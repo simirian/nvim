@@ -5,7 +5,7 @@ simirian's NeoVim config
 ## Install
 
 Install the latest version of NeoVim. (older versions are untested but may work)
-Run `git clone https://github.com/simirian/nvim` in your NeoVim configuration directory.
+Run `git clone https://github.com/simirian/nvim` in your configuration directory.
 Run NeoVim like normal (`nvim`), and everything SHOULD be installed.
 
 ## Configuration
@@ -34,6 +34,8 @@ after this, the language parser needs to be added in the treesitter config, then
 
 Begin telescope mappings with the keybind `leader` > `f`, then continue with one of the following:
 
+| map | action |
+| --- | --- |
 | `f` | Open telescope file finder. |
 | `g` | Open telescope grep finder. |
 | `h` | Open telescope help file search. |
