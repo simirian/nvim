@@ -40,11 +40,11 @@ return {
       "williamboman/mason-lspconfig.nvim",
     },
     config = function()
-      --local cmplsp = require("cmp_nvim_lsp")
+      local cmplsp = require("cmp_nvim_lsp")
       local lspconfig = require("lspconfig")
       for server, opts in pairs(settings.languages) do
         lspconfig[server].setup{
-          --capabilities = cmplsp.default_capabilities(),
+          capabilities = cmplsp.default_capabilities(),
           settings = opts.settings,
         }
       end
