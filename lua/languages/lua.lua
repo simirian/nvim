@@ -16,7 +16,6 @@ return {
   -- use default `.git/` dir with `.luarc.json` as backup
   workspace_root = { "./git", ".luarc.json" },
   filetypes = "lua",
-  ts_parser = "lua",
 
   lsp = {
     name = "lua_ls",

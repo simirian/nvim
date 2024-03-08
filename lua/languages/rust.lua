@@ -11,7 +11,6 @@ return {
   end,
   workspace_root = "Cargo.toml",
   filetypes = "rust",
-  ts_parser = "rust",
 
   lsp = {
     name = "rust_analyzer",

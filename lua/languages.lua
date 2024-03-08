@@ -12,12 +12,9 @@ local template = {
   --- workspace root directory finder
   --- @type string|string[] workspace root directory identifier
   workspace_root = ".git/",
-  --- filetypes for this language
+  --- filetypes for this language, parsers will be installed with treesitter
   --- @type string|string[]
   filetypes = { },
-  --- treesitter parsers to install for this language
-  --- @type string|string[]
-  ts_parser = { },
 
   lsp = {
     --- lsp name for nvim-lspconfig
@@ -67,15 +64,15 @@ function M.treesitter_languages()
   local langs = M.languages()
 
   for _, opts in pairs(langs) do
-    if type(opts.ts_parser) == "table" then
-      for _, parser in ipairs(opts.ts_parser) do
+    if type(opts.filetypes) == "table" then
+      for _, parser in ipairs(opts.filetypes) do
         if not vim.tbl_contains(tbl, parser) then
           table.insert(tbl, parser)
         end
       end
     else
-      if not vim.tbl_contains(tbl, opts.ts_parser) then
-        table.insert(tbl, opts.ts_parser)
+      if not vim.tbl_contains(tbl, opts.filetypes) then
+        table.insert(tbl, opts.filetypes)
       end
     end
   end

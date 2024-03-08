@@ -12,7 +12,6 @@ return {
   end,
   workspace_root = { "CMakeLists.txt", "makefile" },
   filetypes = "c",
-  ts_parser = "c",
 
   lsp = {
     name = "clangd",
