@@ -40,7 +40,6 @@ return {
       "williamboman/mason-lspconfig.nvim",
     },
     config = function()
-      print("lsp init")
       local cmplsp = require("cmp_nvim_lsp")
       local lspconfig = require("lspconfig")
       local langs = require("languages").languages()
