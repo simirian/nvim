@@ -87,13 +87,17 @@ autocmd("FileType", {
 
 -- terminal specific settings
 augroup("terminal", { clear = false })
-autocmd("BufEnter", {
-  pattern = { "term://*", "TelescopePrompt" },
+autocmd({ "BufEnter", "TermOpen" }, {
+  pattern = "term://*",
   group = "terminal",
-  command = "startinsert",
+  callback = function()
+    vim.cmd("startinsert")
+    vim.cmd("setlocal nonumber norelativenumber")
+  end
 })
 autocmd("BufLeave", {
   pattern = "term://*",
   group = "terminal",
   command = "stopinsert",
 })
+
