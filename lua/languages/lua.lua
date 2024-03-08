@@ -30,10 +30,7 @@ return {
         },
         workspace = {
           checkThirdParty = false,
-          library = {
-            vim.env.VIMRUNTIME,
-            "${3rd}/luassert/library",
-          },
+          library = vim.api.nvim_list_runtime_paths(),
         },
       },
     },

@@ -91,8 +91,9 @@ autocmd({ "BufEnter", "TermOpen" }, {
   pattern = "term://*",
   group = "terminal",
   callback = function()
+    vim.wo.number = false
+    vim.wo.relativenumber = false
     vim.cmd("startinsert")
-    vim.cmd("setlocal nonumber norelativenumber")
   end
 })
 autocmd("BufLeave", {
