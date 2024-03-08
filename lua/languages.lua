@@ -103,11 +103,11 @@ end
 function M.get_workspace()
   local langs = M.languages()
 
-  for lang, opts in pairs(langs) do
+  for _, opts in pairs(langs) do
     if opts.detector() then
       -- TODO: look backwards for workspace root dir
       vim.g.workspace_dir = vim.fn.getcwd()
-      vim.g.workspace_lang = lang
+      vim.g.workspace_lang = opts.filetypes[0]
       vim.api.nvim_exec_autocmds("User", { pattern = "WorkspaceEnter" })
       break
     end
