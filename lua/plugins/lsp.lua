@@ -34,18 +34,20 @@ return {
   {
     "neovim/nvim-lspconfig",
     lazy = true,
-    ft = { "lua", "rust", "c", "cpp" },
+    event = "User WorkspaceEnter",
     dependencies = {
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",
     },
     config = function()
+      print("lsp init")
       local cmplsp = require("cmp_nvim_lsp")
       local lspconfig = require("lspconfig")
-      for server, opts in pairs(settings.languages) do
-        lspconfig[server].setup{
+      local langs = require("languages").languages()
+      for _, opts in pairs(langs) do
+        lspconfig[opts.lsp.name].setup{
           capabilities = cmplsp.default_capabilities(),
-          settings = opts.settings,
+          settings = opts.lsp.settings or { },
         }
       end
 

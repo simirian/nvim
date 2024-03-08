@@ -3,61 +3,7 @@
 
 return {
   colorscheme = "kanagawa",
-
-  languages = {
-    -- cpp
-    clangd = { },
-
-    -- lua
-    lua_ls = {
-      settings = {
-        ["Lua"] = {
-          runtime = {
-            version = "LuaJIT",
-          },
-          diagnostics = {
-            enable = true,
-            globals = { "vim" },
-          },
-          workspace = {
-            checkThirdParty = false,
-            library = {
-              vim.env.VIMRUNTIME,
-              "${3rd}/luassert/library",
-            },
-          },
-        },
-      },
-    },
-
-    -- rust
-    rust_analyzer = {
-      settings = {
-        ["rust-analyzer"] = {
-          completion = {
-            autoimport = { enable = true },
-            autoself = { enable = true },
-            callable = { snippets = "fill_arguments" },
-            limit = nil,
-            postfix = { enable = true },
-            privateEditable = { enable = true },
-          },
-          diagnostics = {
-            disabled = { },
-            enable = true,
-          },
-        },
-      },
-    },
-
-    -- web
-    --html = { },
-    --tsserver = { },
-    --cssls = { },
-
-    -- python
-    --pylyzer = { },
-  },
+  --ts_default_lang = { "c", "cpp", "lua", "vim", "vimdoc", "query", "bash" },
 
   icons = {
     -- item kind icons
