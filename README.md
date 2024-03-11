@@ -13,8 +13,8 @@ Run NeoVim like normal (`nvim`), and everything SHOULD be installed.
 Most configuration is straightforwards, keybinds can go in lua/keys.lua, vim options can go in lua/opts.lua, etc..
 Plugins and their settings go in lua/plugins/ according to the lazy.nvim spec.
 
-To add support for additional languages you can simply add that language server to lua/settings.lua under the languages key with the LSP settings.
-after this, the language parser needs to be added in the treesitter config, then you're all set!
+To add support for additional languages those languages should be added to `lua/languages/`.
+This should specify the language server, treesitter parser, and filetypes for the language.
 
 ## Keymaps
 

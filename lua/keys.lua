@@ -61,3 +61,4 @@ map("v", "=", "=gv", opts)
 -- moving text
 map("v", "<A-j>", ":move '>+1<CR>gv", opts)
 map("v", "<A-k>", ":move '<-2<CR>gv", opts)
+
