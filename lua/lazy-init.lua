@@ -18,6 +18,11 @@ require("lazy").setup("plugins", {
     url_format = "https://github.com/%s.git",
     filter = true,
   },
+  dev = {
+    path = "~/source/",
+    patterns = { },
+    fallback = false,
+  },
   install = {
     missing = true,
     colorscheme = { require("settings").colorscheme },
