@@ -18,3 +18,8 @@ newcmd("BufInfo", function(command)
   }
   vim.notify(vim.inspect(binfo), vim.log.levels.INFO)
 end, { desc = "Get basic buffer information for the current buffer" })
+
+function Pt(tbl)
+  print(vim.inspect(tbl))
+end
+
