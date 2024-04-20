@@ -6,23 +6,10 @@
 return {
   "nvim-treesitter/nvim-treesitter",
   opts = {
-    ensure_installed = {
-      -- cpp
-      "c",
-      "cpp",
-
-      -- lua/nvim
-      "lua",
-      "vim",
-      "vimdoc",
-
-      -- rust
-      "rust",
-
-      -- bash
-      "bash"
-    },
-    sync_install = false,
+    --TODO: make this ensure_installed list work better
+    ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "bash" },
+    sync_install = true,
+    auto_install = false,
     highlight = {
       enable = true,
       additional_vim_regex_highlighting = false,
@@ -31,8 +18,14 @@ return {
       enable = true,
     },
     autopairs = {
-      enable = true
-    }
-  }
+      enable = true,
+    },
+  },
+  config = function(_, opts)
+    require("nvim-treesitter.configs").setup(opts)
+    vim.opt.foldmethod = "expr"
+    vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
+    vim.opt.foldlevelstart = 999999
+  end
 }
 
