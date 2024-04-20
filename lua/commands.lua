@@ -19,7 +19,20 @@ newcmd("BufInfo", function(command)
   vim.notify(vim.inspect(binfo), vim.log.levels.INFO)
 end, { desc = "Get basic buffer information for the current buffer" })
 
-function Pt(tbl)
-  print(vim.inspect(tbl))
+--- Debug print anything.
+--- @param a any what to print
+function DBP(a)
+  print(vim.inspect(a))
 end
 
+--- Checks if a direcotry contains an item, or all of a list of items.
+--- @param dir string the directory to search
+--- @param item string the item to search for, append / for directories
+--- @return boolean contained
+function DirContains(dir, item)
+  for basename, type in vim.fs.dir(dir) do
+    if type == "directory" then basename = basename .. "/" end
+    if basename == item then return true end
+  end
+  return false
+end
