@@ -22,6 +22,7 @@ return {
         },
       },
     },
+    config = true,
   },
   {
     "williamboman/mason-lspconfig.nvim",
@@ -30,26 +31,16 @@ return {
     opts = {
       automatic_installation = true,
     },
+    config = true,
   },
   {
     "neovim/nvim-lspconfig",
     lazy = true,
-    event = "User WorkspaceEnter",
     dependencies = {
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",
     },
     config = function()
-      local cmplsp = require("cmp_nvim_lsp")
-      local lspconfig = require("lspconfig")
-      local langs = require("languages").languages()
-      for _, opts in pairs(langs) do
-        lspconfig[opts.lsp.name].setup{
-          capabilities = cmplsp.default_capabilities(),
-          settings = opts.lsp.settings or { },
-        }
-      end
-
       do -- set up nvim lsp settings
         local signs = {
           DiagnosticSignError = settings.icons.Error,
@@ -80,6 +71,7 @@ return {
         vim.diagnostic.config(config)
       end
 
+      -- lsp keybonds
       vim.api.nvim_create_autocmd("LspAttach", {
         group = vim.api.nvim_create_augroup("UserLspConfig", { }),
         callback = function(ev)
@@ -92,8 +84,9 @@ return {
           map("n", "<leader>ld", vim.diagnostic.open_float, opts)
           map("n", "<leader>lh", vim.lsp.buf.hover, opts)
           map("n", "<leader>ls", vim.lsp.buf.signature_help, opts)
-          map("n", "<leader>lr", vim.lsp.buf.rename, opts)
-          map("n", "<leader>la", vim.lsp.buf.code_action, opts)
+          map("n", "<leader>cr", vim.lsp.buf.rename, opts)
+          map("n", "<leader>ca", vim.lsp.buf.code_action, opts)
+          map("n", "<leader>cf", vim.lsp.buf.format, opts)
           map("n", "[d", vim.diagnostic.goto_prev, opts)
           map("n", "]d", vim.diagnostic.goto_next, opts)
         end,

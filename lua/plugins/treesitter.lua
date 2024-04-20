@@ -6,7 +6,8 @@
 return {
   "nvim-treesitter/nvim-treesitter",
   opts = {
-    ensure_installed = require("languages").treesitter_languages(),
+    --TODO: make this ensure_installed list work better
+    ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "bash" },
     sync_install = true,
     auto_install = false,
     highlight = {
