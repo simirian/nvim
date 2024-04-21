@@ -1,64 +1,86 @@
 -- simirian's NeoVim
 -- basic vim keybinds
 
-local opts = { noremap = true, silent = true }
-local map = vim.keymap.set
+local vim_map = vim.keymap.set
+
+--- Map a vum command
+--- @param vm vim-mode
+--- @param lhs string pattern to change
+--- @param rhs string what to change it to
+local function map(vm, lhs, rhs)
+  vim_map(vm, lhs, rhs, {
+    noremap = true,
+    silent = true,
+  })
+end
 
 -- leader key
-map("", "<Space>", "<Nop>", opts)
+map("", "<Space>", "<Nop>")
 vim.g.mapleader = " "
 vim.g.localleader = " "
 
+--- @alias vim-mode string vim mode letters
+--- | ""  # all
+--- | "n" # normal
+--- | "i" # insert
+--- | "c" # command
+--- | "v" # visual, select
+--- | "x" # visual
+--- | "s" # select
+--- | "o" # operator
+--- | "t" # terminal
+--- | "l" # insert, command, lang-arg
+
 -- NORMAL --
 -- window navigation
-map("n", "<C-h>", "<C-w>h", opts)
-map("n", "<C-j>", "<C-w>j", opts)
-map("n", "<C-k>", "<C-w>k", opts)
-map("n", "<C-l>", "<C-w>l", opts)
+map("n", "<C-h>", "<C-w>h")
+map("n", "<C-j>", "<C-w>j")
+map("n", "<C-k>", "<C-w>k")
+map("n", "<C-l>", "<C-w>l")
 
 -- normal cursor movement
-map("n", "j", "gj", opts)
-map("n", "k", "gk", opts)
+map("n", "j", "gj")
+map("n", "k", "gk")
 
 -- line movement
-map("n", "<A-j>", "<Cmd>move +1<CR>", opts)
-map("n", "<A-k>", "<Cmd>move -2<CR>", opts)
+map("n", "<A-j>", "<Cmd>move +1<CR>")
+map("n", "<A-k>", "<Cmd>move -2<CR>")
 
 -- quick navigation
-map("n", "<C-d>", "<C-d>zz", opts)
-map("n", "<C-u>", "<C-u>zz", opts)
+map("n", "<C-d>", "<C-d>zz")
+map("n", "<C-u>", "<C-u>zz")
 
 -- resizing splits
-map("n", "<C-Up>", "<Cmd>resize +1<CR>", opts)
-map("n", "<C-Down>", "<Cmd>resize -1<CR>", opts)
-map("n", "<C-Left>", "<Cmd>vertical resize -2<CR>", opts)
-map("n", "<C-Right>", "<Cmd>vertical resize +2<CR>", opts)
+map("n", "<C-Up>", "<Cmd>resize +1<CR>")
+map("n", "<C-Down>", "<Cmd>resize -1<CR>")
+map("n", "<C-Left>", "<Cmd>vertical resize -2<CR>")
+map("n", "<C-Right>", "<Cmd>vertical resize +2<CR>")
 
 -- use system clipboard
-map("n", "<leader>p", "\"+p", opts)
+map("n", "<leader>p", "\"+p")
 
-map("n", "gT", "<Cmd>tabedit %<CR>", opts)
-map("n", "U", "<C-r>", opts)
+map("n", "gT", "<Cmd>tabedit %<CR>")
+map("n", "U", "<C-r>")
 
 -- INSERT --
-map("i", "kj", "<Esc>", opts)
-map("i", "jk", "<Esc>", opts)
+map("i", "kj", "<Esc>")
+map("i", "jk", "<Esc>")
 
 -- VISUAL --
 -- paste over keeps selection
-map("v", "p", "\"_dP", opts)
+map("x", "p", "\"_dP")
 
 -- use system clipboard
-map("v", "<leader>y", "\"+y", opts)
-map("v", "<leader>p", "\"+p", opts)
+map("x", "<leader>y", "\"+y")
+map("x", "<leader>p", "\"+p")
 
 -- indentation keeps selection
-map("v", ">", ">gv", opts)
-map("v", "<", "<gv", opts)
-map("v", "=", "=gv", opts)
+map("x", ">", ">gv")
+map("x", "<", "<gv")
+map("x", "=", "=gv")
 
 -- tabs
 -- moving text
-map("v", "<A-j>", ":move '>+1<CR>gv", opts)
-map("v", "<A-k>", ":move '<-2<CR>gv", opts)
+map("x", "<A-j>", ":move '>+1<CR>gv")
+map("x", "<A-k>", ":move '<-2<CR>gv")
 
