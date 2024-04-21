@@ -6,10 +6,8 @@ return {
   lazy = false,
   priority = 900,
   dev = true,
-  config = function(_, opts)
-    local workspaces = require("nvim-manager.workspaces")
-    workspaces.setup()
-    local projects = require("nvim-manager.projects")
-    projects.setup()
+  config = function()
+    require("nvim-manager.workspaces").setup()
+    require("nvim-manager.projects").setup()
   end
 }
