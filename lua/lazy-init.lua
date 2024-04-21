@@ -2,6 +2,7 @@
 -- lazy.nvim config, plugins are in ./plugins/
 
 local stdpath = vim.fn.stdpath
+local settings = require("settings")
 
 local lazypath = stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
@@ -25,7 +26,7 @@ require("lazy").setup("plugins", {
   },
   install = {
     missing = true,
-    colorscheme = { require("settings").colorscheme },
+    colorscheme = { settings.colorschemes[1] },
   },
   ui = {
     size = {
@@ -37,30 +38,7 @@ require("lazy").setup("plugins", {
     title = nil, -- appears in border
     title_pos = "left",
     pills = true,
-    icons = {
-      cmd = " ",
-      config = "",
-      event = "",
-      ft = " ",
-      init = " ",
-      import = " ",
-      keys = " ",
-      lazy = "󰒲 ",
-      loaded = "●",
-      not_loaded = "○",
-      plugin = " ",
-      runtime = " ",
-      require = "󰢱 ",
-      source = " ",
-      start = "",
-      task = " ",
-      list = {
-        "-",
-        "=",
-        ">",
-        "*",
-      },
-    },
+    icons = settings.icons,
     browser = nil, --- @type string?
     throttle = 20,
     custom_keys = {
