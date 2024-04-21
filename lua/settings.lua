@@ -2,7 +2,20 @@
 -- basic settings used in many other places
 
 return {
-  colorscheme = "kanagawa",
+  colorschemes = {
+    "gruvbox-material",
+    ["kanagawa"] = {
+      repo = "rebelot/kanagawa.nvim",
+    },
+    ["gruvbox-material"] = {
+      repo = "sainnhe/gruvbox-material",
+      enable = function()
+        vim.g.gruvbox_material_background = "medium"
+        vim.g.gruvbox_material_foreground = "mix"
+        vim.cmd("colorscheme gruvbox-material")
+      end
+    }
+  },
   --ts_default_lang = { "c", "cpp", "lua", "vim", "vimdoc", "query", "bash" },
 
   icons = {
@@ -55,4 +68,3 @@ return {
     Pending = "󰞌",
   }
 }
-

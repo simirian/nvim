@@ -3,22 +3,28 @@
 
 local settings = require("settings")
 
-return {
-  {
-    "rebelot/kanagawa.nvim",
+local function make_scheme(name, opts)
+  return {
+    opts.repo,
     priority = 1000,
-    enabled = settings.colorscheme == "kanagawa",
     config = function()
-      vim.cmd("colorscheme " .. settings.colorscheme)
-    end,
-  },
-  {
-    "sainnhe/gruvbox-material",
-    priority = 1000,
-    enabled = settings.colorscheme == "gruvbox-material",
-    config = function()
-      vim.cmd("colorscheme " .. settings.colorscheme)
-    end,
-  },
-}
+      if settings.colorschemes[1] == name then
+        if opts.enable then
+          opts.enable()
+        else
+          vim.cmd("colorscheme " .. name)
+        end
+      end
+    end
+  }
+end
 
+local tbl = {}
+
+for name, opts in pairs(settings.colorschemes) do
+  if name ~= 1 then
+    table.insert(tbl, make_scheme(name, opts))
+  end
+end
+
+return tbl
