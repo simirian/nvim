@@ -23,7 +23,7 @@ return {
             privateEditable = { enable = true },
           },
           diagnostics = {
-            disabled = { },
+            disabled = {},
             enable = true,
           },
         },
@@ -31,4 +31,3 @@ return {
     },
   },
 }
-

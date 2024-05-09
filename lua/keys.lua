@@ -83,4 +83,3 @@ map("x", "=", "=gv")
 -- moving text
 map("x", "<A-j>", ":move '>+1<CR>gv")
 map("x", "<A-k>", ":move '<-2<CR>gv")
-

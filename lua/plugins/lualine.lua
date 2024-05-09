@@ -52,7 +52,7 @@ return {
       --  
       section_separators = { left = "", right = "" },
       disabled_filetypes = { "alpha", "dashboard", "Outline" },
-      ignore_focus = { },
+      ignore_focus = {},
       always_divide_middle = true,
       globalstatus = true,
       refresh = {
@@ -66,19 +66,19 @@ return {
       lualine_a = { "mode" },
       lualine_b = { "branch" },
       lualine_c = { "diff" },
-      lualine_x = { },
+      lualine_x = {},
       lualine_y = { "encoding" },
       lualine_z = { "progress", "location" },
     },
     winbar = {
-      lualine_a = { },
+      lualine_a = {},
       lualine_b = file_section,
       lualine_c = { diagnostic_component },
     },
     inactive_winbar = {
-      lualine_a = { },
+      lualine_a = {},
       lualine_b = file_section,
-      lualine_c = { },
+      lualine_c = {},
     },
     tabline = {
       lualine_a = {
@@ -104,7 +104,7 @@ return {
           symbols = {
             modified = " ●",
             alternate_file = "",
-            directory =  "  ",
+            directory = "  ",
           },
         },
       },
@@ -125,23 +125,22 @@ return {
       {
         filetypes = { "NvimTree" },
         sections = {
-          lualine_a = { function () return "~" end },
+          lualine_a = { function() return "~" end },
         },
-        winbar = { },
-        inactive_winbar = { },
+        winbar = {},
+        inactive_winbar = {},
       },
       {
         filetypes = { "checkhealth" },
-        sections = { },
+        sections = {},
         winbar = {
           lualine_c = { "filetype" },
         },
         inactive_winbar = {
-          lualine_c = { function () return "~" end },
+          lualine_c = { function() return "~" end },
         },
-        inactive_sections = { },
+        inactive_sections = {},
       },
     },
   },
 }
-

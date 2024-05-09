@@ -6,13 +6,12 @@ return {
     -- look for a `makefile` or `CMakeLists.txt`
     local cwd = vim.fn.getcwd()
     return DirContains(cwd, "makefile")
-      or DirContains(cwd, "CMakeLists.txt")
+        or DirContains(cwd, "CMakeLists.txt")
   end,
   workspace_root = { "CMakeLists.txt", "makefile" },
   filetypes = "c",
 
   lsp = {
-    ["clangd"] = { }
+    ["clangd"] = {}
   },
 }
-

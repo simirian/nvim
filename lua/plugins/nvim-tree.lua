@@ -18,7 +18,7 @@ return {
     hijack_cursor = true,
     hijack_netrw = true,
     hijack_unnamed_buffer_when_opening = false,
-    root_dirs = { },
+    root_dirs = {},
     prefer_startup_root = true,
     sync_root_with_cwd = true,
     reload_on_bufenter = false,
@@ -118,13 +118,13 @@ return {
             symlink_open = "",
           },
           git = {
-            unstaged = "✗",  -- X
-            staged = "✓",    -- V
-            unmerged = "",  -- U
-            renamed = "➜",   -- R
+            unstaged = "✗", -- X
+            staged = "✓", -- V
+            unmerged = "", -- U
+            renamed = "➜", -- R
             untracked = "+", -- *
-            deleted = "-",   -- 
-            ignored = "o",   -- ◌
+            deleted = "-", -- 
+            ignored = "o", -- ◌
           },
         },
       },
@@ -136,18 +136,18 @@ return {
     update_focused_file = {
       enable = false,
       update_root = false,
-      ignore_list = { },
+      ignore_list = {},
     },
     system_open = {
       -- will adapt to os
       cmd = "",
-      args = { },
+      args = {},
     },
     git = {
       enable = true,
       show_on_dirs = false,
       show_on_open_dirs = false,
-      disable_for_dirs = { },
+      disable_for_dirs = {},
       timeout = 3000,
     },
     diagnostics = {
@@ -178,7 +178,7 @@ return {
       no_buffer = false,
       no_bookmark = false,
       -- always shown
-      exclude = { },
+      exclude = {},
     },
     live_filter = {
       prefix = " ",
@@ -187,7 +187,7 @@ return {
     filesystem_watchers = {
       enable = true,
       debounce_delay = 50,
-      ignore_dirs = { },
+      ignore_dirs = {},
     },
     actions = {
       use_system_clipboard = true,
@@ -248,7 +248,7 @@ return {
       sync = {
         open = false,
         close = false,
-        ignore = { },
+        ignore = {},
       },
     },
     notify = {
@@ -304,4 +304,3 @@ return {
     vim.keymap.set("n", "<leader>e", require("nvim-tree.api").tree.toggle)
   end
 }
-

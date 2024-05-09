@@ -9,7 +9,7 @@ local autocmd = vim.api.nvim_create_autocmd
 -- editor appearance
 o.colorcolumn = "80"
 o.number = true
-o.relativenumber = true
+o.relativenumber = false
 o.numberwidth = 2
 o.scrolloff = 4
 o.sidescrolloff = 4
@@ -20,12 +20,12 @@ o.showtabline = 2
 o.cursorline = true
 o.wrap = false
 
--- show whitespace characters as follows
+-- show whitespace characters
 o.list = true
 o.listchars = {
-  eol = "↩",
-  tab = "▏ ",
-  leadmultispace = "▏ ",
+  eol = "|",
+  tab = "| ",
+  leadmultispace = "|" .. string.rep(" ", 80),
   extends = "+",
   precedes = "+",
 }
@@ -48,9 +48,9 @@ o.wrapscan = true
 
 -- indentation
 o.expandtab = true -- use spaces where tabs don't matter
-o.tabstop = 2 -- tab size
-o.softtabstop = 2 -- simulated tab size
-o.shiftwidth = 0 -- uses tabstop
+o.tabstop = 2      -- tab size
+o.softtabstop = 2  -- simulated tab size
+o.shiftwidth = 0   -- uses tabstop
 
 -- splits
 o.splitright = true
@@ -64,16 +64,18 @@ g.loaded_node_provider = 0
 
 -- misc
 o.timeoutlen = 3000 -- timeout length in ms
-o.updatetime = 50 -- time before completions in ms
+o.updatetime = 50   -- time before completions in ms
+vim.lsp.set_log_level(vim.lsp.log_levels.WARN)
 
 -- nvim should use powershell on windows
 if vim.fn.has("win32") == 1 then
-  vim.o.shell = "powershell"
-  vim.o.shellcmdflag = "-NoLogo -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.UTF8Encoding]::new();$PSDefaultParameterValues['Out-File:Encoding']='utf8';"
-  vim.o.shellredir = "2>&1 | %%{ \"$_\" } | Out-File %s; exit $LastExitCode"
-  vim.o.shellpipe  = "2>&1 | %%{ \"$_\" } | Tee-Object %s; exit $LastExitCode"
-  vim.o.shellquote = ""
-  vim.o.shellxquote = ""
+  vim.o.shell        = "powershell"
+  vim.o.shellcmdflag =
+  "-NoLogo -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.UTF8Encoding]::new();$PSDefaultParameterValues['Out-File:Encoding']='utf8';"
+  vim.o.shellredir   = "2>&1 | %%{ \"$_\" } | Out-File %s; exit $LastExitCode"
+  vim.o.shellpipe    = "2>&1 | %%{ \"$_\" } | Tee-Object %s; exit $LastExitCode"
+  vim.o.shellquote   = ""
+  vim.o.shellxquote  = ""
 end
 
 -- autocommands
@@ -101,4 +103,3 @@ autocmd("BufLeave", {
   group = "terminal",
   command = "stopinsert",
 })
-

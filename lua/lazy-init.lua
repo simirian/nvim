@@ -6,8 +6,8 @@ local settings = require("settings")
 
 local lazypath = stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
-  vim.fn.system{ "git", "clone", "--filter=blob:none",
-  "https://github.com/folke/lazy.nvim.git", "--branch=stable", lazypath, }
+  vim.fn.system { "git", "clone", "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git", "--branch=stable", lazypath, }
 end
 vim.opt.rtp:prepend(lazypath)
 
@@ -21,7 +21,7 @@ require("lazy").setup("plugins", {
   },
   dev = {
     path = "~/source/",
-    patterns = { },
+    patterns = {},
     fallback = false,
   },
   install = {
@@ -41,22 +41,7 @@ require("lazy").setup("plugins", {
     icons = settings.icons,
     browser = nil, --- @type string?
     throttle = 20,
-    custom_keys = {
-      ["<localleader>l"] = {
-        function(plugin)
-          require("lazy.util").float_term({ "lazygit", "log" },
-          { cwd = plugin.dir })
-        end,
-        desc = "Open lazygit log",
-      },
-
-      ["<localleader>t"] = {
-        function(plugin)
-          require("lazy.util").float_term(nil, { cwd = plugin.dir })
-        end,
-        desc = "Open terminal in plugin dir",
-      }
-    }
+    custom_keys = {},
   },
   diff = { cmd = "git" },
   checker = {
@@ -75,7 +60,7 @@ require("lazy").setup("plugins", {
     reset_packpath = true,
     rtp = {
       reset = true,
-      paths = { },
+      paths = {},
       disabled_plugins = {
         -- "gzip",
         -- "matchit",
@@ -104,4 +89,3 @@ require("lazy").setup("plugins", {
     require = false,
   },
 })
-

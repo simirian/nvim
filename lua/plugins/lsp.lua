@@ -73,7 +73,7 @@ return {
 
       -- lsp keybonds
       vim.api.nvim_create_autocmd("LspAttach", {
-        group = vim.api.nvim_create_augroup("UserLspConfig", { }),
+        group = vim.api.nvim_create_augroup("UserLspConfig", {}),
         callback = function(ev)
           local map = vim.keymap.set
           local opts = { buffer = ev.buf, noremap = true, silent = true }
@@ -94,4 +94,3 @@ return {
     end,
   },
 }
-

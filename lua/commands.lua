@@ -4,7 +4,7 @@
 local newcmd = vim.api.nvim_create_user_command
 
 newcmd("Update", function(command)
-  require("lazy").sync{ show = false }
+  require("lazy").sync { show = false }
   vim.cmd("MasonUpdate")
   vim.cmd("TSUpdateSync")
 end, { desc = "Updates Lazy, Mason, and Treesitter add-ons" })

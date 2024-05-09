@@ -40,6 +40,7 @@ Begin telescope mappings with the keybind `leader` > `f`, then continue with one
 | `g` | Open telescope grep finder. |
 | `h` | Open telescope help file search. |
 | `b` | Open telescope buffer finder. |
+| `p` | Open nvim-manager projects picker. |
 
 ### Insert mode
 

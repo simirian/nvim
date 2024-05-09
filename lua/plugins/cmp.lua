@@ -28,17 +28,17 @@ return {
       local luasnip = require("luasnip")
 
       -- generic completion sources
-      cmp.setup{
+      cmp.setup {
         snippet = {
           expand = function(args)
             luasnip.lsp_expand(args.body)
           end,
         },
-        mapping = cmp.mapping.preset.insert{
+        mapping = cmp.mapping.preset.insert {
           ["<C-e>"] = cmp.mapping.abort(),
           ["<CR>"] = function(fallback)
             if cmp.visible() then
-              cmp.confirm{select = true}
+              cmp.confirm { select = true }
             else
               fallback()
             end
@@ -62,7 +62,7 @@ return {
             end
           end,
         },
-        sources = cmp.config.sources{
+        sources = cmp.config.sources {
           { name = "nvim_lsp" },
           { name = "luasnip" },
           { name = "buffer" },
@@ -70,7 +70,7 @@ return {
         },
         formatting = {
           fields = { "kind", "abbr", "menu" },
-          format = function (entry, vim_item)
+          format = function(entry, vim_item)
             -- icon
             vim_item.kind = require("settings").icons[vim_item.kind]
             -- source
@@ -92,7 +92,7 @@ return {
       -- search
       cmp.setup.cmdline({ "/", "?" }, {
         mapping = cmp.mapping.preset.cmdline(),
-        sources = cmp.config.sources{
+        sources = cmp.config.sources {
           { name = "buffer" },
         },
       })
@@ -100,7 +100,7 @@ return {
       -- command line
       cmp.setup.cmdline(":", {
         mapping = cmp.mapping.preset.cmdline(),
-        sources = cmp.config.sources{
+        sources = cmp.config.sources {
           { name = "path" },
           { name = "cmdline" },
         },
@@ -112,4 +112,3 @@ return {
     end,
   },
 }
-

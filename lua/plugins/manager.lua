@@ -9,5 +9,5 @@ return {
   config = function()
     require("nvim-manager.workspaces").setup()
     require("nvim-manager.projects").setup()
-  end
+  end,
 }
