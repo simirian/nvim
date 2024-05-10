@@ -3,6 +3,6 @@
 -- require all the basic configs for file editing
 vim.cmd("colorscheme habamax")
 require("opts")
-require("keys")
+require("keys").setup()
 require("commands")
 require("lazy-init")

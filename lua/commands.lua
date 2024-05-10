@@ -3,13 +3,13 @@
 
 local newcmd = vim.api.nvim_create_user_command
 
-newcmd("Update", function(command)
+newcmd("Update", function()
   require("lazy").sync { show = false }
   vim.cmd("MasonUpdate")
   vim.cmd("TSUpdateSync")
 end, { desc = "Updates Lazy, Mason, and Treesitter add-ons" })
 
-newcmd("BufInfo", function(command)
+newcmd("BufInfo", function()
   local bufnr = vim.api.nvim_get_current_buf()
   local binfo = {
     name = vim.api.nvim_buf_get_name(bufnr),
@@ -21,7 +21,7 @@ end, { desc = "Get basic buffer information for the current buffer" })
 
 --- Debug print anything.
 --- @param a any what to print
-function DBP(a)
+function P(a)
   print(vim.inspect(a))
 end
 
