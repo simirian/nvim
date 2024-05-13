@@ -16,9 +16,9 @@ return {
         width = 0.8,
         height = 0.8,
         icons = {
-          package_installed = settings.icons.Ok,
-          package_pending = settings.icons.Pending,
-          package_uninstalled = settings.icons.Error,
+          package_installed   = settings.icons.check,
+          package_pending     = settings.icons.pending,
+          package_uninstalled = settings.icons.cross,
         },
       },
     },
@@ -43,10 +43,10 @@ return {
     config = function()
       do -- set up nvim lsp settings
         local signs = {
-          DiagnosticSignError = settings.icons.Error,
-          DiagnosticSignWarn = settings.icons.Warning,
-          DiagnosticSignHint = settings.icons.Hint,
-          DiagnosticSignInfo = settings.icons.Information,
+          DiagnosticSignError = settings.icons.error,
+          DiagnosticSignWarn  = settings.icons.warning,
+          DiagnosticSignHint  = settings.icons.hint,
+          DiagnosticSignInfo  = settings.icons.info,
         }
 
         for name, sign in pairs(signs) do

@@ -1,94 +1,185 @@
 -- simirian's NeoVim
 -- basic settings used in many other places
 
-return {
-  colorschemes = {
-    "gruvbox-material",
-    ["kanagawa"] = {
-      repo = "rebelot/kanagawa.nvim",
-    },
-    ["gruvbox-material"] = {
-      repo = "sainnhe/gruvbox-material",
-      enable = function()
-        vim.g.gruvbox_material_background = "medium"
-        vim.g.gruvbox_material_foreground = "mix"
-        vim.cmd("colorscheme gruvbox-material")
-      end
-    }
-  },
-  --ts_default_lang = { "c", "cpp", "lua", "vim", "vimdoc", "query", "bash" },
+local M = {}
 
-  icons = {
-    -- item kind icons
-    Array = "",
-    Boolean = "",
-    Class = "󱪵",
-    Color = "",
-    Constant = "󰭷",
-    Constructor = "",
-    Enum = "󱃣",
-    EnumMember = "󰎢",
-    Event = "",
-    Field = "",
-    File = "󰈤",
-    Folder = "󰉋",
-    Function = "󰊕",
-    Interface = "",
-    Key = "",
-    Keyword = "",
-    Method = "󰘧",
-    Module = "",
-    Namespace = "",
-    Null = "󱥸",
-    Number = "",
-    Object = "󰔇",
-    Operator = "󱓉",
-    Package = "",
-    Property = "",
-    Reference = "",
-    Snippet = "󰩫",
-    String = "󰬴",
-    Struct = "",
-    Text = "󰈙",
-    TypeParameter = "󰓹",
-    Unit = "",
-    Value = "󰺢",
-    Variable = "󰄪",
+-- nerdfont icons
+-- second value is an ASCII alternative
+local icons = {
+  -- code types
+  -- data structures and members
+  interface    = { "", ":" },
+  array        = { "", ":" },
+  struct       = { "", ":" },
+  class        = { "󱪵", ":" },
+  field        = { "", ";" },
+  property     = { "", ";" },
+  enum         = { "󱃣", ":" },
+  enum_case    = { "󰎢", ";" },
+  -- numbers
+  number       = { "", "#" },
+  unit         = { "", "#" },
+  -- values and literals
+  value        = { "󰺢", "l" },
+  boolean      = { "", "l" },
+  string       = { "󰬴", "l" },
+  object       = { "󰔇", "l" },
+  color        = { "", "l" },
+  -- callables
+  func         = { "󰊕", "f" },
+  method       = { "󰘧", "f" },
+  constructor  = { "", "f" },
+  -- variables
+  constant     = { "󰭷", "v" },
+  variable     = { "󰄪", "v" },
+  reference    = { "", "v" },
+  -- namespaces
+  namespace    = { "", "m" },
+  module       = { "", "m" },
+  package      = { "", "m" },
+  -- text
+  text         = { "󰈙", "A" },
+  keyword      = { "", "A" },
+  -- misc
+  event        = { "", "e" },
+  null         = { "󱥸", "_" },
+  operator     = { "󱓉", "%" },
+  snippet      = { "󰩫", "&" },
 
-    -- diagnostic icons
-    Error = "",
-    Warning = "",
-    Information = "",
-    Question = "",
-    Hint = "󰌵",
-    Debug = "",
-    Trace = "",
-    Ok = "",
-    Pause = "",
-    Pending = "󰞌",
+  -- status
+  diagnostics  = { "󱖫", "d" },
+  ok           = { "", "=" },
+  error        = { "", "X" },
+  warning      = { "", "!" },
+  information  = { "", "i" },
+  question     = { "", "?" },
+  hint         = { "󰌵", "*" },
 
-    -- lazy UI icons
-    cmd = " ",
-    config = "",
-    event = "",
-    ft = " ",
-    init = " ",
-    import = " ",
-    keys = " ",
-    lazy = "󰒲 ",
-    loaded = "●",
-    not_loaded = "○",
-    plugin = " ",
-    runtime = " ",
-    require = "󰢱 ",
-    source = " ",
-    start = "",
-    task = " ",
-    list = {
-      "-",
-      "=",
-      ">",
-      "*",
-    },
-  }
+  -- debug
+  debug        = { "", "#" },
+  trace        = { "", "|" },
+  start        = { "", ">" },
+  pause        = { "", "-" },
+  stop         = { "", "|" },
+  pending      = { "", "-" },
+
+  -- files
+  folder_close = { "", "/" },
+  folder_open  = { "", "/" },
+  folder_empty = { "", "/" },
+  folder_link  = { "", ">" },
+  file         = { "", "." },
+  file_link    = { "", ">" },
+
+  -- git
+  add          = { "", "+" },
+  modify       = { "", "~" },
+  remove       = { "", "-" },
+  rename       = { "", "r" },
+  ignore       = { "", "o" },
+
+  commit       = { "", "c" },
+  branch       = { "", "b" },
+
+  -- ui
+  up           = { "", "^" },
+  down         = { "", "v" },
+  left         = { "", "<" },
+  right        = { "", ">" },
+  dot          = { "", "*" },
+  circle       = { "", "o" },
+  check        = { "󰄬", "+" },
+  cross        = { "󰅖", "x" },
+  lock         = { "", "l" },
+  key          = { "", "l" },
+  vim          = { "", "V" },
+  nvim         = { "", "N" },
+  lazy         = { "󰒲", "z" },
+  telescope    = { "", ">" },
+  command      = { "", ">" },
+  config       = { "", "*" },
+  tag          = { "󰓹", ":" },
+  code         = { "", "#" },
+  symbol       = { "", "O" },
+  default      = { "󱐟", "$" },
 }
+
+--- Colorschemes to install and load.
+--- [1] is the colorscheme that gets loaded
+M.colorschemes = {
+  "yicks",
+
+  ["kanagawa"] = {
+    repo = "rebelot/kanagawa.nvim",
+  },
+
+  ["gruvbox-material"] = {
+    repo = "sainnhe/gruvbox-material",
+    enable = function()
+      vim.g.gruvbox_material_background = "medium"
+      vim.g.gruvbox_material_foreground = "mix"
+      vim.cmd("colorscheme gruvbox-material")
+    end
+  },
+}
+
+function M.cmp_item(name)
+  local items = {
+    Array         = M.icons.array,
+    Boolean       = M.icons.boolean,
+    Class         = M.icons.class,
+    Color         = M.icons.color,
+    Constant      = M.icons.constant,
+    Constructor   = M.icons.Constructor,
+    Enum          = M.icons.enum,
+    EnumMember    = M.icons.enum_case,
+    Event         = M.icons.event,
+    Field         = M.icons.field,
+    File          = M.icons.file,
+    Folder        = M.icons.folder_close,
+    Function      = M.icons.func,
+    Interface     = M.icons.interface,
+    Key           = M.icons.key,
+    Keyword       = M.icons.keyword,
+    Method        = M.icons.method,
+    Module        = M.icons.module,
+    Namespace     = M.icons.namespace,
+    Null          = M.icons.null,
+    Number        = M.icons.number,
+    Object        = M.icons.object,
+    Operator      = M.icons.operator,
+    Package       = M.icons.package,
+    Property      = M.icons.property,
+    Reference     = M.icons.reference,
+    Snippet       = M.icons.snippet,
+    String        = M.icons.string,
+    Struct        = M.icons.struct,
+    Text          = M.icons.text,
+    TypeParameter = M.icons.tag,
+    Unit          = M.icons.unit,
+    Value         = M.icons.value,
+    Variable      = M.icons.variable,
+  }
+  return items[name]
+end
+
+--- Setup the settings module
+function M.setup()
+  -- check if we are in a vc (rather than a terminal emulator)
+  local has_vc = false
+  if not vim.fn.has("linux") then
+    has_vc = (vim.fn.getenv("DISPLAY") or vim.fn.getenv("WAYLAND_DISPLAY"))
+  end
+
+  -- load ascii alts if we are in a vc
+  local itbl = {}
+  for k, v in pairs(icons) do
+    itbl[k] = v[has_vc and 2 or 1]
+  end
+
+  setmetatable(M, {
+    __index = { icons = itbl },
+  })
+end
+
+return M

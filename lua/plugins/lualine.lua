@@ -7,10 +7,10 @@ local diagnostic_component = {
   "diagnostics",
   sources = { "nvim_lsp" },
   symbols = {
-    error = settings.icons.Error .. " ",
-    warn = settings.icons.Warning .. " ",
-    info = settings.icons.Information .. " ",
-    hint = settings.icons.Hint .. " ",
+    error = settings.icons.error .. " ",
+    warn  = settings.icons.warning .. " ",
+    info  = settings.icons.information .. " ",
+    hint  = settings.icons.hint .. " ",
   },
   always_visible = true,
 }
@@ -30,10 +30,10 @@ local file_section = {
     path = 4,
     shorting_target = 40,
     symbols = {
-      modified = " ●",
-      readonly = " ",
-      unnamed = "[ano]",
-      newfile = "[new]",
+      modified = settings.icons.dot,
+      readonly = settings.icons.lock,
+      unnamed  = settings.icons.null,
+      newfile  = settings.icons.circle,
     },
     separator = "",
     padding = 0,
@@ -47,9 +47,9 @@ return {
   opts = {
     options = {
       icons_enabled = true,
-      theme = settings.colorscheme,
-      component_separators = { left = "|", right = "|" },
+      theme = "auto",
       --  
+      component_separators = { left = "|", right = "|" },
       section_separators = { left = "", right = "" },
       disabled_filetypes = { "alpha", "dashboard", "Outline" },
       ignore_focus = {},
@@ -64,7 +64,7 @@ return {
     -- inclue empty space to override the defaults
     sections = {
       lualine_a = { "mode" },
-      lualine_b = { "branch" },
+      lualine_b = { { "branch", icon = settings.icons.branch } },
       lualine_c = { "diff" },
       lualine_x = {},
       lualine_y = { "encoding" },
@@ -88,7 +88,7 @@ return {
           hide_filename_extension = false,
           show_modified_status = true,
           mode = 0,
-          -- set buffers to 2/3 screen width
+          -- set buffers to 3/4 screen width
           max_length = vim.o.columns * 3 / 4,
           filetype_names = {
             TelescopePrompt = "Telescope",
@@ -102,9 +102,9 @@ return {
             checkhealth = "Health",
           },
           symbols = {
-            modified = " ●",
+            modified = settings.icons.dot,
             alternate_file = "",
-            directory = "  ",
+            directory =settings.icons.floder_close,
           },
         },
       },
@@ -112,12 +112,12 @@ return {
         {
           'tabs',
           tab_max_length = 40,
-          -- set tabs to 1/3 screen width
+          -- set tabs to 1/4 screen width
           max_length = vim.o.columns / 4,
           mode = 0,
           path = 0,
           show_modified_status = true,
-          symbols = { modified = " ●" },
+          symbols = { modified = settings.icons.dot},
         }
       }
     },
@@ -125,7 +125,7 @@ return {
       {
         filetypes = { "NvimTree" },
         sections = {
-          lualine_a = { function() return "~" end },
+          lualine_a = { function() return "~ nvim-tree" end },
         },
         winbar = {},
         inactive_winbar = {},
@@ -137,7 +137,7 @@ return {
           lualine_c = { "filetype" },
         },
         inactive_winbar = {
-          lualine_c = { function() return "~" end },
+          lualine_c = { function() return "~ checkhealth" end },
         },
         inactive_sections = {},
       },

@@ -103,28 +103,28 @@ return {
           bookmarks = true,
         },
         glyphs = {
-          default = "",
-          symlink = "",
-          bookmark = "󰆤",
-          modified = "●",
+          default  = settings.icons.file,
+          symlink  = settings.icons.file_link,
+          bookmark = settings.icons.tag,
+          modified = settings.icons.circle,
           folder = {
-            arrow_closed = "",
-            arrow_open = "",
-            default = "",
-            open = "",
-            empty = "",
-            empty_open = "",
-            symlink = "",
-            symlink_open = "",
+            arrow_closed = settings.icons.right,
+            arrow_open   = settings.icons.down,
+            default      = settings.icons.folder_close,
+            open         = settings.icons.folder_open,
+            empty        = settings.icons.folder_empty,
+            empty_open   = settings.icons.folder_empty,
+            symlink      = settings.icons.folder_link,
+            symlink_open = settings.icons.folder_link,
           },
           git = {
-            unstaged = "✗", -- X
-            staged = "✓", -- V
-            unmerged = "", -- U
-            renamed = "➜", -- R
-            untracked = "+", -- *
-            deleted = "-", -- 
-            ignored = "o", -- ◌
+            unstaged  = settings.icons.add,
+            staged    = settings.icons.modify,
+            unmerged  = settings.icons.default,
+            renamed   = settings.icons.rename,
+            untracked = settings.icons.add,
+            deleted   = settings.icons.remove,
+            ignored   = settings.icons.ignore,
           },
         },
       },
@@ -160,10 +160,10 @@ return {
         max = vim.diagnostic.severity.ERROR,
       },
       icons = {
-        hint = settings.icons.Hint,
-        info = settings.icons.Info,
-        warning = settings.icons.Warning,
-        error = settings.icons.Error,
+        hint    = settings.icons.hint,
+        info    = settings.icons.info,
+        warning = settings.icons.warning,
+        error   = settings.icons.error,
       },
     },
     modified = {
