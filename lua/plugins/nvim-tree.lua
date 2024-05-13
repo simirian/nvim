@@ -42,7 +42,7 @@ return {
         enable = true,
         quit_on_focus_loss = false,
         open_win_config = {
-          border = "solid",
+          border = "none",
           relative = "editor",
           width = width(),
           height = height,
@@ -118,7 +118,7 @@ return {
             symlink_open = settings.icons.folder_link,
           },
           git = {
-            unstaged  = settings.icons.add,
+            unstaged  = settings.icons.modify,
             staged    = settings.icons.modify,
             unmerged  = settings.icons.default,
             renamed   = settings.icons.rename,

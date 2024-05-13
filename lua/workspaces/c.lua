@@ -9,9 +9,17 @@ return {
         or DirContains(cwd, "CMakeLists.txt")
   end,
   workspace_root = { "CMakeLists.txt", "makefile" },
-  filetypes = "c",
+  filetypes = { "c", "bash", "make", "cmake" },
 
   lsp = {
-    ["clangd"] = {}
+    ["clangd"] = {
+      settings = {
+        CompileFlags = {
+          Add = {
+            "-std=c++20",
+          },
+        },
+      },
+    },
   },
 }

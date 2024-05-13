@@ -8,7 +8,7 @@ return {
     return DirContains(cwd, "Cargo.toml")
   end,
   workspace_root = "Cargo.toml",
-  filetypes = "rust",
+  filetypes = { "rust" },
 
   lsp = {
     ["rust_analyzer"] = {

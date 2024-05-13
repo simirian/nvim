@@ -27,49 +27,50 @@ return {
   {
     "williamboman/mason-lspconfig.nvim",
     lazy = true,
-    dependencies = { "williamboman/mason.nvim" },
-    opts = {
-      automatic_installation = true,
-    },
-    config = true,
+    dependencies = { "williamboman/mason.nvim", "nvim-manager" },
+    config = function()
+      require("mason-lspconfig").setup({
+        ensure_installed = require("nvim-manager.workspaces").lsps(),
+        automatic_installation = true,
+      })
+    end
   },
   {
     "neovim/nvim-lspconfig",
-    lazy = true,
     dependencies = {
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",
     },
+    -- this just sets up lsp settings, it does not actually set up servers,
+    --   that's done by nvim-manager.
     config = function()
-      do -- set up nvim lsp settings
-        local signs = {
-          DiagnosticSignError = settings.icons.error,
-          DiagnosticSignWarn  = settings.icons.warning,
-          DiagnosticSignHint  = settings.icons.hint,
-          DiagnosticSignInfo  = settings.icons.info,
-        }
+      local signs = {
+        DiagnosticSignError = settings.icons.error,
+        DiagnosticSignWarn  = settings.icons.warning,
+        DiagnosticSignHint  = settings.icons.hint,
+        DiagnosticSignInfo  = settings.icons.info,
+      }
 
-        for name, sign in pairs(signs) do
-          vim.fn.sign_define(name, { texthl = name, text = sign, numhl = "" })
-        end
-
-        local config = {
-          virtual_text = false,
-          signs = { active = signs },
-          update_in_insert = true,
-          underline = true,
-          severity_sort = true,
-          float = {
-            focusable = false,
-            style = "minimal",
-            border = "none",
-            source = "always",
-            header = "",
-            prefix = "",
-          },
-        }
-        vim.diagnostic.config(config)
+      for name, sign in pairs(signs) do
+        vim.fn.sign_define(name, { texthl = name, text = sign, numhl = "" })
       end
+
+      local config = {
+        virtual_text = false,
+        signs = { active = signs },
+        update_in_insert = true,
+        underline = true,
+        severity_sort = true,
+        float = {
+          focusable = false,
+          style = "minimal",
+          border = "none",
+          source = "always",
+          header = "",
+          prefix = "",
+        },
+      }
+      vim.diagnostic.config(config)
 
       -- lsp keybonds
       vim.api.nvim_create_autocmd("LspAttach", {

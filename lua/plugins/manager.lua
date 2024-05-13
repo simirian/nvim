@@ -7,7 +7,7 @@ return {
   priority = 900,
   dev = true,
   config = function()
-    require("nvim-manager.workspaces").setup()
     require("nvim-manager.projects").setup()
+    require("nvim-manager.workspaces").setup()
   end,
 }

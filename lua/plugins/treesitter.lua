@@ -5,9 +5,8 @@
 
 return {
   "nvim-treesitter/nvim-treesitter",
+  dependencies = { "nvim-manager" },
   opts = {
-    --TODO: make this ensure_installed list work better
-    ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "bash" },
     sync_install = true,
     auto_install = false,
     highlight = {
@@ -22,7 +21,9 @@ return {
     },
   },
   config = function(_, opts)
+    opts.ensure_installed = require("nvim-manager.workspaces").ts_fts()
     require("nvim-treesitter.configs").setup(opts)
+
     vim.opt.foldmethod = "indent"
     --vim.opt.foldmethod = "expr"
     --vim.opt.foldexpr = "nvim_treesitter#foldexpr()"

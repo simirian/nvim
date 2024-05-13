@@ -11,7 +11,7 @@ return {
     -- look for a `.luarc.json` file
     return DirContains(cwd, ".luarc.json")
   end,
-  filetypes = "lua",
+  filetypes = { "lua", "vim", "vimdoc" },
 
   lsp = {
     ["lua_ls"] = {

@@ -1,7 +1,7 @@
 -- simirian's NeoVim
 
 -- require all the basic configs for file editing
-vim.cmd.colorscheme("habamax")
+vim.cmd.colorscheme("yicks")
 -- this will set the settings metatable to the current environment
 require("settings").setup()
 require("opts")
