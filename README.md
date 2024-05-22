@@ -4,17 +4,19 @@ simirian's NeoVim config
 
 ## Install
 
-Install the latest version of NeoVim. (older versions are untested but may work)
-Run `git clone https://github.com/simirian/nvim` in your configuration directory.
-Run NeoVim like normal (`nvim`), and everything SHOULD be installed.
+Install the latest version of NeoVim. (older versions are untested but may
+work) Run `git clone https://github.com/simirian/nvim` in your configuration
+directory. Run NeoVim like normal (`nvim`), and everything SHOULD be installed.
 
 ## Configuration
 
-Most configuration is straightforwards, keybinds can go in lua/keys.lua, vim options can go in lua/opts.lua, etc..
-Plugins and their settings go in lua/plugins/ according to the lazy.nvim spec.
+Most configuration is straightforwards, keybinds can go in lua/keys.lua, vim
+options can go in lua/opts.lua, etc.. Plugins and their settings go in
+lua/plugins/ according to the lazy.nvim spec.
 
-To add support for additional languages those languages should be added to `lua/languages/`.
-This should specify the language server, treesitter parser, and filetypes for the language.
+To add support for additional languages those languages should be added to
+`lua/languages/`. This should specify the language server, treesitter parser,
+and filetypes for the language.
 
 ## Keymaps
 
@@ -32,7 +34,8 @@ This should specify the language server, treesitter parser, and filetypes for th
 
 #### Telescope
 
-Begin telescope mappings with the keybind `leader` > `f`, then continue with one of the following:
+Begin telescope mappings with the keybind `leader` > `f`, then continue with
+one of the following:
 
 | map | action |
 | --- | --- |

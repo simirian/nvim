@@ -10,13 +10,7 @@ newcmd("Update", function()
 end, { desc = "Updates Lazy, Mason, and Treesitter add-ons" })
 
 newcmd("BufInfo", function()
-  local bufnr = vim.api.nvim_get_current_buf()
-  local binfo = {
-    name = vim.api.nvim_buf_get_name(bufnr),
-    number = bufnr,
-    filetype = vim.api.nvim_buf_get_option(bufnr, "filetype"),
-  }
-  vim.notify(vim.inspect(binfo), vim.log.levels.INFO)
+  P(vim.fn.getbufinfo("%")[1])
 end, { desc = "Get basic buffer information for the current buffer" })
 
 --- Debug print anything.

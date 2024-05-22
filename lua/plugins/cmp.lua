@@ -6,6 +6,7 @@ local settings = require("settings")
 return {
   {
     "windwp/nvim-autopairs",
+    lazy = true,
     opts = {
       disable_in_macro = true,
       disable_in_visualblock = true,
