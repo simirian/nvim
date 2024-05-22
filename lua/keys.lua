@@ -21,50 +21,51 @@ vim.g.localleader = " "
 --- | "t" # terminal
 --- | "l" # insert, command, lang-arg
 
---- @alias keymap { [1]: string, [2]: string, mode?: vim-mode, opts?: table }
+--- @alias keymap { [1]: string, [2]: string, desc: string, mode?: vim-mode|vim-mode[], opts?: table }
 
 --- @type keymap[]
 local maps = {
-  -- window  navigation
-  { "<C-h>",     "<C-w>h" },
-  { "<C-j>",     "<C-w>j" },
-  { "<C-k>",     "<C-w>k" },
-  { "<C-l>",     "<C-w>l" },
-  { "<C-h>",     "<C-\\><C-O><C-w>h", mode = "t" },
-  { "<C-j>",     "<C-\\><C-O><C-w>j", mode = "t" },
-  { "<C-k>",     "<C-\\><C-O><C-w>k", mode = "t" },
-  { "<C-l>",     "<C-\\><C-O><C-w>l", mode = "t" },
+  -- window and tab navigation
+  { "<C-h>",     "gT",                desc = "Go to previous tab page." },
+  { "<C-j>",     "<C-w>w",            desc = "Focus previous window." },
+  { "<C-k>",     "<C-w>W",            desc = "Focus next window." },
+  { "<C-l>",     "gt",                desc = "Go to next tab page." },
+  { "<C-h>",     "<C-\\><C-O>gT",     desc = "Go to previous tab page.",     mode = "t", },
+  { "<C-j>",     "<C-\\><C-O><C-w>W", desc = "Go to previous window.",       mode = "t", },
+  { "<C-k>",     "<C-\\><C-O><C-w>w", desc = "Go to next window.",           mode = "t", },
+  { "<C-l>",     "<C-\\><C-O>gt",     desc = "go to next tab page.",         mode = "t", },
+  -- resizing windows
+  { "<C-Up>",    "1<C-w>+",           desc = "Increase window height." },
+  { "<C-Down>",  "1<C-w>-",           desc = "Decrease window height." },
+  { "<C-Left>",  "2<C-w><",           desc = "Increase window width." },
+  { "<C-Right>", "2<C-w>>",           desc = "Decrease window width." },
+  -- move lines
+  { "<A-j>",     ":move +1<cr>",      desc = "Move line down." },
+  { "<A-k>",     ":move -2<cr>",      desc = "Move line up" },
+  { "<A-j>",     ":move '>+1<CR>gv",  desc = "Move lines down.",             mode = "x" },
+  { "<A-k>",     ":move '<-2<CR>gv",  desc = "Move lines up.",               mode = "x" },
+  -- quick escape
+  { "kj",        "<Esc>",             desc = "Escape insert mode.",          mode = "i" },
+  { "jk",        "<Esc>",             desc = "Escape insert mode.",          mode = "i" },
+  -- use system clipboard
+  { "<leader>p", "\"+p",              desc = "Paste from system clipboard.", mode = { "n", "x" } },
+  { "<leader>y", "\"+y",              desc = "Yank to system clipboard.",    mode = { "n", "x" } },
+  -- indentation keeps selection
+  --[[
+  { ">",         ">gv",               mode = "x" },
+  { "<",         "<gv",               mode = "x" },
+  { "=",         "=gv",               mode = "x" },
   -- cursor movement
   { "j",         "gj" },
   { "k",         "gk" },
+  ]]
   -- quick navigation
-  { "<C-d>",     "<C-d>zz" },
-  { "<C-u>",     "<C-u>zz" },
-  -- resizing splits
-  { "<C-Up>",    "<Cmd>resize +1<CR>" },
-  { "<C-Down>",  "<Cmd>resize -1<CR>" },
-  { "<C-Left>",  "<Cmd>vertical resize -2<CR>" },
-  { "<C-Right>", "<Cmd>vertical resize +2<CR>" },
-  -- move lines
-  { "<A-j>",     ":move +1<cr>" },
-  { "<A-k>",     ":move -2<cr>" },
-  { "<A-j>",     ":move '>+1<CR>gv",           mode = "x" },
-  { "<A-k>",     ":move '<-2<CR>gv",           mode = "x" },
-  -- quick escape
-  { "kj",        "<Esc>",                      mode = "i" },
-  { "jk",        "<Esc>",                      mode = "i" },
-  -- use system clipboard
-  { "<leader>p", "\"+p" },
-  { "<leader>p", "\"+p",                       mode = "x" },
-  { "<leader>y", "\"+y",                       mode = "x" },
-  -- indentation keeps selection
-  { ">",         ">gv",                        mode = "x" },
-  { "<",         "<gv",                        mode = "x" },
-  { "=",         "=gv",                        mode = "x" },
+  { "<C-d>",     "<C-d>zz",           desc = "Scroll up." },
+  { "<C-u>",     "<C-u>zz",           desc = "Scroll down." },
   -- misc mappings
-  { "gT",        "<Cmd>tabedit %<CR>" },
-  { "U",         "<C-r>" },
-  { "p",         "\"_dP",                      mode = "x" },
+  { "U",         "<C-r>",             desc = "Redo." },
+  { "p",         "\"_dP",             desc = "Yank into system clipboard.",  mode = "x" },
+  { "<C-f>",     "<Esc>gwapi",        desc = "Format in insert mode.",       mode = "i" }
 }
 
 local M = {}
@@ -84,7 +85,8 @@ function M.setup()
     end
 
     if ok then
-      local mo = vim.tbl_deep_extend("force", {}, default_opts, v.opts or {})
+      local mo = vim.tbl_deep_extend("force",
+        {}, default_opts, v.opts or {}, { desc = v.desc })
       vim.keymap.set(v.mode or "n", v[1], v[2], mo)
     end
   end
