@@ -26,7 +26,7 @@ require("lazy").setup("plugins", {
   },
   install = {
     missing = true,
-    colorscheme = { settings.colorschemes[1] },
+    colorscheme = { "yicks" },
   },
   ui = {
     size = {

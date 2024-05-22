@@ -1,30 +1,34 @@
 -- simirian's neovim
 -- colorschemes, loaded by lazy according to settings.lua
 
-local settings = require("settings")
+-- TODO: make schemes global somewhere?
 
-local function make_scheme(name, opts)
-  return {
-    opts.repo,
-    priority = 1000,
-    config = function()
-      if settings.colorschemes[1] == name then
-        if opts.enable then
-          opts.enable()
-        else
-          vim.cmd("colorscheme " .. name)
-        end
-      end
-    end
-  }
+--- List of colorschemes to install.
+--- @type string[]|table[]
+local schemes = {
+  "cryptomilk/nightcity.nvim",
+  "rebelot/kanagawa.nvim",
+  "sainnhe/gruvbox-material",
+}
+
+--- Load the default color scheme.
+local function enable()
+    -- random yicks color scheme
+    if os.time() % 2 == 0 then vim.g.yicks_blue = true end
+    vim.cmd.colorscheme("yicks")
 end
 
-local tbl = {}
+-- reformat schemes to lazy specs
+for i, scheme in ipairs(schemes) do
+  local tbl = { priority = 1000 }
+  tbl[1] = scheme
+  schemes[i] = tbl
+end
 
-for name, opts in pairs(settings.colorschemes) do
-  if name ~= 1 then
-    table.insert(tbl, make_scheme(name, opts))
+vim.api.nvim_create_autocmd("VimEnter", {
+  callback = function()
+    enable()
   end
-end
+})
 
-return tbl
+return schemes

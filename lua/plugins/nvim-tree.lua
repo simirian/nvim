@@ -4,6 +4,7 @@
 local settings = require("settings")
 
 -- TODO: adaptive width and height
+-- TODO: look into oil.nvim as a better? alternative
 local function width()
   return math.max(math.floor(vim.o.columns * 0.4), 40)
 end

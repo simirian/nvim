@@ -9,7 +9,7 @@ local icons = {
   -- code types
   -- data structures and members
   interface    = { "", ":" },
-  array        = { "", ":" },
+  array        = { "󰅪", ":" },
   struct       = { "", ":" },
   class        = { "󱪵", ":" },
   field        = { "", ";" },
@@ -26,7 +26,7 @@ local icons = {
   object       = { "󰔇", "l" },
   color        = { "", "l" },
   -- callables
-  func         = { "󰊕", "f" },
+  func         = { "󰡱", "f" },
   method       = { "󰘧", "f" },
   constructor  = { "", "f" },
   -- variables
@@ -34,7 +34,7 @@ local icons = {
   variable     = { "󰄪", "v" },
   reference    = { "", "v" },
   -- namespaces
-  namespace    = { "", "m" },
+  namespace    = { "󰅩", "m" },
   module       = { "", "m" },
   package      = { "", "m" },
   -- text
@@ -90,8 +90,8 @@ local icons = {
   circle       = { "", "o" },
   check        = { "󰄬", "+" },
   cross        = { "󰅖", "x" },
-  lock         = { "", "l" },
-  key          = { "", "l" },
+  lock         = { "", "D" },
+  key          = { "", "~" },
   vim          = { "", "V" },
   nvim         = { "", "N" },
   lazy         = { "󰒲", "z" },
@@ -100,27 +100,10 @@ local icons = {
   config       = { "", "*" },
   tag          = { "󰓹", ":" },
   code         = { "", "#" },
-  symbol       = { "", "O" },
-  default      = { "󱐟", "$" },
-}
-
---- Colorschemes to install and load.
---- [1] is the colorscheme that gets loaded
-M.colorschemes = {
-  "yicks",
-
-  ["kanagawa"] = {
-    repo = "rebelot/kanagawa.nvim",
-  },
-
-  ["gruvbox-material"] = {
-    repo = "sainnhe/gruvbox-material",
-    enable = function()
-      vim.g.gruvbox_material_background = "medium"
-      vim.g.gruvbox_material_foreground = "mix"
-      vim.cmd("colorscheme gruvbox-material")
-    end
-  },
+  bubbles      = { "󰗣", "Q" },
+  aperture     = { "󰄄", ";" },
+  cake         = { "󰃩", "!" },
+  default      = { "", "$" },
 }
 
 function M.cmp_item(name)
