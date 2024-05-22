@@ -43,6 +43,7 @@ local file_section = {
 
 return {
   "nvim-lualine/lualine.nvim",
+  enabled = false,
   dependencies = { "nvim-tree/nvim-web-devicons" },
   opts = {
     options = {
@@ -104,7 +105,7 @@ return {
           symbols = {
             modified = settings.icons.dot,
             alternate_file = "",
-            directory =settings.icons.floder_close,
+            directory = settings.icons.floder_close,
           },
         },
       },
@@ -117,7 +118,7 @@ return {
           mode = 0,
           path = 0,
           show_modified_status = true,
-          symbols = { modified = settings.icons.dot},
+          symbols = { modified = settings.icons.dot },
         }
       }
     },
