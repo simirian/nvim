@@ -1,6 +1,8 @@
 -- simirian's NeoVim
 -- basic settings used in many other places
 
+local vfn = vim.fn
+
 local M = {}
 
 -- nerdfont icons
@@ -11,7 +13,7 @@ local icons = {
   interface    = { "", ":" },
   array        = { "󰅪", ":" },
   struct       = { "", ":" },
-  class        = { "󱪵", ":" },
+  class        = { "", ":" },
   field        = { "", ";" },
   property     = { "", ";" },
   enum         = { "󱃣", ":" },
@@ -51,7 +53,7 @@ local icons = {
   ok           = { "", "=" },
   error        = { "", "X" },
   warning      = { "", "!" },
-  information  = { "", "i" },
+  info         = { "", "i" },
   question     = { "", "?" },
   hint         = { "󰌵", "*" },
 
@@ -150,8 +152,8 @@ end
 function M.setup()
   -- check if we are in a vc (rather than a terminal emulator)
   local has_vc = false
-  if not vim.fn.has("linux") then
-    has_vc = (vim.fn.getenv("DISPLAY") or vim.fn.getenv("WAYLAND_DISPLAY"))
+  if not vfn.has("linux") then
+    has_vc = (vfn.getenv("DISPLAY") or vfn.getenv("WAYLAND_DISPLAY"))
   end
 
   -- load ascii alts if we are in a vc

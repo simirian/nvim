@@ -7,10 +7,10 @@ local diagnostic_component = {
   "diagnostics",
   sources = { "nvim_lsp" },
   symbols = {
-    error = settings.icons.error .. " ",
-    warn  = settings.icons.warning .. " ",
-    info  = settings.icons.information .. " ",
-    hint  = settings.icons.hint .. " ",
+    error = settings.icons.error,
+    warn  = settings.icons.warning,
+    info  = settings.icons.info,
+    hint  = settings.icons.hint,
   },
   always_visible = true,
 }

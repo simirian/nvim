@@ -16,7 +16,7 @@ return {
     local actions = require("telescope.actions")
     telescope.setup {
       defaults = {
-        prompt_prefix = " " .. settings.icons.telescope .. "  ",
+        prompt_prefix = " " .. settings.icons.telescope .. " ",
         mappings = {
           i = {
             ["<C-j>"] = actions.move_selection_next,

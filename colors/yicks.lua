@@ -166,6 +166,7 @@ end
 vim.cmd.hi("clear")
 vim.g.colors_name = "yicks"
 vim.o.termguicolors = true
+vim.o.background = "dark"
 
 -- metahighlights
 hl("Unknown", { fg = p.lg, bg = p.lm })

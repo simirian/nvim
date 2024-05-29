@@ -1,6 +1,7 @@
 -- simirian's NeoVim
 -- lines settings for statusline and tabline
 
+local vfn = vim.fn
 local settings = require("settings")
 
 return {
@@ -11,7 +12,7 @@ return {
     local c = require("contour.components")
 
     -- refresh tabline every minute
-    vim.fn.timer_start(60000, function()
+    vfn.timer_start(60000, function()
       vim.cmd.redrawtabline()
     end, { ["repeat"] = -1 })
 

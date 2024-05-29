@@ -1,18 +1,18 @@
 -- simirian's NeoVim
 -- lazy.nvim config, plugins are in ./plugins/
 
-local stdpath = vim.fn.stdpath
+local vfn = vim.fn
 local settings = require("settings")
 
-local lazypath = stdpath("data") .. "/lazy/lazy.nvim"
+local lazypath = vfn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
-  vim.fn.system { "git", "clone", "--filter=blob:none",
+  vfn.system { "git", "clone", "--filter=blob:none",
     "https://github.com/folke/lazy.nvim.git", "--branch=stable", lazypath, }
 end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup("plugins", {
-  lockfile = stdpath("config") .. "/lazy-lock.json",
+  lockfile = vfn.stdpath("config") .. "/lazy-lock.json",
   git = {
     log = { "-8" },
     timeout = 120,
@@ -95,11 +95,11 @@ require("lazy").setup("plugins", {
   -- when the readme opens with :help it will be correctly displayed as markdown
   readme = {
     enabled = true,
-    root = stdpath("state") .. "/lazy/readme",
+    root = vfn.stdpath("state") .. "/lazy/readme",
     files = { "README.md", "lua/**/README.md" },
     skip_if_doc_exists = true,
   },
-  state = stdpath("state") .. "/lazy/state.json",
+  state = vfn.stdpath("state") .. "/lazy/state.json",
   build = { warn_on_override = true },
   profiling = {
     loader = false,

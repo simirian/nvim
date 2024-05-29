@@ -4,6 +4,7 @@
 -- TODO: language specific lazy modules, alongside an lsp-base module
 
 local settings = require("settings")
+local vfn = vim.fn
 
 return {
   {
@@ -53,8 +54,12 @@ return {
       }
 
       for name, sign in pairs(signs) do
-        vim.fn.sign_define(name, { texthl = name, text = sign, numhl = "" })
+        vfn.sign_define(name, { texthl = name, text = sign, numhl = "" })
       end
+
+      -- misc
+      vim.lsp.set_log_level(vim.lsp.log_levels.WARN)
+
 
       local config = {
         virtual_text = false,
