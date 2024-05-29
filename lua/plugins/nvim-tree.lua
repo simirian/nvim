@@ -3,15 +3,6 @@
 
 local settings = require("settings")
 
--- TODO: adaptive width and height
--- TODO: look into oil.nvim as a better? alternative
-local function width()
-  return math.max(math.floor(vim.o.columns * 0.4), 40)
-end
-local hpos = math.ceil((vim.o.columns - width()) / 2)
-local height = math.floor(vim.o.lines * 0.8)
-local vpos = math.ceil(vim.o.lines * 0.1)
-
 return {
   "nvim-tree/nvim-tree.lua",
   dependencies = "nvim-tree/nvim-web-devicons",
@@ -38,17 +29,17 @@ return {
       number = false,
       relativenumber = false,
       signcolumn = "yes",
-      width = width(),
+      width = math.max(20, math.floor(vim.go.columns / 4)),
       float = {
         enable = true,
         quit_on_focus_loss = false,
         open_win_config = {
           border = "none",
           relative = "editor",
-          width = width(),
-          height = height,
-          col = hpos,
-          row = vpos,
+          width = math.max(40, math.floor(vim.go.columns / 4)),
+          height = vim.go.lines - 3,
+          col = 0,
+          row = 1,
         },
       },
     },
@@ -92,7 +83,7 @@ return {
         diagnostics_placement = "signcolumn",
         modified_placement = "after",
         bookmarks_placement = "signcolumn",
-        padding = " ",
+        padding = "",
         symlink_arrow = "->",
         show = {
           file = true,
