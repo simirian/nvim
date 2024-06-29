@@ -17,7 +17,6 @@ local p = {
   lb = "#3e94bb",
   lv = "#9740bf",
   lm = "#bb3ea2",
-  -- dark colors TODO: fix these, only green is good
   r = "#a12f2b",
   o = "#985b2a",
   y = "#8d7725",
@@ -185,6 +184,7 @@ hl("Cursor", { fmt = f.rv, fg = p.b0 })
 hl("lCursor", "Cursor")
 hl("CursorIM", "Cursor")
 hl("CursorLine", { bg = p.b1 })
+hl("CursorColumn", "CursorLine")
 hl("ColorColumn", "CursorLine")
 -- reverse by default, be we want that to be explicit
 hl("TermCursor", { fmt = f.rv, fg = p.b7 })
