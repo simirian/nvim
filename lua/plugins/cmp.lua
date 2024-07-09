@@ -40,7 +40,7 @@ return {
         mapping = cmp.mapping.preset.insert {
           ["<C-e>"] = cmp.mapping.abort(),
           ["<CR>"] = function(fallback)
-            if cmp.visible() then
+            if cmp.visible() and cmp.get_active_entry() then
               cmp.confirm { select = true }
             else
               fallback()
