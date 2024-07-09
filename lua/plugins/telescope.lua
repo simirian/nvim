@@ -16,7 +16,7 @@ return {
     local actions = require("telescope.actions")
     telescope.setup {
       defaults = {
-        prompt_prefix = " " .. settings.icons.telescope .. " ",
+        prompt_prefix = " " .. settings.icons.telescope .. "  ",
         mappings = {
           i = {
             ["<C-j>"] = actions.move_selection_next,
@@ -41,7 +41,5 @@ return {
     vim.keymap.set("n", "<leader>fg", builtin.live_grep, {})
     vim.keymap.set("n", "<leader>fb", builtin.buffers, {})
     vim.keymap.set("n", "<leader>fh", builtin.help_tags, {})
-    -- TODO: chache pickers for picker picker
-    --vim.keymap.set("n", "<leader>ft", builtin.pickers, { })
   end,
 }

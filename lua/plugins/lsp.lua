@@ -1,10 +1,9 @@
 -- simirian's NeoVim
 -- LSP config loader, configuration goes in settings.lua
 
--- TODO: language specific lazy modules, alongside an lsp-base module
-
 local settings = require("settings")
 local vfn = vim.fn
+local vlsb = vim.lsp.buf
 
 return {
   {
@@ -84,18 +83,16 @@ return {
         callback = function(ev)
           local map = vim.keymap.set
           local opts = { buffer = ev.buf, noremap = true, silent = true }
-          map("n", "<leader>gd", vim.lsp.buf.definition, opts)
-          map("n", "<leader>gD", vim.lsp.buf.declaration, opts)
-          map("n", "<leader>gi", vim.lsp.buf.implementation, opts)
-          map("n", "<leader>gr", vim.lsp.buf.references, opts)
+          map("n", "<leader>gd", vlsb.definition, opts)
+          map("n", "<leader>gD", vlsb.declaration, opts)
+          map("n", "<leader>gi", vlsb.implementation, opts)
+          map("n", "<leader>gr", vlsb.references, opts)
           map("n", "<leader>ld", vim.diagnostic.open_float, opts)
-          map("n", "<leader>lh", vim.lsp.buf.hover, opts)
-          map("n", "<leader>ls", vim.lsp.buf.signature_help, opts)
-          map("n", "<leader>cr", vim.lsp.buf.rename, opts)
-          map("n", "<leader>ca", vim.lsp.buf.code_action, opts)
-          map("n", "<leader>cf", vim.lsp.buf.format, opts)
-          map("n", "[d", vim.diagnostic.goto_prev, opts)
-          map("n", "]d", vim.diagnostic.goto_next, opts)
+          map("n", "<leader>lh", vlsb.hover, opts)
+          map("n", "<leader>ls", vlsb.signature_help, opts)
+          map("n", "<leader>cr", vlsb.rename, opts)
+          map("n", "<leader>ca", vlsb.code_action, opts)
+          map("n", "<leader>cf", vlsb.format, opts)
         end,
       })
     end,

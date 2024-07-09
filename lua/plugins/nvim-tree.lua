@@ -83,7 +83,7 @@ return {
         diagnostics_placement = "signcolumn",
         modified_placement = "after",
         bookmarks_placement = "signcolumn",
-        padding = "",
+        padding = " ",
         symlink_arrow = "->",
         show = {
           file = true,
