@@ -10,6 +10,7 @@ return {
   config = function()
     local contour = require("contour")
     local c = require("contour.components")
+    local buf = c.buffer
 
     -- refresh tabline every minute
     vfn.timer_start(60000, function()
@@ -17,29 +18,41 @@ return {
     end, { ["repeat"] = -1 })
 
     -- set how buffers are displayed
-    c.Buf.default_name = "U.N. Owen"
-    c.Buf.modified_icon = settings.icons.dot
-    c.Buf.show_bufnr = true
+    buf.default_name = "U.N. Owen"
+    buf.modified_icon = settings.icons.dot
+    buf.show_bufnr = true
 
-    contour.statusline.setup { mode = 2, {
-      --- @format disable
+    contour.statusline.setup("always", {
       -- left filetype
-      { "%2* %y %*", left = true, min_width = 15 },
+      {
+        highlight = "StatusLine",
+        left = true,
+        min_width = 15,
+        c.diagnostics {
+          icons = {
+            error = settings.icons.error,
+            warn = settings.icons.warning,
+            info = settings.icons.info,
+            hint = settings.icons.hint,
+            base = settings.icons.diagnostics,
+          },
+          highlight = 2,
+        },
+      },
       -- center file name and modified
       "%=",
-      c.Buf { modified_icon = settings.icons.dot },
+      buf { modified_icon = settings.icons.dot },
       "%=",
       -- right position
       { "%2* %l,%c ", min_width = 15 },
-      --- @format enable
-    } }
+    })
 
-    contour.tabline.setup { mode = 2, {
+    contour.tabline.setup("always", {
       highlight = "TabLine",
       -- cwd
       "%1* %{fnamemodify(getcwd(), ':t')} | %{strftime('%H:%M')} ",
       "%#TabLineFill#%=",
-      c.TabBufs { close_icon = settings.icons.cross },
-    } }
+      c.tabbufs { close_icon = settings.icons.cross },
+    })
   end
 }

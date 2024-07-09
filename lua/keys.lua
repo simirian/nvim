@@ -31,8 +31,8 @@ local maps = {
   { "<C-k>",     "<C-w>W",            desc = "Focus next window." },
   { "<C-l>",     "gt",                desc = "Go to next tab page." },
   { "<C-h>",     "<C-\\><C-O>gT",     desc = "Go to previous tab page.",     mode = "t", },
-  { "<C-j>",     "<C-\\><C-O><C-w>W", desc = "Go to previous window.",       mode = "t", },
-  { "<C-k>",     "<C-\\><C-O><C-w>w", desc = "Go to next window.",           mode = "t", },
+  { "<C-j>",     "<C-\\><C-O><C-w>w", desc = "Go to previous window.",       mode = "t", },
+  { "<C-k>",     "<C-\\><C-O><C-w>W", desc = "Go to next window.",           mode = "t", },
   { "<C-l>",     "<C-\\><C-O>gt",     desc = "go to next tab page.",         mode = "t", },
   -- resizing windows
   { "<C-Up>",    "1<C-w>+",           desc = "Increase window height." },
