@@ -1,8 +1,10 @@
--- simirian's NeoVim
--- lazy.nvim config, plugins are in ./plugins/
+--------------------------------------------------------------------------------
+--                              simirian's NeoVim                             --
+--                              ~ lazy plugins ~                              --
+--------------------------------------------------------------------------------
 
 local vfn = vim.fn
-local settings = require("settings")
+local icons = require("icons")
 
 local lazypath = vfn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
@@ -39,21 +41,21 @@ require("lazy").setup("plugins", {
     title_pos = "left",
     pills = true,
     icons = {
-      cmd        = settings.icons.command,
-      event      = settings.icons.event,
-      ft         = settings.icons.file,
-      init       = settings.icons.config,
-      import     = settings.icons.sub_module,
-      keys       = settings.icons.key,
-      lazy       = settings.icons.lazy,
-      loaded     = settings.icons.dot,
-      not_loaded = settings.icons.circle,
-      plugin     = settings.icons.package,
-      runtime    = settings.icons.nvim,
-      require    = settings.icons.package,
-      source     = settings.icons.code,
-      start      = settings.icons.start,
-      task       = settings.icons.check,
+      cmd        = icons.list.command,
+      event      = icons.list.event,
+      ft         = icons.list.file,
+      init       = icons.list.config,
+      import     = icons.list.sub_module,
+      keys       = icons.list.key,
+      lazy       = icons.list.lazy,
+      loaded     = icons.list.dot,
+      not_loaded = icons.list.circle,
+      plugin     = icons.list.package,
+      runtime    = icons.list.nvim,
+      require    = icons.list.package,
+      source     = icons.list.code,
+      start      = icons.list.start,
+      task       = icons.list.check,
       list       = { "-", "-", "-", "-", },
     },
     browser = nil, --- @type string?

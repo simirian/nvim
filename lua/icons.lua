@@ -1,5 +1,7 @@
--- simirian's NeoVim
--- basic settings used in many other places
+--------------------------------------------------------------------------------
+--                              simirian's NeoVim                             --
+--                                  ~ icons ~                                 --
+--------------------------------------------------------------------------------
 
 local vfn = vim.fn
 
@@ -9,6 +11,7 @@ local M = {}
 -- second value is an ASCII alternative
 local icons = {
   -- code types
+
   -- data structures and members
   interface    = { "", ":" },
   array        = { "󰅪", ":" },
@@ -79,7 +82,6 @@ local icons = {
   remove       = { "", "-" },
   rename       = { "", "r" },
   ignore       = { "", "o" },
-
   commit       = { "", "c" },
   branch       = { "", "b" },
 
@@ -109,43 +111,42 @@ local icons = {
 }
 
 function M.cmp_item(name)
-  local items = {
-    Array         = M.icons.array,
-    Boolean       = M.icons.boolean,
-    Class         = M.icons.class,
-    Color         = M.icons.color,
-    Constant      = M.icons.constant,
-    Constructor   = M.icons.Constructor,
-    Enum          = M.icons.enum,
-    EnumMember    = M.icons.enum_case,
-    Event         = M.icons.event,
-    Field         = M.icons.field,
-    File          = M.icons.file,
-    Folder        = M.icons.folder_close,
-    Function      = M.icons.func,
-    Interface     = M.icons.interface,
-    Key           = M.icons.key,
-    Keyword       = M.icons.keyword,
-    Method        = M.icons.method,
-    Module        = M.icons.module,
-    Namespace     = M.icons.namespace,
-    Null          = M.icons.null,
-    Number        = M.icons.number,
-    Object        = M.icons.object,
-    Operator      = M.icons.operator,
-    Package       = M.icons.package,
-    Property      = M.icons.property,
-    Reference     = M.icons.reference,
-    Snippet       = M.icons.snippet,
-    String        = M.icons.string,
-    Struct        = M.icons.struct,
-    Text          = M.icons.text,
-    TypeParameter = M.icons.tag,
-    Unit          = M.icons.unit,
-    Value         = M.icons.value,
-    Variable      = M.icons.variable,
-  }
-  return items[name]
+  return ({
+    Array         = M.list.array,
+    Boolean       = M.list.boolean,
+    Class         = M.list.class,
+    Color         = M.list.color,
+    Constant      = M.list.constant,
+    Constructor   = M.list.Constructor,
+    Enum          = M.list.enum,
+    EnumMember    = M.list.enum_case,
+    Event         = M.list.event,
+    Field         = M.list.field,
+    File          = M.list.file,
+    Folder        = M.list.folder_close,
+    Function      = M.list.func,
+    Interface     = M.list.interface,
+    Key           = M.list.key,
+    Keyword       = M.list.keyword,
+    Method        = M.list.method,
+    Module        = M.list.module,
+    Namespace     = M.list.namespace,
+    Null          = M.list.null,
+    Number        = M.list.number,
+    Object        = M.list.object,
+    Operator      = M.list.operator,
+    Package       = M.list.package,
+    Property      = M.list.property,
+    Reference     = M.list.reference,
+    Snippet       = M.list.snippet,
+    String        = M.list.string,
+    Struct        = M.list.struct,
+    Text          = M.list.text,
+    TypeParameter = M.list.tag,
+    Unit          = M.list.unit,
+    Value         = M.list.value,
+    Variable      = M.list.variable,
+  })[name]
 end
 
 --- Setup the settings module
@@ -163,7 +164,7 @@ function M.setup()
   end
 
   setmetatable(M, {
-    __index = { icons = itbl },
+    __index = { list = itbl },
   })
 end
 

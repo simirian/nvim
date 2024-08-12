@@ -1,7 +1,7 @@
 -- simirian's NeoVim
--- LSP config loader, configuration goes in settings.lua
+-- LSP config loader, configured in nvim-manager
 
-local settings = require("settings")
+local icons = require("icons")
 local vfn = vim.fn
 local vlsb = vim.lsp.buf
 
@@ -16,9 +16,9 @@ return {
         width = 0.8,
         height = 0.8,
         icons = {
-          package_installed   = settings.icons.check,
-          package_pending     = settings.icons.pending,
-          package_uninstalled = settings.icons.cross,
+          package_installed   = icons.list.check,
+          package_pending     = icons.list.pending,
+          package_uninstalled = icons.list.cross,
         },
       },
     },
@@ -53,10 +53,10 @@ return {
     },
     config = function()
       local signs = {
-        DiagnosticSignError = settings.icons.error,
-        DiagnosticSignWarn  = settings.icons.warning,
-        DiagnosticSignHint  = settings.icons.hint,
-        DiagnosticSignInfo  = settings.icons.info,
+        DiagnosticSignError = icons.list.error,
+        DiagnosticSignWarn  = icons.list.warning,
+        DiagnosticSignHint  = icons.list.hint,
+        DiagnosticSignInfo  = icons.list.info,
       }
 
       for name, sign in pairs(signs) do

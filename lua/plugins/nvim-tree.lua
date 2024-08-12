@@ -1,7 +1,7 @@
 -- simirian's NeoVim
 -- nvimtree popup config
 
-local settings = require("settings")
+local icons = require("icons")
 
 return {
   "nvim-tree/nvim-tree.lua",
@@ -95,28 +95,28 @@ return {
           bookmarks = true,
         },
         glyphs = {
-          default  = settings.icons.file,
-          symlink  = settings.icons.file_link,
-          bookmark = settings.icons.tag,
-          modified = settings.icons.circle,
+          default  = icons.list.file,
+          symlink  = icons.list.file_link,
+          bookmark = icons.list.tag,
+          modified = icons.list.circle,
           folder = {
-            arrow_closed = settings.icons.right,
-            arrow_open   = settings.icons.down,
-            default      = settings.icons.folder_close,
-            open         = settings.icons.folder_open,
-            empty        = settings.icons.folder_empty,
-            empty_open   = settings.icons.folder_empty,
-            symlink      = settings.icons.folder_link,
-            symlink_open = settings.icons.folder_link,
+            arrow_closed = icons.list.right,
+            arrow_open   = icons.list.down,
+            default      = icons.list.folder_close,
+            open         = icons.list.folder_open,
+            empty        = icons.list.folder_empty,
+            empty_open   = icons.list.folder_empty,
+            symlink      = icons.list.folder_link,
+            symlink_open = icons.list.folder_link,
           },
           git = {
-            unstaged  = settings.icons.modify,
-            staged    = settings.icons.modify,
-            unmerged  = settings.icons.default,
-            renamed   = settings.icons.rename,
-            untracked = settings.icons.add,
-            deleted   = settings.icons.remove,
-            ignored   = settings.icons.ignore,
+            unstaged  = icons.list.modify,
+            staged    = icons.list.modify,
+            unmerged  = icons.list.default,
+            renamed   = icons.list.rename,
+            untracked = icons.list.add,
+            deleted   = icons.list.remove,
+            ignored   = icons.list.ignore,
           },
         },
       },
@@ -152,10 +152,10 @@ return {
         max = vim.diagnostic.severity.ERROR,
       },
       icons = {
-        hint    = settings.icons.hint,
-        info    = settings.icons.info,
-        warning = settings.icons.warning,
-        error   = settings.icons.error,
+        hint    = icons.list.hint,
+        info    = icons.list.info,
+        warning = icons.list.warning,
+        error   = icons.list.error,
       },
     },
     modified = {

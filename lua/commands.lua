@@ -1,5 +1,7 @@
--- simirian's NeoVim
--- some useful custom commands
+--------------------------------------------------------------------------------
+--                              simirian's NeoVim                             --
+--                                ~ commands ~                                --
+--------------------------------------------------------------------------------
 
 local newcmd = vim.api.nvim_create_user_command
 
@@ -16,11 +18,13 @@ end, { desc = "Get basic buffer information for the current buffer" })
 newcmd("WinProse", function()
   vim.wo.spell = true
   vim.wo.conceallevel = 2
+  vim.bo.textwidth = 80
 end, { desc = "Set a window to prose writing mode." })
 
 newcmd("WinCode", function ()
   vim.wo.spell = false
   vim.wo.conceallevel = 0
+  vim.bo.textwidth = 0
 end, {desc = "Set a window to code writing mode."})
 
 --- Debug print anything.

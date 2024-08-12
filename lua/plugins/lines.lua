@@ -1,8 +1,8 @@
 -- simirian's NeoVim
--- lines settings for statusline and tabline
+-- lines icons for statusline and tabline
 
 local vfn = vim.fn
-local settings = require("settings")
+local icons = require("icons")
 
 return {
   "nvim-contour",
@@ -19,7 +19,7 @@ return {
 
     -- set how buffers are displayed
     buf.default_name = "U.N. Owen"
-    buf.modified_icon = settings.icons.dot
+    buf.modified_icon = icons.list.dot
     buf.show_bufnr = true
 
     contour.statusline.setup("always", {
@@ -30,18 +30,18 @@ return {
         min_width = 15,
         c.diagnostics {
           icons = {
-            error = settings.icons.error,
-            warn = settings.icons.warning,
-            info = settings.icons.info,
-            hint = settings.icons.hint,
-            base = settings.icons.diagnostics,
+            error = icons.list.error,
+            warn = icons.list.warning,
+            info = icons.list.info,
+            hint = icons.list.hint,
+            base = icons.list.diagnostics,
           },
           highlight = 2,
         },
       },
       -- center file name and modified
       "%=",
-      buf { modified_icon = settings.icons.dot },
+      buf { modified_icon = icons.list.dot },
       "%=",
       -- right position
       { "%2* %l,%c ", min_width = 15 },
@@ -52,7 +52,7 @@ return {
       -- cwd
       "%1* %{fnamemodify(getcwd(), ':t')} | %{strftime('%H:%M')} ",
       "%#TabLineFill#%=",
-      c.tabbufs { close_icon = settings.icons.cross },
+      c.tabbufs { close_icon = icons.list.cross },
     })
   end
 }
