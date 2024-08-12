@@ -1,5 +1,7 @@
--- simirian's NeoVim
--- basic vim keybinds
+--------------------------------------------------------------------------------
+--                              simirian's NeoVim                             --
+--                                  ~ keys ~                                  --
+--------------------------------------------------------------------------------
 
 -- default mapping options
 local default_opts = { noremap = true, silent = true }
@@ -65,7 +67,9 @@ local maps = {
   -- misc mappings
   { "U",         "<C-r>",             desc = "Redo." },
   { "p",         "\"_dP",             desc = "Yank into system clipboard.",  mode = "x" },
-  { "<C-f>",     "<Esc>gwapi",        desc = "Format in insert mode.",       mode = "i" }
+  { "<C-f>",     "<Esc>gwapa",        desc = "Format in insert mode.",       mode = "i" },
+  -- funky character found with <C-v><C-BS> in insert mode with 'display' uhex
+  { "\x08",      "<C-w>",             desc = "Delete back a word.",          mode = "i" },
 }
 
 local M = {}
