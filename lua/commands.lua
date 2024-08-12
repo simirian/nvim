@@ -13,10 +13,20 @@ newcmd("BufInfo", function()
   P(vim.fn.getbufinfo("%")[1])
 end, { desc = "Get basic buffer information for the current buffer" })
 
+newcmd("WinProse", function()
+  vim.wo.spell = true
+  vim.wo.conceallevel = 2
+end, { desc = "Set a window to prose writing mode." })
+
+newcmd("WinCode", function ()
+  vim.wo.spell = false
+  vim.wo.conceallevel = 0
+end, {desc = "Set a window to code writing mode."})
+
 --- Debug print anything.
 --- @param a any what to print
 function P(a)
-  print(vim.inspect(a))
+  vim.print(a)
 end
 
 --- Checks if a direcotry contains an item, or all of a list of items.
