@@ -135,7 +135,7 @@ o.foldminlines = 4
 o.foldnestmax = 8
 o.foldclose = ""
 -- o.foldlevel =
--- o.foldlevelstart =
+o.foldlevelstart = 99
 -- o.foldignore =
 -- o.foldtext =
 o.foldopen = {
@@ -160,7 +160,6 @@ o.showbreak = "^ "
 autocmd("FileType", {
   pattern = { "text", "markdown" },
   callback = function()
-    vim.wo.wrap = true
     if vim.bo.textwidth == 0 then
       vim.bo.textwidth = 80
     end
@@ -308,7 +307,7 @@ o.writebackup = true
 o.backup = false
 o.backupext = "~"
 -- o.backupcopy =
--- o.backupdir = 
+-- o.backupdir =
 -- o.backupskip =
 
 -- sessions --------------------------------------------------------------------
@@ -413,7 +412,7 @@ o.tagcase = "followscs"
 o.taglength = 0
 -- o.tagrelative =
 -- o.tags =
--- o.tagstack = 
+-- o.tagstack =
 
 -- o.wildchar =
 -- o.wildcharm =
@@ -437,7 +436,7 @@ o.diffopt = {
   "internal",
 }
 -- o.patchexpr =
-o.patchmode = ".old"
+-- o.patchmode = ".old"
 
 -- features :: quickfix --------------------------------------------------------
 -- o.makeprg =
@@ -452,7 +451,9 @@ o.patchmode = ".old"
 if vfn.has("win32") == 1 then
   o.shell        = vfn.executable("pwsh") == 1 and "pwsh" or "powershell"
   o.shellcmdflag =
-  "-NoLogo -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.UTF8Encoding]::new();$PSDefaultParameterValues['Out-File:Encoding']='utf8';Remove-Alias -Force -ErrorAction SilentlyContinue tee;"
+  -- TODO: why does this no longer work? Remove-Alias died??
+  --"-NoLogo -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.UTF8Encoding]::new();$PSDefaultParameterValues['Out-File:Encoding']='utf8';Remove-Alias -Force -ErrorAction SilentlyContinue tee;"
+  "-NoLogo -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.UTF8Encoding]::new();$PSDefaultParameterValues['Out-File:Encoding']='utf8';"
   o.shellpipe    = "2>&1 | %%{ \"$_\" } | Tee-Object %s; exit $LastExitCode"
   o.shellredir   = "2>&1 | %%{ \"$_\" } | Out-File %s; exit $LastExitCode"
 
