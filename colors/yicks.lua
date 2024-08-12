@@ -135,7 +135,7 @@ local function to_cterm(color)
   return 13
 end
 
---- @alias hlargs { fg?: color, bg?: color, fmt: format }
+--- @alias hlargs { fg?: color, bg?: color, sp?: color, fmt?: format }
 
 --- Takes an argument and sets highlihgt groups based on it.
 --- @param group string The croup to modify.
@@ -157,6 +157,9 @@ local function hl(group, args)
   if args.bg then
     command = command .. " guibg=" .. args.bg
         .. " ctermbg=" .. to_cterm(args.bg)
+  end
+  if args.sp then
+    command = command .. " guisp=" .. args.sp
   end
 
   vim.cmd(command)
@@ -265,10 +268,10 @@ hl("PmenuSbar", { bg = p.b2 })
 hl("PmenuThumb", { bg = p.a.p })
 
 -- spellcheck
--- "SpellBad"
--- "SpellCap"
--- "SpellLocal"
--- "SpellRare"
+hl("SpellBad", { sp = p.lr, fmt = "undercurl" })
+hl("SpellCap", { sp = p.ly, fmt = "underdashed" })
+hl("SpellLocal", { sp = p.lg, fmt = "underdashed" })
+hl("SpellRare", { sp = p.lc, fmt = "underdashed" })
 
 -- selections
 hl("Visual", { bg = p.b2 })
