@@ -16,7 +16,14 @@ return {
     },
   },
   config = function(_, opts)
-    opts.ensure_installed = require("nvim-manager.workspaces").ts_fts()
+    opts.ensure_installed = opts.ensure_installed or {}
+    for _, spec in pairs(require("nvim-manager.workspaces").list()) do
+      for _, ft in ipairs(spec.filetypes) do
+        if not vim.tbl_contains(opts.ensure_installed, ft) then
+          table.insert(opts.ensure_installed, ft)
+        end
+      end
+    end
     require("nvim-treesitter.configs").setup(opts)
   end
 }

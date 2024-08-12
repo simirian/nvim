@@ -29,8 +29,17 @@ return {
     lazy = true,
     dependencies = { "williamboman/mason.nvim", "nvim-manager" },
     config = function()
+      local servers = {}
+      local ws_specs = require("nvim-manager.workspaces").list()
+      for _, spec in pairs(ws_specs) do
+        for server, _ in pairs(spec.lsp) do
+          if not vim.tbl_contains(servers, server) then
+            table.insert(servers, server)
+          end
+        end
+      end
       require("mason-lspconfig").setup({
-        ensure_installed = require("nvim-manager.workspaces").lsps(),
+        ensure_installed = servers,
         automatic_installation = true,
       })
     end
@@ -42,8 +51,6 @@ return {
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",
     },
-    -- this just sets up lsp settings, it does not actually set up servers,
-    --   that's done by nvim-manager.
     config = function()
       local signs = {
         DiagnosticSignError = settings.icons.error,
@@ -56,17 +63,15 @@ return {
         vfn.sign_define(name, { texthl = name, text = sign, numhl = "" })
       end
 
-      -- misc
       vim.lsp.set_log_level(vim.lsp.log_levels.WARN)
 
-
       local config = {
+        underline = true,
         virtual_text = false,
         signs = { active = signs },
-        update_in_insert = true,
-        underline = true,
-        severity_sort = true,
         float = {
+          scope = "line",
+          severity_sort = true,
           focusable = false,
           style = "minimal",
           border = "none",
@@ -74,6 +79,8 @@ return {
           header = "",
           prefix = "",
         },
+        update_in_insert = false,
+        severity_sort = true,
       }
       vim.diagnostic.config(config)
 
