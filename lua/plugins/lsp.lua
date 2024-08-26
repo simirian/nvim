@@ -16,9 +16,9 @@ return {
         width = 0.8,
         height = 0.8,
         icons = {
-          package_installed   = icons.list.check,
-          package_pending     = icons.list.pending,
-          package_uninstalled = icons.list.cross,
+          package_installed   = icons.check,
+          package_pending     = icons.pending,
+          package_uninstalled = icons.cross,
         },
       },
     },
@@ -53,10 +53,10 @@ return {
     },
     config = function()
       local signs = {
-        DiagnosticSignError = icons.list.error,
-        DiagnosticSignWarn  = icons.list.warning,
-        DiagnosticSignHint  = icons.list.hint,
-        DiagnosticSignInfo  = icons.list.info,
+        DiagnosticSignError = icons.error,
+        DiagnosticSignWarn  = icons.warning,
+        DiagnosticSignHint  = icons.hint,
+        DiagnosticSignInfo  = icons.info,
       }
 
       for name, sign in pairs(signs) do

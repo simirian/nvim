@@ -19,7 +19,7 @@ return {
 
     -- set how buffers are displayed
     buf.default_name = "U.N. Owen"
-    buf.modified_icon = icons.list.dot
+    buf.modified_icon = icons.dot
     buf.show_bufnr = true
 
     contour.statusline.setup("always", {
@@ -30,18 +30,18 @@ return {
         min_width = 15,
         c.diagnostics {
           icons = {
-            error = icons.list.error,
-            warn = icons.list.warning,
-            info = icons.list.info,
-            hint = icons.list.hint,
-            base = icons.list.diagnostics,
+            error = icons.error,
+            warn  = icons.warning,
+            info  = icons.info,
+            hint  = icons.hint,
+            base  = icons.diagnostics,
           },
           highlight = 2,
         },
       },
       -- center file name and modified
       "%=",
-      buf { modified_icon = icons.list.dot },
+      buf { modified_icon = icons.dot },
       "%=",
       -- right position
       { "%2* %l,%c ", min_width = 15 },
@@ -52,7 +52,7 @@ return {
       -- cwd
       "%1* %{fnamemodify(getcwd(), ':t')} | %{strftime('%H:%M')} ",
       "%#TabLineFill#%=",
-      c.tabbufs { close_icon = icons.list.cross },
+      c.tabbufs { close_icon = icons.cross },
     })
   end
 }

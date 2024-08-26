@@ -7,165 +7,171 @@ local vfn = vim.fn
 
 local M = {}
 
--- nerdfont icons
--- second value is an ASCII alternative
+--- @class iconspec
+--- @field [1] string Patched font icon.
+--- @field [2] string Unicode icon.
+--- @field [3] string Ascii icon.
+
+--- @type { [string]: iconspec }
 local icons = {
   -- code types
-
   -- data structures and members
-  interface    = { "", ":" },
-  array        = { "󰅪", ":" },
-  struct       = { "", ":" },
-  class        = { "", ":" },
-  field        = { "", ";" },
-  property     = { "", ";" },
-  enum         = { "󱃣", ":" },
-  enum_case    = { "󰎢", ";" },
+  interface    = { "", "⧂", ":" },
+  array        = { "󰅪", "⦂", ":" },
+  struct       = { "", "⊖", ":" },
+  class        = { "", "⧀", ":" },
+  field        = { "", "∈", ";" },
+  property     = { "", "⋿", ";" },
+  enum         = { "󱃣", "⋃", ":" },
+  enum_case    = { "󰎢", "⨃", ";" },
   -- numbers
-  number       = { "", "#" },
-  unit         = { "", "#" },
+  number       = { "", "#", "#" },
+  unit         = { "", "$", "$" },
   -- values and literals
-  value        = { "󰺢", "l" },
-  boolean      = { "", "l" },
-  string       = { "󰬴", "l" },
-  object       = { "󰔇", "l" },
-  color        = { "", "l" },
+  value        = { "󰺢", "¤", "l" },
+  boolean      = { "", "◑", "l" },
+  string       = { "󰬴", "α", "l" },
+  object       = { "󰔇", "❆", "l" },
+  color        = { "", "⬡", "l" },
   -- callables
-  func         = { "󰡱", "f" },
-  method       = { "󰘧", "f" },
-  constructor  = { "", "f" },
+  func         = { "󰡱", "f", "f" },
+  method       = { "󰘧", "λ", "f" },
+  constructor  = { "", "μ", "f" },
   -- variables
-  constant     = { "󰭷", "v" },
-  variable     = { "󰄪", "v" },
-  reference    = { "", "v" },
+  constant     = { "󰭷", "π", "v" },
+  variable     = { "󰄪", "x", "v" },
+  reference    = { "", "↦", "v" },
   -- namespaces
-  namespace    = { "󰅩", "m" },
-  module       = { "", "m" },
-  package      = { "", "m" },
+  namespace    = { "󰅩", "⸬", "m" },
+  module       = { "", "⏍", "m" },
+  package      = { "", "⏍", "m" },
   -- text
-  text         = { "󰈙", "A" },
-  keyword      = { "", "A" },
+  text         = { "󰈙", "❞", "A" },
+  keyword      = { "", "»", "A" },
   -- misc
-  event        = { "", "e" },
-  null         = { "󱥸", "_" },
-  operator     = { "󱓉", "%" },
-  snippet      = { "󰩫", "&" },
+  event        = { "", "↯", "e" },
+  null         = { "󱥸", "∅", "_" },
+  operator     = { "󱓉", "±", "%" },
+  snippet      = { "󰩫", "✀", "&" },
 
   -- status
-  diagnostics  = { "󱖫", "d" },
-  ok           = { "", "=" },
-  error        = { "", "X" },
-  warning      = { "", "!" },
-  info         = { "", "i" },
-  question     = { "", "?" },
-  hint         = { "󰌵", "*" },
+  diagnostics  = { "󱖫", "✓", "d" },
+  ok           = { "", "✓", "=" },
+  error        = { "", "✕", "X" },
+  warning      = { "", "!", "!" },
+  info         = { "", "i", "i" },
+  question     = { "", "?", "?" },
+  hint         = { "󰌵", "*", "*" },
 
   -- debug
-  debug        = { "", "#" },
-  trace        = { "", "|" },
-  start        = { "", ">" },
-  pause        = { "", "-" },
-  stop         = { "", "|" },
-  pending      = { "", "-" },
+  debug        = { "", "⧞", "#" },
+  trace        = { "", "⬚", "|" },
+  start        = { "", "⯈", ">" },
+  pause        = { "", "∥", "-" },
+  stop         = { "", "■", "|" },
+  pending      = { "", "⧗", "-" },
 
   -- files
-  folder_close = { "", "/" },
-  folder_open  = { "", "/" },
-  folder_empty = { "", "/" },
-  folder_link  = { "", ">" },
-  file         = { "", "." },
-  file_link    = { "", ">" },
+  folder_close = { "", "/", "/" },
+  folder_open  = { "", "/", "/" },
+  folder_empty = { "", "/", "/" },
+  folder_link  = { "", "➤", ">" },
+  file         = { "", "•", "." },
+  file_link    = { "", "↪", ">" },
 
   -- git
-  add          = { "", "+" },
-  modify       = { "", "~" },
-  remove       = { "", "-" },
-  rename       = { "", "r" },
-  ignore       = { "", "o" },
-  commit       = { "", "c" },
-  branch       = { "", "b" },
+  add          = { "", "+", "+" },
+  modify       = { "", "~", "~" },
+  remove       = { "", "-", "-" },
+  rename       = { "", "↪", "r" },
+  ignore       = { "", "◌", "o" },
+  commit       = { "", "⧃", "c" },
+  branch       = { "", "⎇", "b" },
 
   -- ui
-  up           = { "", "^" },
-  down         = { "", "v" },
-  left         = { "", "<" },
-  right        = { "", ">" },
-  dot          = { "", "*" },
-  circle       = { "", "o" },
-  check        = { "󰄬", "+" },
-  cross        = { "󰅖", "x" },
-  lock         = { "", "D" },
-  key          = { "", "~" },
-  vim          = { "", "V" },
-  nvim         = { "", "N" },
-  lazy         = { "󰒲", "z" },
-  telescope    = { "", ">" },
-  command      = { "", ">" },
-  config       = { "", "*" },
-  tag          = { "󰓹", ":" },
-  code         = { "", "#" },
-  bubbles      = { "󰗣", "Q" },
-  aperture     = { "󰄄", ";" },
-  cake         = { "󰃩", "!" },
-  default      = { "", "$" },
+  up           = { "", "˄", "^" },
+  down         = { "", "˅", "v" },
+  left         = { "", "˂", "<" },
+  right        = { "", "˃", ">" },
+  dot          = { "", "●", "*" },
+  circle       = { "", "○", "o" },
+  check        = { "󰄬", "✓", "+" },
+  cross        = { "󰅖", "✓", "x" },
+  lock         = { "", "⩍", "D" },
+  key          = { "", "⚿", "~" },
+  vim          = { "", "V", "V" },
+  nvim         = { "", "N", "N" },
+  lazy         = { "󰒲", "◑ ", "z" },
+  telescope    = { "", "⌕", ">" },
+  command      = { "", "⌘", ">" },
+  config       = { "", "⛭", "*" },
+  tag          = { "󰓹", "»", ":" },
+  code         = { "", "◇", "#" },
+  bubbles      = { "󰗣", "⁖", "Q" },
+  aperture     = { "󰄄", "🞉", ";" },
+  default      = { "󰃩", "⪧", "!" },
 }
 
 function M.cmp_item(name)
   return ({
-    Array         = M.list.array,
-    Boolean       = M.list.boolean,
-    Class         = M.list.class,
-    Color         = M.list.color,
-    Constant      = M.list.constant,
-    Constructor   = M.list.Constructor,
-    Enum          = M.list.enum,
-    EnumMember    = M.list.enum_case,
-    Event         = M.list.event,
-    Field         = M.list.field,
-    File          = M.list.file,
-    Folder        = M.list.folder_close,
-    Function      = M.list.func,
-    Interface     = M.list.interface,
-    Key           = M.list.key,
-    Keyword       = M.list.keyword,
-    Method        = M.list.method,
-    Module        = M.list.module,
-    Namespace     = M.list.namespace,
-    Null          = M.list.null,
-    Number        = M.list.number,
-    Object        = M.list.object,
-    Operator      = M.list.operator,
-    Package       = M.list.package,
-    Property      = M.list.property,
-    Reference     = M.list.reference,
-    Snippet       = M.list.snippet,
-    String        = M.list.string,
-    Struct        = M.list.struct,
-    Text          = M.list.text,
-    TypeParameter = M.list.tag,
-    Unit          = M.list.unit,
-    Value         = M.list.value,
-    Variable      = M.list.variable,
+    Array         = M.array,
+    Boolean       = M.boolean,
+    Class         = M.class,
+    Color         = M.color,
+    Constant      = M.constant,
+    Constructor   = M.Constructor,
+    Enum          = M.enum,
+    EnumMember    = M.enum_case,
+    Event         = M.event,
+    Field         = M.field,
+    File          = M.file,
+    Folder        = M.folder_close,
+    Function      = M.func,
+    Interface     = M.interface,
+    Key           = M.key,
+    Keyword       = M.keyword,
+    Method        = M.method,
+    Module        = M.module,
+    Namespace     = M.namespace,
+    Null          = M.null,
+    Number        = M.number,
+    Object        = M.object,
+    Operator      = M.operator,
+    Package       = M.package,
+    Property      = M.property,
+    Reference     = M.reference,
+    Snippet       = M.snippet,
+    String        = M.string,
+    Struct        = M.struct,
+    Text          = M.text,
+    TypeParameter = M.tag,
+    Unit          = M.unit,
+    Value         = M.value,
+    Variable      = M.variable,
   })[name]
 end
 
 --- Setup the settings module
-function M.setup()
-  -- check if we are in a vc (rather than a terminal emulator)
-  local has_vc = false
-  if not vfn.has("linux") then
-    has_vc = (vfn.getenv("DISPLAY") or vfn.getenv("WAYLAND_DISPLAY"))
+--- @param mode "nerdfont"|"unicode"|"ascii"|"auto"
+function M.setup(mode)
+  mode = mode or "auto"
+  if mode == "auto" then
+    mode = "nerdfont"
+    -- check if we are in a vc (rather than a terminal emulator)
+    if vim.loop.os_uname().sysname == "Linux"
+        and not (vfn.getenv("DISPLAY") or vfn.getenv("WAYLAND_DISPLAY"))
+    then
+      mode = "ascii"
+    end
   end
 
-  -- load ascii alts if we are in a vc
-  local itbl = {}
   for k, v in pairs(icons) do
-    itbl[k] = v[has_vc and 2 or 1]
+    M[k] = v[({
+      nerdfont = 1,
+      unicode = 2,
+      ascii = 3,
+    })[mode]]
   end
-
-  setmetatable(M, {
-    __index = { list = itbl },
-  })
 end
 
 return M
