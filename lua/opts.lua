@@ -20,6 +20,12 @@ local autocmd = vim.api.nvim_create_autocmd
 
 -- appearance ------------------------------------------------------------------
 o.background = "dark"
+vim.api.nvim_create_autocmd("VimEnter", {
+  callback = function()
+    if os.time() % 2 == 0 then vim.g.yicks_blue = true end
+    vim.cmd.colorscheme("yicks")
+  end
+})
 
 -- textwidth colorcolumn
 autocmd("BufWinEnter", {
