@@ -5,7 +5,7 @@ local vfn = vim.fn
 
 return {
   "nvim-manager",
-  lazy = false,
+  dependencies = { "williamboman/mason.nvim" },
   priority = 900,
   dev = true,
   config = function()
@@ -16,6 +16,5 @@ return {
       workspaces[wsname] = require("workspaces." .. wsname)
     end
     require("nvim-manager").setup{ workspaces = workspaces }
-
   end,
 }

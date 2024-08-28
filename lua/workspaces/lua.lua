@@ -3,25 +3,23 @@
 
 return {
   detector = function()
-    -- look for specific workspace names
     local cwd = vim.fn.getcwd()
     if string.match(vim.fs.basename(cwd), "nvim") then return true end
     if vim.fs.basename(cwd) == "awesome" then return true end
-
-    -- look for a `.luarc.json` file
-    return DirContains(cwd, ".luarc.json")
+    return vim.fs.root(cwd, ".luarc.json") ~= nil
   end,
   filetypes = { "lua", "vim", "vimdoc" },
 
   lsp = {
-    ["lua_ls"] = {
+    ["lua-language-server"] = {
+      filetypes = "lua",
+      cmd = { "lua-language-server.cmd" },
       settings = {
-        ["Lua"] = {
+        Lua = {
           runtime = {
             version = "LuaJIT",
           },
           diagnostics = {
-            enable = true,
             globals = { "vim" },
           },
           workspace = {

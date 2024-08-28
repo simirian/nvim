@@ -3,23 +3,14 @@
 
 return {
   detector = function()
-    -- look for a `makefile` or `CMakeLists.txt`
-    local cwd = vim.fn.getcwd()
-    return DirContains(cwd, "makefile")
-        or DirContains(cwd, "CMakeLists.txt")
+    return vim.fs.root(vim.fn.getcwd(), { "CMakeLists.txt", "makefile" }) ~= nil
   end,
-  workspace_root = { "CMakeLists.txt", "makefile" },
   filetypes = { "c", "bash", "make", "cmake" },
 
   lsp = {
     ["clangd"] = {
-      settings = {
-        CompileFlags = {
-          Add = {
-            "-std=c++20",
-          },
-        },
-      },
+      filetypes = { "c", "cpp" },
+      cmd = { "clangd.cmd" },
     },
   },
 }
