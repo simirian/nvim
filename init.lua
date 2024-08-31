@@ -12,6 +12,6 @@
 
 require("icons").setup()
 require("opts")
-require("keys").setup()
+require("keymaps").setup()
 require("commands")
 require("lazy-init")

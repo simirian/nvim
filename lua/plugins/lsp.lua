@@ -29,23 +29,25 @@ vdg.config {
   },
 }
 
+local keys = require("keymaps")
+
+keys.lsp = {
+  { "<leader>gd", lspb.definition,     desc = "[g]oto [d]efinition." },
+  { "<leader>gD", lspb.declaration,    desc = "[g]oto [D]eclaration." },
+  { "<leader>gi", lspb.implementation, desc = "[g]oto [i]mplementation." },
+  { "<leader>gr", lspb.references,     desc = "[g]et [r]eferences." },
+  { "<leader>ld", vdg.open_float,      desc = "[l]ist [d]iagnostics." },
+  { "<leader>li", lspb.hover,          desc = "[l]ist symbol [i]nformation" },
+  { "<leader>ls", lspb.signature_help, desc = "[l]ist function [s]ignature." },
+  { "<C-s>",      lspb.signature_help, desc = "List function [s]ignature.",  mode = "i" },
+  { "<leader>cr", lspb.rename,         desc = "[c]ode [r]ename" },
+  { "<leader>ca", lspb.code_action,    desc = "[c]ode [a]ctions" },
+  { "<leader>cf", lspb.format,         desc = "[c]ode [f]ormat" },
+}
+
 -- lsp keybinds
-vim.api.nvim_create_autocmd("LspAttach", {
-  callback = function(event)
-    local map = vim.keymap.set
-    local opts = { buffer = event.buf, noremap = true, silent = true }
-    map("n", "<leader>gd", lspb.definition, opts)
-    map("n", "<leader>gD", lspb.declaration, opts)
-    map("n", "<leader>gi", lspb.implementation, opts)
-    map("n", "<leader>gr", lspb.references, opts)
-    map("n", "<leader>ld", vdg.open_float, opts)
-    map("n", "<leader>lh", lspb.hover, opts)
-    map("n", "<leader>ls", lspb.signature_help, opts)
-    map("n", "<leader>cr", lspb.rename, opts)
-    map("n", "<leader>ca", lspb.code_action, opts)
-    map("n", "<leader>cf", lspb.format, opts)
-  end,
-})
+vim.api.nvim_create_autocmd("LspAttach",
+  { callback = function(event) keys.setup("lsp", event.buffer) end })
 
 return {
   "williamboman/mason.nvim",

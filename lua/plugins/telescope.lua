@@ -29,17 +29,20 @@ return {
       },
     }
 
-    -- find projects with nvim manager
-    local mok = pcall(require, "nvim-manager")
-    if mok then
-      vim.keymap.set("n", "<leader>fp",
-        telescope.extensions.projects.projects, {})
-    end
 
     local builtin = require("telescope.builtin")
-    vim.keymap.set("n", "<leader>ff", builtin.find_files, {})
-    vim.keymap.set("n", "<leader>fg", builtin.live_grep, {})
-    vim.keymap.set("n", "<leader>fb", builtin.buffers, {})
-    vim.keymap.set("n", "<leader>fh", builtin.help_tags, {})
+    local keys = require("keymaps")
+    keys.telescope = {
+      { "<leader>ff", builtin.find_files, desc = "[f]ind [f]iles" },
+      { "<leader>fg", builtin.live_grep,  desc = "[f]ind [g]rep" },
+      { "<leader>fb", builtin.buffers,    desc = "[f]ind [b]uffer" },
+      { "<leader>fh", builtin.help_tags,  desc = "[f]ind [h]elp" },
+    }
+    -- find projects with nvim manager
+    if pcall(require, "nvim-manager") then
+      table.insert(keys.telescope,
+        { "<leader>fp", telescope.extensions.projects.projects, desc = "[f]ind [p]rojects" })
+    end
+    keys.setup("telescope")
   end,
 }
