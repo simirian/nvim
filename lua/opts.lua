@@ -20,22 +20,13 @@ local autocmd = vim.api.nvim_create_autocmd
 
 -- appearance ------------------------------------------------------------------
 o.background = "dark"
-vim.api.nvim_create_autocmd("VimEnter", {
-  callback = function()
-    if os.time() % 2 == 0 then vim.g.yicks_blue = true end
-    vim.cmd.colorscheme("yicks")
-  end
-})
+vim.cmd.colorscheme("yicks")
 
 -- textwidth colorcolumn
 autocmd("BufWinEnter", {
   callback = function()
     local tw = vim.bo.textwidth
-    if tw == 0 then
-      vim.wo.colorcolumn = "81"
-    else
-      vim.wo.colorcolumn = "+1"
-    end
+    vim.wo.colorcolumn = tw == 0 and "81" or "+1"
   end
 })
 
@@ -61,7 +52,7 @@ o.fillchars = {
 }
 o.guicursor = {
   "n-v-sm:block",
-  "o-r:hor20",
+  "o-r-cr:hor20",
   "i-c-ci:ver25",
 }
 o.guifont = "JetBrainsMono NFM:h9"
@@ -295,8 +286,8 @@ o.cdhome = true
 -- o.charconvert =
 -- o.browsedir = "current"
 o.isfname:remove { "[", "]" }
-o.fileignorecase = false
-o.suffixesadd = { ".lua", ".md" }
+-- o.fileignorecase = false -- do not set, breaks language servers on windows
+o.suffixesadd = { ".md" }
 
 o.modeline = true
 o.modelineexpr = false
@@ -430,7 +421,7 @@ o.wildoptions = { "pum", "tagfile" }
 o.cedit = "<C-f>"
 
 o.wildignore = ""
-o.wildignorecase = false
+o.wildignorecase = true
 -- o.suffixes =
 
 -- o.diffexpr =
@@ -456,19 +447,13 @@ o.diffopt = {
 -- o.errorfile =
 
 -- features :: shell -----------------------------------------------------------
-if vfn.has("win32") == 1 then
+if vim.loop.os_uname().sysname == "Windows_NT" then
   o.shell        = vfn.executable("pwsh") == 1 and "pwsh" or "powershell"
   o.shellcmdflag =
-  -- TODO: why does this no longer work? Remove-Alias died??
-  --"-NoLogo -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.UTF8Encoding]::new();$PSDefaultParameterValues['Out-File:Encoding']='utf8';Remove-Alias -Force -ErrorAction SilentlyContinue tee;"
   "-NoLogo -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.UTF8Encoding]::new();$PSDefaultParameterValues['Out-File:Encoding']='utf8';"
-  o.shellpipe    = "2>&1 | %%{ \"$_\" } | Tee-Object %s; exit $LastExitCode"
   o.shellredir   = "2>&1 | %%{ \"$_\" } | Out-File %s; exit $LastExitCode"
-
+  o.shellpipe    = "2>&1 | %%{ \"$_\" } | tee.exe %s; exit $LastExitCode"
   o.shellquote   = ""
-  o.shellslash   = false
-  o.shelltemp    = true
-  o.shellxescape = ""
   o.shellxquote  = ""
 end
 
