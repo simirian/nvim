@@ -67,4 +67,6 @@ one of the following:
 | --- | --- |
 | `:Update` | Updates mason, treesitter, and lazy. |
 | `:BufInfo` | Prints basic buffer info. |
-
+| `:WinProse` | Sets a few window options for writing prose. |
+| `:WinCode` | Unsets prose writing options. |
+| `:Toc` | Opens a markdown file's table of contents. |
