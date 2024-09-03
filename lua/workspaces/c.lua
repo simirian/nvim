@@ -8,9 +8,9 @@ return {
   filetypes = { "c", "bash", "make", "cmake" },
 
   lsp = {
-    ["clangd"] = {
+    clangd = {
       filetypes = { "c", "cpp" },
-      cmd = { "clangd.cmd" },
+      cmd = { "clangd" },
     },
   },
 }

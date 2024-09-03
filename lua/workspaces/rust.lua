@@ -10,10 +10,9 @@ return {
   filetypes = { "rust" },
 
   lsp = {
-    ["rust_analyzer"] = {
+    rust_analyzer = {
       filetypes = "rust",
-      cmd = { "rust-analyzer.cmd" },
-      settings = { ["rust-analyzer"] = { }, },
+      cmd = { "rust-analyzer" },
     },
   },
 }

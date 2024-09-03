@@ -11,9 +11,9 @@ return {
   filetypes = { "lua", "vim", "vimdoc" },
 
   lsp = {
-    ["lua-language-server"] = {
+    lua_ls = {
       filetypes = "lua",
-      cmd = { "lua-language-server.cmd" },
+      cmd = { "lua-language-server" },
       settings = {
         Lua = {
           runtime = {

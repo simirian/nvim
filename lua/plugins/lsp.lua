@@ -26,7 +26,6 @@ vdg.config {
   },
   float = {
     source = true,
-    prefix = "",
     border = "none",
   },
 }
