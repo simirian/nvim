@@ -77,7 +77,7 @@ M.yicks_yellow = {
 --- @type yicks.scheme
 M.yicks_green = {} -- TODO: yicks_green
 
--- helper items  {{{1
+-- helper items {{{1
 
 --- H.p{} {{{2
 --- Stores the currently active palette. Values are of the form cv where c is
@@ -115,40 +115,6 @@ function H.makep(scheme)
   end
 end
 
---- H.to_cterm() {{{2
---- Converts a color in `p` to a cterm color.
---- @param color string
---- @return integer
-function H.to_cterm(color)
-  local type = color:sub(1, 1):lower()
-  local value = color:sub(2, 2)
-  local light = vim.o.background == "light"
-  if type == "b" then
-    return ({ 0, 0, 8, 8, 7, 7, 15, 15 })[tonumber(value)]
-  elseif type == "c" then
-    return ({
-      r = 4,
-      o = 4,
-      y = 6,
-      g = 2,
-      c = 3,
-      b = 1,
-      v = 5,
-      m = 5,
-    })[type] + (
-    -- in light mode A is light
-      ((light and color:sub(1, 1) == "A")
-        -- in dark mode a is light
-        or (not light and color:sub(1, 1) == "a"))
-      -- if light, we add an offset of 8
-      and 8 or 0
-    )
-  elseif type == "a" then
-    -- accent
-  end
-  return 0
-end
-
 --- H.hl() {{{2
 --- Highlights a group.
 --- @param group string The group to highlight.
@@ -167,9 +133,9 @@ function H.hl(group, args)
   vim.api.nvim_set_hl(0, group, cargs)
 end
 
--- highlight groups {{{2
+--- highlight groups {{{1
 H.highlights = {
-  -- metahighlights {{{3
+  -- metahighlights {{{2
   Unknown = { fg = "cg", bg = "cm" },
   Error = { fg = "cr" },
   Warning = { fg = "co" },
@@ -181,31 +147,29 @@ H.highlights = {
   -- WildMenu
   Directory = { fg = "a1" },
 
-  -- cursor groups {{{3
+  -- cursor {{{2
   Cursor = { reverse = true, fg = "b1" },
   lCursor = "Cursor",
   CursorIM = "Cursor",
   CursorLine = { bg = "b2" },
   CursorColumn = "CursorLine",
   ColorColumn = "CursorLine",
-  -- reverse by default, be we want that to be explicit
   TermCursor = { fg = "b8", reverse = true },
   TermCursorNC = { fg = "b5", reverse = true },
 
-  -- diff groups {{{3
+  -- diff groups {{{2
   DiffAdd = { fg = "b1", bg = "cg" },
   DiffChange = { fg = "b1", bg = "cc" },
   DiffDelete = { fg = "b1", bg = "cr" },
   DiffText = { fg = "b1", bg = "b8" },
 
-  -- /search colors {{{3
+  -- search {{{2
   Search = { fg = "b1", bg = "a3" },
-  -- format default is reverse, so remove that
   CurSearch = { fg = "b1", bg = "a3" },
   IncSearch = "CurSearch",
   Substitute = "CurSearch",
 
-  -- left column {{{3
+  -- left column {{{2
   LineNr = { fg = "b4" },
   LineNrAbove = "LineNr",
   LineNrBelow = "LineNr",
@@ -217,7 +181,7 @@ H.highlights = {
   SignColumn = "Normal",
   CursorLineSign = "CursorLineNr",
 
-  -- text {{{3
+  -- text {{{2
   Normal = { fg = "b7", bg = "b1" },
   NormalNC = "Normal",
   Conceal = { fg = "b5", bg = "" },
@@ -228,7 +192,7 @@ H.highlights = {
   Folded = { fg = "b8", bg = "b3" },
   MatchParen = { fg = "b8", bg = "" },
 
-  -- messages {{{3
+  -- messages {{{2
   MsgArea = "Normal",
   ErrorMsg = { fg = "b1", bg = "cr" },
   WarningMsg = { fg = "b1", bg = "co" },
@@ -237,15 +201,14 @@ H.highlights = {
   MoreMsg = { fg = "cb" },
   Question = "MoreMsg",
 
-  -- floats and windows {{{3
+  -- floats and windows {{{2
   Title = { fg = "a1" },
   WinSeparator = { fg = "b3", bg = "b3" },
   NormalFloat = { fg = "b7", bg = "b2" },
   FloatTitle = "WinSeparator",
   FloatBorder = "WinSeparator",
 
-  -- lines {{{3
-  -- fmt = "reverse" by default, so set to none to remove that
+  -- lines {{{2
   StatusLine = { fg = "a1", bg = "b3", reverse = false },
   StatusLineNC = { fg = "b7", bg = "b3", reverse = false },
   WinBar = "StatusLine",
@@ -256,7 +219,7 @@ H.highlights = {
   User1 = { fg = "b1", bg = "a1" },
   User2 = { fg = "a1", bg = "b2" },
 
-  -- popup menus {{{3
+  -- popup menus {{{2
   Pmenu = { fg = "b7", bg = "b2" },
   PmenuSel = { fg = "a1", bg = "b3" },
   PmenuKind = "Pmenu",
@@ -266,19 +229,20 @@ H.highlights = {
   PmenuSbar = { bg = "b3" },
   PmenuThumb = { bg = "A1" },
 
-  -- spellcheck {{{3
+  -- spellcheck {{{2
   SpellBad = { sp = "cr", undercurl = true },
   SpellCap = { sp = "cy", underdashed = true },
   SpellLocal = { sp = "cg", underdashed = true },
   SpellRare = { sp = "cc", underdashed = true },
 
-  -- selections {{{3
+  -- selections {{{2
   Visual = { bg = "b3" },
   VisualNOS = "Visual",
 
-  -- code groups {{{3
+  -- code groups {{{2
   Comment = { fg = "b5" },
 
+  -- variables {{{3
   Constant = { fg = "A1" },
   Variable = { fg = "a1" },
   String = { fg = "A4" },
@@ -290,28 +254,29 @@ H.highlights = {
   Identifier = { fg = "b6" },
   Function = { fg = "a3" },
 
+  -- keywords {{{3
   Statement = { fg = "a2" },
   Operator = { fg = "A2" },
   Conditional = "Statement",
-  Repeat = "Statement",
   Repeat = "Statement",
   Label = "Statement",
   Keyword = "Statement",
   Exception = "Statement",
 
+  -- preproc {{{3
   PreProc = { fg = "a3" },
-  PreProc = "PreProc",
   Include = "PreProc",
   Define = "PreProc",
   Macro = "PreProc",
   PreCondit = "PreProc",
 
+  -- types {{{3
   Type = { fg = "a3" },
   StorageClass = "Type",
   Structure = "Type",
   Typedef = "Type",
 
-  -- special {{{3
+  -- special {{{2
   Special = { fg = "b6" },
   SpecialChar = "Character",
   Tag = { fg = "a4" },
@@ -322,7 +287,7 @@ H.highlights = {
   Ignore = { italic = true, fg = "b6" },
   Todo = { fg = "cp", bg = "" },
 
-  -- telescope {{{3
+  -- telescope {{{2
   TelescopeNormal = { fg = "b7", bg = "b2" },
   TelescopeBorder = { fg = "b2", bg = "b2" },
   TelescopeTitle = "TelescopeBorder",
@@ -335,7 +300,7 @@ H.highlights = {
   TelescopeSelection = { fg = "", bg = "b3" },
   TelescopeSelectionCaret = { fg = "b3", bg = "b3" },
 
-  -- diagnostics {{{3
+  -- diagnostics {{{2
   DiagnosticError = "Error",
   DiagnosticWarn = "Warning",
   DiagnosticInfo = "Info",
@@ -348,17 +313,19 @@ H.highlights = {
   DiagnosticUnderlineHint = "DiagnosticHint",
   DiagnosticUnderlineOk = "DiagnosticOk",
 
-  -- nvim-tree {{{3
+  -- nvim-tree {{{2
   NvimTreeSignColumn = "NormalFloat",
 
-  -- treesitter {{{3
+  -- treesitter {{{2
   ["@variable"] = "Variable",
   ["@lsp.type.variable"] = "Variable",
   ["@label"] = { fg = "a4" },
   ["@markup.link"] = { fg = "a4" },
 }
 
---- yicks.set() {{{3
+-- module functions {{{1
+
+--- M.set() {{{2
 --- Sets the color scheme.
 --- @param opts string|yicks.scheme The scheme to set, default yicks_yellow.
 function M.set(opts)

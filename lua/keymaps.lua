@@ -10,14 +10,14 @@ local H = {}
 
 --- H.error() {{{2
 --- Prints an error message appropriate to the module.
---- @param msg string The message to print.
+--- @param msg string The error message.
 function H.error(msg)
   vim.notify("keymaps:\n    " .. msg:gsub("\n", "\n    "), vim.log.levels.ERROR)
 end
 
 -- definitions {{{1
 
--- leader key
+-- leader key {{{2
 vim.keymap.set("", " ", "<Nop>")
 vim.g.mapleader = " "
 vim.g.localleader = " "
@@ -46,7 +46,7 @@ vim.g.localleader = " "
 --- Description of the mapping for help information.
 --- @field desc string
 --- Mode in which this mapping applies.
---- @field mode? vim-mode|vim-moode[]
+--- @field mode? vim-mode|vim-mode[]
 --- Buffer if this is a buffer local mapping.
 --- @field buffer? integer
 --- Prevent recursive mappings.
@@ -64,9 +64,10 @@ local keymap = {
 }
 
 --- M.maps {{{2
+--- Default maps.
 --- @type keymap[]
 M.maps = {
-  -- window and tab navigation
+  -- window and tab navigation {{{3
   { "<C-h>",     "gT",                desc = "Go to previous tab page." },
   { "<C-j>",     "<C-w>w",            desc = "Focus previous window." },
   { "<C-k>",     "<C-w>W",            desc = "Focus next window." },
@@ -75,34 +76,35 @@ M.maps = {
   { "<C-j>",     "<C-\\><C-O><C-w>w", desc = "Go to previous window.",        mode = "t", },
   { "<C-k>",     "<C-\\><C-O><C-w>W", desc = "Go to next window.",            mode = "t", },
   { "<C-l>",     "<C-\\><C-O>gt",     desc = "go to next tab page.",          mode = "t", },
-  -- resizing windows
+  -- resizing windows {{{3
   { "<C-Up>",    "1<C-w>+",           desc = "Increase window height." },
   { "<C-Down>",  "1<C-w>-",           desc = "Decrease window height." },
   { "<C-Left>",  "2<C-w><",           desc = "Decrease window width." },
   { "<C-Right>", "2<C-w>>",           desc = "Increase window width." },
-  -- move lines
+  -- move lines {{{3
   { "<A-j>",     ":move +1<cr>",      desc = "Move line down." },
   { "<A-k>",     ":move -2<cr>",      desc = "Move line up" },
   { "<A-j>",     ":move '>+1<CR>gv",  desc = "Move lines down.",              mode = "x" },
   { "<A-k>",     ":move '<-2<CR>gv",  desc = "Move lines up.",                mode = "x" },
-  -- quick escape
+  -- quick escape {{{3
   { "kj",        "<Esc>",             desc = "Escape insert mode.",           mode = "i" },
   { "jk",        "<Esc>",             desc = "Escape insert mode.",           mode = "i" },
-  -- use system clipboard
+  -- use system clipboard {{{3
   { "<leader>p", "\"+p",              desc = "Paste from system clipboard.",  mode = { "n", "x" } },
   { "<leader>y", "\"+y",              desc = "Yank to system clipboard.",     mode = { "n", "x" } },
-  -- misc mappings
+  -- misc mappings {{{3
   { "U",         "<C-r>",             desc = "Redo." },
   { "<C-f>",     "<Esc>gwapa",        desc = "Format in insert mode.",        mode = "i" },
-  { "q:",        "<Nop",              desc = "I don't like command mode." },
+  { "q:",        "<Nop",              desc = "I don't like command mode.",    nowait = true },
   { "p",         "\"_dP",             desc = "Cleanly paste over selection.", mode = "x" },
+  { "cw",        "caw",               desc = "Change to next word." },
   -- funky character found with <C-v><C-BS> in insert mode with 'display' uhex
   { "\x08",      "<C-w>",             desc = "Delete back a word.",           mode = "i" },
 }
 
 -- module functions {{{1
 
---- M.setup {{{2
+--- M.setup() {{{2
 --- Setup keymaps specified on this module under a certain namespace.
 --- @param ns? string One of this module's keymap namespaces.
 --- @param buffer? boolean|integer The buffer to add keymaps to.
@@ -146,7 +148,7 @@ function M.remove(ns, buffer)
     return
   end
   buffer = buffer or false
-  for _, v in ipairs(M[key]) do
+  for _, v in ipairs(M[ns]) do
     vim.keymap.del(v.mode, v[1], { buffer = buffer })
   end
 end

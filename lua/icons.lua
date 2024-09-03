@@ -9,7 +9,7 @@ local M = {}
 
 -- dedfinitions {{{1
 
---- iconspec {{{2
+--- iconspec definition {{{2
 --- @class iconspec
 --- @field [1] string Patched font icon.
 --- @field [2] string Unicode icon.
@@ -161,7 +161,7 @@ end
 
 --- M.setup() {{{2
 --- Setup the settings module
---- @param mode "nerdfont"|"unicode"|"ascii"|"auto"
+--- @param mode? "nerdfont"|"unicode"|"ascii"|"auto"
 function M.setup(mode)
   mode = mode or "auto"
   if mode == "auto" then
@@ -173,7 +173,6 @@ function M.setup(mode)
       mode = "ascii"
     end
   end
-
   for k, v in pairs(icons) do
     M[k] = v[({
       nerdfont = 1,

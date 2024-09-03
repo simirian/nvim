@@ -35,8 +35,6 @@ newcmd("WinCode", function()
   vim.bo.textwidth = 0
 end, { desc = "Set a window to code writing mode." })
 
--- global functions {{{1
-
 -- :Toc {{{2
 local tocns = api.nvim_create_namespace("TOC")
 
@@ -79,6 +77,8 @@ api.nvim_create_autocmd("FileType", {
   end,
   desc = "Open this buffer's table of contents."
 })
+
+-- global functions {{{1
 
 -- P() {{{2
 --- Debug print anything.
