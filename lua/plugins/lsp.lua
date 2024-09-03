@@ -6,9 +6,11 @@ local lsp = vim.lsp
 local lspb = lsp.buf
 local vdg = vim.diagnostic
 
+-- definitions {{{1
+
 lsp.set_log_level(vim.log.levels.WARN)
 
--- diagnostic setings
+-- diagnostic setings {{{2
 vdg.config {
   underline = true,
   update_in_insert = false,
@@ -29,8 +31,8 @@ vdg.config {
   },
 }
 
+-- keymaps {{{2
 local keys = require("keymaps")
-
 keys.lsp = {
   { "<leader>gd", lspb.definition,     desc = "[g]oto [d]efinition." },
   { "<leader>gD", lspb.declaration,    desc = "[g]oto [D]eclaration." },
@@ -44,11 +46,10 @@ keys.lsp = {
   { "<leader>ca", lspb.code_action,    desc = "[c]ode [a]ctions" },
   { "<leader>cf", lspb.format,         desc = "[c]ode [f]ormat" },
 }
-
--- lsp keybinds
 vim.api.nvim_create_autocmd("LspAttach",
   { callback = function(event) keys.setup("lsp", event.buffer) end })
 
+-- plugin {{{1
 return {
   "williamboman/mason.nvim",
   opts = {
@@ -65,3 +66,4 @@ return {
     },
   },
 }
+-- vim:fdm=marker

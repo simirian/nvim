@@ -6,6 +6,7 @@
 local vfn = vim.fn
 local icons = require("icons")
 
+-- bootstrap {{{1
 local lazypath = vfn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
   vfn.system { "git", "clone", "--filter=blob:none",
@@ -13,39 +14,21 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+-- setup {{{1
 require("lazy").setup("plugins", {
-  lockfile = vfn.stdpath("config") .. "/lazy-lock.json",
-  git = {
-    log = { "-8" },
-    timeout = 120,
-    url_format = "https://github.com/%s.git",
-    filter = true,
-  },
-  dev = {
-    path = "~/source/",
-    patterns = {},
-    fallback = false,
-  },
-  install = {
-    missing = true,
-    colorscheme = { "yicks" },
-  },
+  dev = { path = "~/source/" },
+  install = { colorscheme = { "yicks", "habamax" } },
   ui = {
-    size = {
-      width = 0.8,
-      height = 0.8,
-    },
-    wrap = true,
+    size = { width = 0.8, height = 0.8 },
     border = "none",
-    title = nil, -- appears in border
-    title_pos = "left",
     pills = true,
     icons = {
       cmd        = icons.command,
+      config     = icons.config,
       event      = icons.event,
       ft         = icons.file,
       init       = icons.config,
-      import     = icons.sub_module,
+      import     = icons.package,
       keys       = icons.key,
       lazy       = icons.lazy,
       loaded     = icons.dot,
@@ -58,28 +41,10 @@ require("lazy").setup("plugins", {
       task       = icons.check,
       list       = { "-", "-", "-", "-", },
     },
-    browser = nil, --- @type string?
-    throttle = 20,
-    custom_keys = {},
   },
-  diff = { cmd = "git" },
-  checker = {
-    enabled = false,
-    concurrency = nil,
-    notify = true,
-    frequency = 3600,
-    check_pinned = false,
-  },
-  change_detection = {
-    enabled = true,
-    notify = false,
-  },
+  change_detection = { notify = false },
   performance = {
-    cache = { enabled = true },
-    reset_packpath = true,
     rtp = {
-      reset = true,
-      paths = {},
       disabled_plugins = {
         -- "gzip",
         -- "matchit",
@@ -95,16 +60,6 @@ require("lazy").setup("plugins", {
   -- lazy can generate helptags from the headings in markdown readme files,
   -- so :help works even for plugins that don't have vim docs.
   -- when the readme opens with :help it will be correctly displayed as markdown
-  readme = {
-    enabled = true,
-    root = vfn.stdpath("state") .. "/lazy/readme",
-    files = { "README.md", "lua/**/README.md" },
-    skip_if_doc_exists = true,
-  },
-  state = vfn.stdpath("state") .. "/lazy/state.json",
-  build = { warn_on_override = true },
-  profiling = {
-    loader = false,
-    require = false,
-  },
+  readme = { enabled = false },
 })
+-- vim:fdm=marker

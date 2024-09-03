@@ -7,15 +7,19 @@ local vfn = vim.fn
 
 local M = {}
 
+-- dedfinitions {{{1
+
+--- iconspec {{{2
 --- @class iconspec
 --- @field [1] string Patched font icon.
 --- @field [2] string Unicode icon.
 --- @field [3] string Ascii icon.
 
+--- icons {{{2
 --- @type { [string]: iconspec }
 local icons = {
-  -- code types
-  -- data structures and members
+  -- code types {{{3
+  -- data structures and members {{{4
   interface    = { "", "⧂", ":" },
   array        = { "󰅪", "⦂", ":" },
   struct       = { "", "⊖", ":" },
@@ -24,37 +28,35 @@ local icons = {
   property     = { "", "⋿", ";" },
   enum         = { "󱃣", "⋃", ":" },
   enum_case    = { "󰎢", "⨃", ";" },
-  -- numbers
+  -- values and literals {{{4
   number       = { "", "#", "#" },
   unit         = { "", "$", "$" },
-  -- values and literals
   value        = { "󰺢", "¤", "l" },
   boolean      = { "", "◑", "l" },
   string       = { "󰬴", "α", "l" },
   object       = { "󰔇", "❆", "l" },
   color        = { "", "⬡", "l" },
-  -- callables
+  -- callables {{{4
   func         = { "󰡱", "f", "f" },
   method       = { "󰘧", "λ", "f" },
   constructor  = { "", "μ", "f" },
-  -- variables
+  -- variables {{{4
   constant     = { "󰭷", "π", "v" },
   variable     = { "󰄪", "x", "v" },
   reference    = { "", "↦", "v" },
-  -- namespaces
+  -- namespaces {{{4
   namespace    = { "󰅩", "⸬", "m" },
   module       = { "", "⏍", "m" },
   package      = { "", "⏍", "m" },
-  -- text
+  -- misc {{{4
   text         = { "󰈙", "❞", "A" },
   keyword      = { "", "»", "A" },
-  -- misc
   event        = { "", "↯", "e" },
   null         = { "󱥸", "∅", "_" },
   operator     = { "󱓉", "±", "%" },
   snippet      = { "󰩫", "✀", "&" },
 
-  -- status
+  -- status {{{3
   diagnostics  = { "󱖫", "✓", "d" },
   ok           = { "", "✓", "=" },
   error        = { "", "✕", "X" },
@@ -63,7 +65,7 @@ local icons = {
   question     = { "", "?", "?" },
   hint         = { "󰌵", "*", "*" },
 
-  -- debug
+  -- debug {{{3
   debug        = { "", "⧞", "#" },
   trace        = { "", "⬚", "|" },
   start        = { "", "⯈", ">" },
@@ -71,7 +73,7 @@ local icons = {
   stop         = { "", "■", "|" },
   pending      = { "", "⧗", "-" },
 
-  -- files
+  -- files {{{3
   folder_close = { "", "/", "/" },
   folder_open  = { "", "/", "/" },
   folder_empty = { "", "/", "/" },
@@ -79,7 +81,7 @@ local icons = {
   file         = { "", "•", "." },
   file_link    = { "", "↪", ">" },
 
-  -- git
+  -- git {{{3
   add          = { "", "+", "+" },
   modify       = { "", "~", "~" },
   remove       = { "", "-", "-" },
@@ -88,7 +90,7 @@ local icons = {
   commit       = { "", "⧃", "c" },
   branch       = { "", "⎇", "b" },
 
-  -- ui
+  -- ui {{{3
   up           = { "", "˄", "^" },
   down         = { "", "˅", "v" },
   left         = { "", "˂", "<" },
@@ -112,6 +114,12 @@ local icons = {
   default      = { "󰃩", "⪧", "!" },
 }
 
+-- module functions {{{1
+
+--- M.cmp_item() {{{2
+--- Gets a vim completion kind icon from its internal name.
+--- @param name string The icon name.
+--- @return string icon
 function M.cmp_item(name)
   return ({
     Array         = M.array,
@@ -151,6 +159,7 @@ function M.cmp_item(name)
   })[name]
 end
 
+--- M.setup() {{{2
 --- Setup the settings module
 --- @param mode "nerdfont"|"unicode"|"ascii"|"auto"
 function M.setup(mode)
@@ -175,3 +184,4 @@ function M.setup(mode)
 end
 
 return M
+-- vim:fdm=marker

@@ -4,6 +4,7 @@
 local vfn = vim.fn
 local icons = require("icons")
 
+-- plugin {{{1
 return {
   "nvim-contour",
   dev = true,
@@ -17,11 +18,12 @@ return {
       vim.cmd.redrawtabline()
     end, { ["repeat"] = -1 })
 
-    -- set how buffers are displayed
+    -- buffer {{{2
     buf.default_name = "U.N. Owen"
     buf.modified_icon = icons.dot
     buf.show_bufnr = true
 
+    -- statusline {{{2
     contour.statusline.setup("always", {
       -- left filetype
       {
@@ -47,6 +49,7 @@ return {
       { "%2* %l,%c ", min_width = 15 },
     })
 
+    -- tabline {{{2
     contour.tabline.setup("always", {
       highlight = "TabLine",
       -- cwd
@@ -56,3 +59,4 @@ return {
     })
   end
 }
+-- vim:fdm=marker

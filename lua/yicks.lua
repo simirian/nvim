@@ -9,6 +9,9 @@ local vfn = vim.fn
 local M = {}
 local H = {}
 
+-- colors {{{1
+
+-- accent colors {{{2
 --- colors for the yicks color scheme
 M.colors = {
   light_red     = "#bb473e",
@@ -30,13 +33,15 @@ M.colors = {
   magenta       = "#9e2989",
 }
 
+--- yicks.scheme{} {{{2
 --- A yicks color scheme
 --- @class yicks.scheme
 --- 8 bases for the color scheme to use.
---- @field bases string[8]
+--- @field bases string[]
 --- 4 accent colors for the scheme to use.
---- @field accents string[4]
+--- @field accents string[]
 
+--- M.yicks_blue{} {{{2
 --- @type yicks.scheme
 M.yicks_blue = {
   bases = {
@@ -52,6 +57,7 @@ M.yicks_blue = {
   accents = { "blue", "magenta", "cyan", "violet" },
 }
 
+--- M.yicks_yellow{} {{{2
 --- @type yicks.scheme
 M.yicks_yellow = {
   bases = {
@@ -67,9 +73,13 @@ M.yicks_yellow = {
   accents = { "yellow", "red", "orange", "green" },
 }
 
+--- M.yicks_green{} {{{2
 --- @type yicks.scheme
 M.yicks_green = {} -- TODO: yicks_green
 
+-- helper items  {{{1
+
+--- H.p{} {{{2
 --- Stores the currently active palette. Values are of the form cv where c is
 --- the category and v is the value.
 --- eg. b3 = #666666 for setting base 3
@@ -83,6 +93,7 @@ M.yicks_green = {} -- TODO: yicks_green
 --- @type { [string]: string }
 H.p = {}
 
+--- H.makep() {{{2
 --- Populates the palette 'p' with values.
 --- @param scheme yicks.scheme The color scheme to load.
 function H.makep(scheme)
@@ -104,6 +115,7 @@ function H.makep(scheme)
   end
 end
 
+--- H.to_cterm() {{{2
 --- Converts a color in `p` to a cterm color.
 --- @param color string
 --- @return integer
@@ -137,6 +149,7 @@ function H.to_cterm(color)
   return 0
 end
 
+--- H.hl() {{{2
 --- Highlights a group.
 --- @param group string The group to highlight.
 --- @param args vim.api.keyset.highlight|string The highlight options.
@@ -154,8 +167,9 @@ function H.hl(group, args)
   vim.api.nvim_set_hl(0, group, cargs)
 end
 
+-- highlight groups {{{2
 H.highlights = {
-  -- metahighlights
+  -- metahighlights {{{3
   Unknown = { fg = "cg", bg = "cm" },
   Error = { fg = "cr" },
   Warning = { fg = "co" },
@@ -167,7 +181,7 @@ H.highlights = {
   -- WildMenu
   Directory = { fg = "a1" },
 
-  -- cursor groups
+  -- cursor groups {{{3
   Cursor = { reverse = true, fg = "b1" },
   lCursor = "Cursor",
   CursorIM = "Cursor",
@@ -178,20 +192,20 @@ H.highlights = {
   TermCursor = { fg = "b8", reverse = true },
   TermCursorNC = { fg = "b5", reverse = true },
 
-  -- diff groups
+  -- diff groups {{{3
   DiffAdd = { fg = "b1", bg = "cg" },
   DiffChange = { fg = "b1", bg = "cc" },
   DiffDelete = { fg = "b1", bg = "cr" },
   DiffText = { fg = "b1", bg = "b8" },
 
-  -- /search colors
+  -- /search colors {{{3
   Search = { fg = "b1", bg = "a3" },
   -- format default is reverse, so remove that
   CurSearch = { fg = "b1", bg = "a3" },
   IncSearch = "CurSearch",
   Substitute = "CurSearch",
 
-  -- left column
+  -- left column {{{3
   LineNr = { fg = "b4" },
   LineNrAbove = "LineNr",
   LineNrBelow = "LineNr",
@@ -203,7 +217,7 @@ H.highlights = {
   SignColumn = "Normal",
   CursorLineSign = "CursorLineNr",
 
-  -- text
+  -- text {{{3
   Normal = { fg = "b7", bg = "b1" },
   NormalNC = "Normal",
   Conceal = { fg = "b5", bg = "" },
@@ -214,7 +228,7 @@ H.highlights = {
   Folded = { fg = "b8", bg = "b3" },
   MatchParen = { fg = "b8", bg = "" },
 
-  -- messages
+  -- messages {{{3
   MsgArea = "Normal",
   ErrorMsg = { fg = "b1", bg = "cr" },
   WarningMsg = { fg = "b1", bg = "co" },
@@ -223,14 +237,14 @@ H.highlights = {
   MoreMsg = { fg = "cb" },
   Question = "MoreMsg",
 
-  -- floats and windows
+  -- floats and windows {{{3
   Title = { fg = "a1" },
   WinSeparator = { fg = "b3", bg = "b3" },
   NormalFloat = { fg = "b7", bg = "b2" },
   FloatTitle = "WinSeparator",
   FloatBorder = "WinSeparator",
 
-  -- lines
+  -- lines {{{3
   -- fmt = "reverse" by default, so set to none to remove that
   StatusLine = { fg = "a1", bg = "b3", reverse = false },
   StatusLineNC = { fg = "b7", bg = "b3", reverse = false },
@@ -242,7 +256,7 @@ H.highlights = {
   User1 = { fg = "b1", bg = "a1" },
   User2 = { fg = "a1", bg = "b2" },
 
-  -- popup menus
+  -- popup menus {{{3
   Pmenu = { fg = "b7", bg = "b2" },
   PmenuSel = { fg = "a1", bg = "b3" },
   PmenuKind = "Pmenu",
@@ -252,17 +266,17 @@ H.highlights = {
   PmenuSbar = { bg = "b3" },
   PmenuThumb = { bg = "A1" },
 
-  -- spellcheck
+  -- spellcheck {{{3
   SpellBad = { sp = "cr", undercurl = true },
   SpellCap = { sp = "cy", underdashed = true },
   SpellLocal = { sp = "cg", underdashed = true },
   SpellRare = { sp = "cc", underdashed = true },
 
-  -- selections
+  -- selections {{{3
   Visual = { bg = "b3" },
   VisualNOS = "Visual",
 
-  -- code groups
+  -- code groups {{{3
   Comment = { fg = "b5" },
 
   Constant = { fg = "A1" },
@@ -297,7 +311,7 @@ H.highlights = {
   Structure = "Type",
   Typedef = "Type",
 
-  -- Special
+  -- special {{{3
   Special = { fg = "b6" },
   SpecialChar = "Character",
   Tag = { fg = "a4" },
@@ -308,7 +322,7 @@ H.highlights = {
   Ignore = { italic = true, fg = "b6" },
   Todo = { fg = "cp", bg = "" },
 
-  -- telescope
+  -- telescope {{{3
   TelescopeNormal = { fg = "b7", bg = "b2" },
   TelescopeBorder = { fg = "b2", bg = "b2" },
   TelescopeTitle = "TelescopeBorder",
@@ -321,7 +335,7 @@ H.highlights = {
   TelescopeSelection = { fg = "", bg = "b3" },
   TelescopeSelectionCaret = { fg = "b3", bg = "b3" },
 
-  -- diagnostics
+  -- diagnostics {{{3
   DiagnosticError = "Error",
   DiagnosticWarn = "Warning",
   DiagnosticInfo = "Info",
@@ -334,16 +348,17 @@ H.highlights = {
   DiagnosticUnderlineHint = "DiagnosticHint",
   DiagnosticUnderlineOk = "DiagnosticOk",
 
-  -- nvim-tree
+  -- nvim-tree {{{3
   NvimTreeSignColumn = "NormalFloat",
 
-  -- treesitter
+  -- treesitter {{{3
   ["@variable"] = "Variable",
   ["@lsp.type.variable"] = "Variable",
   ["@label"] = { fg = "a4" },
   ["@markup.link"] = { fg = "a4" },
 }
 
+--- yicks.set() {{{3
 --- Sets the color scheme.
 --- @param opts string|yicks.scheme The scheme to set, default yicks_yellow.
 function M.set(opts)
@@ -358,4 +373,6 @@ function M.set(opts)
   end
 end
 
+-- footer {{{1
 return M
+-- vim:fdm=marker

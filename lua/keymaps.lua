@@ -6,15 +6,24 @@
 local M = {}
 local H = {}
 
+-- helper functions {{{1
+
+--- H.error() {{{2
+--- Prints an error message appropriate to the module.
+--- @param msg string The message to print.
 function H.error(msg)
   vim.notify("keymaps:\n    " .. msg:gsub("\n", "\n    "), vim.log.levels.ERROR)
 end
+
+-- definitions {{{1
 
 -- leader key
 vim.keymap.set("", " ", "<Nop>")
 vim.g.mapleader = " "
 vim.g.localleader = " "
 
+--- vim-mode {{{2
+--- Valid mode letters for keymaps.
 --- @alias vim-mode string vim mode letters
 --- | ""  # all
 --- | "n" # normal
@@ -27,6 +36,7 @@ vim.g.localleader = " "
 --- | "t" # terminal
 --- | "l" # insert, command, lang-arg
 
+--- keymap {{{2
 --- Represents a keymap fot the user to define.
 --- @class keymap
 --- The left hand side, what triggers the mapping.
@@ -53,6 +63,7 @@ local keymap = {
   silent = true,
 }
 
+--- M.maps {{{2
 --- @type keymap[]
 M.maps = {
   -- window and tab navigation
@@ -89,6 +100,9 @@ M.maps = {
   { "\x08",      "<C-w>",             desc = "Delete back a word.",           mode = "i" },
 }
 
+-- module functions {{{1
+
+--- M.setup {{{2
 --- Setup keymaps specified on this module under a certain namespace.
 --- @param ns? string One of this module's keymap namespaces.
 --- @param buffer? boolean|integer The buffer to add keymaps to.
@@ -118,6 +132,7 @@ function M.setup(ns, buffer)
   end
 end
 
+--- M.remove() {{{2
 --- Removes all keymaps in a specified namespace.
 --- @param ns string The namespace to remove from.
 --- @param buffer? boolean|integer The buffer to remove keymaps from.
@@ -137,3 +152,4 @@ function M.remove(ns, buffer)
 end
 
 return M
+-- vim:fdm=marker

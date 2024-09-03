@@ -8,7 +8,7 @@ local g = vim.g
 local vfn = vim.fn
 local autocmd = vim.api.nvim_create_autocmd
 
--- CONTENTS
+-- CONTENTS {{{1
 -- appearance: windows, lines, columns
 -- display: folding, wrap
 -- editing: tabs, spelling, completion, indentation
@@ -18,7 +18,9 @@ local autocmd = vim.api.nvim_create_autocmd
 -- application: language, mouse
 -- features: quickfix, shell
 
--- appearance ------------------------------------------------------------------
+-- options {{{1
+
+-- appearance {{{2
 o.background = "dark"
 vim.cmd.colorscheme("yicks")
 
@@ -76,7 +78,7 @@ o.showcmdloc = "last"
 o.showmode = false
 o.confirm = true
 
--- appearance :: windows -------------------------------------------------------
+-- appearance :: windows {{{3
 o.equalalways = false
 o.eadirection = "both"
 o.winheight = 20
@@ -88,7 +90,7 @@ o.winminheight = 0
 o.winminwidth = 0
 o.winblend = 0
 
--- appearance :: lines ---------------------------------------------------------
+-- appearance :: lines {{{3
 -- o.laststatus =
 -- o.statusline =
 -- o.winbar =
@@ -97,7 +99,7 @@ o.winblend = 0
 o.ruler = false
 o.rulerformat = ""
 
--- appearance :: column
+-- appearance :: column {{{3
 -- o.statuscolumn =
 o.number = true
 o.relativenumber = false
@@ -105,7 +107,7 @@ o.numberwidth = 1
 o.signcolumn = "yes:1"
 o.foldcolumn = "0"
 
--- display ---------------------------------------------------------------------
+-- display {{{2
 o.display = { "lastline", "uhex" }
 o.list = true
 o.listchars = {
@@ -125,7 +127,7 @@ o.emoji = true
 o.termbidi = false
 o.arabicshape = true
 
--- display :: folding ----------------------------------------------------------
+-- display :: folding {{{3
 o.foldmethod = "expr"
 o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 o.foldmarker = "{{{,}}}"
@@ -147,7 +149,7 @@ o.foldopen = {
   "undo",
 }
 
--- display :: wrap -------------------------------------------------------------
+-- display :: wrap {{{3
 o.wrap = false
 o.wrapmargin = 0
 o.linebreak = true
@@ -165,7 +167,7 @@ autocmd("FileType", {
   end
 })
 
--- editing ---------------------------------------------------------------------
+-- editing {{{2
 o.casemap = { "internal", "keepascii" }
 -- o.comments =
 -- o.commentstring =
@@ -194,7 +196,7 @@ o.undolevels = 1000
 o.undoreload = 10000
 -- o.undodir =
 
--- editing :: tabs -------------------------------------------------------------
+-- editing :: tabs {{{3
 o.tabstop = 2
 o.softtabstop = 2
 o.shiftwidth = 0
@@ -204,7 +206,7 @@ o.expandtab = true
 o.shiftround = true
 o.smarttab = true
 
--- editing :: spelling ---------------------------------------------------------
+-- editing :: spelling {{{3
 o.spell = false
 o.spelllang = "en"
 -- o.spellfile =
@@ -212,7 +214,7 @@ o.spelloptions = { "camel" }
 -- o.spellsuggest =
 -- o.spellcapcheck =
 
--- editing :: completion -------------------------------------------------------
+-- editing :: completion {{{3
 -- o.omnifunc =
 -- o.complete =
 -- o.completefunc =
@@ -224,7 +226,7 @@ o.showfulltag = false
 -- o.thesaurusfunc =
 o.infercase = true
 
--- editing :: indentation ------------------------------------------------------
+-- editing :: indentation {{{3
 o.autoindent = true
 o.smartindent = false
 o.copyindent = false
@@ -242,7 +244,7 @@ o.cindent = false
 -- o.lispoptions =
 -- o.lispwords =
 
--- movement --------------------------------------------------------------------
+-- movement {{{2
 o.jumpoptions = ""
 -- o.paragraphs =
 -- o.sections =
@@ -258,7 +260,7 @@ o.backspace = { "indent", "eol", "start" }
 -- o.iskeyword =
 -- o.isident =
 
--- movement :: search ----------------------------------------------------------
+-- movement :: search {{{3
 o.incsearch = true
 o.ignorecase = true
 o.regexpengine = 0
@@ -266,7 +268,7 @@ o.smartcase = true
 o.hlsearch = false
 o.wrapscan = true
 
--- movement :: scrolling -------------------------------------------------------
+-- movement :: scrolling {{{3
 -- o.window =
 -- o.scroll =
 o.scrolloff = 0
@@ -277,7 +279,7 @@ o.scrolljump = 1
 o.scrollback = 10000
 o.smoothscroll = true
 
--- files -----------------------------------------------------------------------
+-- files {{{2
 -- o.fileencodings =
 -- o.fileformats =
 o.fixendofline = true
@@ -301,7 +303,7 @@ o.autowriteall = false
 o.write = true
 o.writeany = false
 
--- flies :: backup -------------------------------------------------------------
+-- flies :: backup {{{3
 o.writebackup = true
 o.backup = false
 o.backupext = "~"
@@ -309,7 +311,7 @@ o.backupext = "~"
 -- o.backupdir =
 -- o.backupskip =
 
--- sessions --------------------------------------------------------------------
+-- sessions {{{2
 -- o.sessionoptions =
 -- o.shada =
 -- o.shadafile =
@@ -319,7 +321,7 @@ o.updatetime = 4000
 o.viewoptions = { "curdir", "folds" }
 -- o.directory = -- for swapfiles
 
--- application -----------------------------------------------------------------
+-- application {{{2
 o.clipboard = {}
 -- o.opendevice = unknown option??
 o.pyxversion = 3
@@ -348,7 +350,7 @@ o.titlelen = 30
 o.icon = false
 -- o.iconstring =
 
--- application :: language -----------------------------------------------------
+-- application :: language {{{3
 -- o.keymap =
 o.keymodel = ""
 -- o.langmap =
@@ -359,7 +361,7 @@ o.langremap = false
 o.iminsert = 0
 o.imsearch = -1
 
--- application :: mouse --------------------------------------------------------
+-- application :: mouse {{{3
 o.mouse = "a"
 o.mousefocus = false
 o.mousehide = true
@@ -369,7 +371,7 @@ o.mousescroll = { "ver:4", "hor:6" }
 -- o.mouseshape =
 o.mousetime = 200
 
--- features --------------------------------------------------------------------
+-- features {{{2
 -- o.cpoptions =
 -- o.eventignore =
 -- o.helpfile =
@@ -437,7 +439,7 @@ o.diffopt = {
 -- o.patchexpr =
 -- o.patchmode = ".old"
 
--- features :: quickfix --------------------------------------------------------
+-- features :: quickfix {{{3
 -- o.makeprg =
 -- o.errorformat =
 -- o.grepprg =
@@ -446,7 +448,7 @@ o.diffopt = {
 -- o.makeencoding =
 -- o.errorfile =
 
--- features :: shell -----------------------------------------------------------
+-- features :: shell {{{3
 if vim.loop.os_uname().sysname == "Windows_NT" then
   o.shell        = vfn.executable("pwsh") == 1 and "pwsh" or "powershell"
   o.shellcmdflag =
@@ -463,7 +465,7 @@ g.loaded_ruby_provider = 0
 g.loaded_perl_provider = 0
 g.loaded_node_provider = 0
 
--- terminal --------------------------------------------------------------------
+-- terminal {{{2
 autocmd({ "BufEnter", "TermOpen" }, {
   pattern = "term://*",
   callback = function()
@@ -473,3 +475,4 @@ autocmd({ "BufEnter", "TermOpen" }, {
   end
 })
 autocmd("TermLeave", { command = "stopinsert" })
+-- vim:fdm=marker
