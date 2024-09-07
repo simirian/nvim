@@ -57,7 +57,7 @@ newcmd("Toc", function()
       .. ") %* %= %2* %c "
   local bufnr = vim.fn.bufnr()
   for _, mark in ipairs(api.nvim_buf_get_extmarks(bufnr, tocns, 0, -1, {})) do
-    api.nvim_buf_del_extmark(bufnr, tocns, mark)
+    api.nvim_buf_del_extmark(bufnr, tocns, mark[1])
   end
   for lnum, line in ipairs(api.nvim_buf_get_lines(0, 0, -1, false)) do
     local s, e = line:find("#+")
