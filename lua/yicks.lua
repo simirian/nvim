@@ -308,7 +308,7 @@ H.highlights = {
   DiagnosticOk = "Ok",
 
   DiagnosticUnderlineError = "DiagnosticError",
-  DiagnosticUnderlineWarn = "DiagnosticWarning",
+  DiagnosticUnderlineWarn = "DiagnosticWarn",
   DiagnosticUnderlineInfo = "DiagnosticInfo",
   DiagnosticUnderlineHint = "DiagnosticHint",
   DiagnosticUnderlineOk = "DiagnosticOk",
@@ -321,6 +321,12 @@ H.highlights = {
   ["@lsp.type.variable"] = "Variable",
   ["@label"] = { fg = "a4" },
   ["@markup.link"] = { fg = "a4" },
+
+  -- contour {{{2
+  ContourError = { fg = "cr", bg = "b2" },
+  ContourWarn = { fg = "co", bg = "b2" },
+  ContourInfo = { fg = "cb", bg = "b2" },
+  ContourHint = { fg = "cc", bg = "b2" },
 }
 
 -- module functions {{{1
