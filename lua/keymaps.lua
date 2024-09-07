@@ -16,7 +16,6 @@ function H.error(msg)
 end
 
 -- definitions {{{1
-
 -- leader key {{{2
 vim.keymap.set("", " ", "<Nop>")
 vim.g.mapleader = " "
@@ -42,7 +41,7 @@ vim.g.localleader = " "
 --- The left hand side, what triggers the mapping.
 --- @field [1] string
 --- The right hand side, what the mapping does.
---- @field [2] string
+--- @field [2] string|fun()
 --- Description of the mapping for help information.
 --- @field desc string
 --- Mode in which this mapping applies.
@@ -87,16 +86,17 @@ M.maps = {
   { "<A-j>",     ":move '>+1<CR>gv",  desc = "Move lines down.",              mode = "x" },
   { "<A-k>",     ":move '<-2<CR>gv",  desc = "Move lines up.",                mode = "x" },
   -- quick escape {{{3
-  { "kj",        "<Esc>",             desc = "Escape insert mode.",           mode = "i" },
-  { "jk",        "<Esc>",             desc = "Escape insert mode.",           mode = "i" },
-  -- use system clipboard {{{3
-  { "<leader>p", "\"+p",              desc = "Paste from system clipboard.",  mode = { "n", "x" } },
+  { "kk",        "<Esc>",             desc = "Escape insert mode.",           mode = "i" },
+  -- registers {{{3
+  { "<leader>p", "\"_d\"+P",          desc = "Paste from system clipboard.",  mode = { "n", "x" } },
   { "<leader>y", "\"+y",              desc = "Yank to system clipboard.",     mode = { "n", "x" } },
+  { "p",         "\"_dP",             desc = "Cleanly paste over selection.", mode = "x" },
+  -- indenting {{{3
+  { "<Tab>",     ">gv",               desc = "Indent selected liens",         mode = "v" },
+  { "<S-Tab>",   "<gv",               desc = "Unindent selected lines",       mode = "v" },
   -- misc mappings {{{3
   { "U",         "<C-r>",             desc = "Redo." },
-  { "<C-f>",     "<Esc>gwapa",        desc = "Format in insert mode.",        mode = "i" },
-  { "q:",        "<Nop",              desc = "I don't like command mode.",    nowait = true },
-  { "p",         "\"_dP",             desc = "Cleanly paste over selection.", mode = "x" },
+  { "<C-f>",     "<Esc>m`gqap``a",    desc = "Format in insert mode.",        mode = "i" },
   { "cw",        "caw",               desc = "Change to next word." },
   -- funky character found with <C-v><C-BS> in insert mode with 'display' uhex
   { "\x08",      "<C-w>",             desc = "Delete back a word.",           mode = "i" },

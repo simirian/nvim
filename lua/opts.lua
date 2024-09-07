@@ -72,7 +72,7 @@ o.menuitems = 25
 -- TODO: move these?
 o.report = 2
 o.more = true
-o.shortmess = "lmrOstTCFS"
+o.shortmess = "lmrOstTcCFS"
 o.showcmd = true -- visual selection size
 o.showcmdloc = "last"
 o.showmode = false

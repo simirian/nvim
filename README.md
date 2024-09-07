@@ -20,53 +20,56 @@ and filetypes for the language.
 
 ## Keymaps
 
-### Normal mode
+| map                | action                                          |
+| ------------------ | ----------------------------------------------- |
+| `kk`               | Exit insert mode.                               |
+| `U`                | Redo.                                           |
+| `<C-f>`            | Format in insert mode.                          |
+| `<C-j>`, `<C-k>`   | Next and previous window in tabpage.            |
+| `<C-h>`, `<C-l>`   | Next and previous tabpage.                      |
+| `<C-arrow>`        | Resize the current window.                      |
+| `<A-j>`, `<A-k>`   | Moves the current line or selection up or down. |
+| `<leader>p`        | Paste from system clipboard.                    |
+| `<leader>y`        | Yank to system clipboard.                       |
+| `<Tab>`, `<S-Tab>` | Invoke completion or indentation.               |
+| `<leader>e`        | Open popup file explorer.                       |
 
-| map | action |
-| --- | --- |
-| `ctrl` + [`hjkl`] | Switches to the window in that direction. |
-| `ctrl` + [arrow] | Use the arrow keys to resize windows. |
-| `alt` + [`jk`] | Moves the current line up or down. |
-| `leader` > `p` | Paste from system clipboard. |
-| `gT` | Create new tabs. |
-| `U` | Redo more easily and override the horrible revert line binding. |
-| `leader` > `e` | Open popup file explorer. |
-
-#### Telescope
+### Telescope
 
 Begin telescope mappings with the keybind `leader` > `f`, then continue with
-one of the following:
+another key as shown below.
 
-| map | action |
-| --- | --- |
-| `f` | Open telescope file finder. |
-| `g` | Open telescope grep finder. |
-| `h` | Open telescope help file search. |
-| `b` | Open telescope buffer finder. |
-| `p` | Open nvim-manager projects picker. |
+| map          | action                 |
+| ------------ | ---------------------- |
+| `<leader>ff` | \[f\]ind \[f\]iles     |
+| `<leader>fg` | \[f\]ind with \[g\]rep |
+| `<leader>fb` | \[f\]ind \[b\]uffer    |
+| `<leader>fh` | \[f\]ind \[h\]elp      |
 
-### Insert mode
+### LSP
 
-| map | action |
-| --- | --- |
-| `jk`\|`kj` | Exit insert mode quickly. |
-
-### Visual mode
-
-| map | action |
-| --- | --- |
-| `p` | Paste over without ruining yank registries. |
-| `leader` > `p` | Paste from system clipboard. |
-| `leader` > `y` | Copy to system clipboard. |
-| `alt` + `j` | Move selected lines down. |
-| `alt` + `k` | Move selected lines up. |
+| map          | action                                      |
+| ------------ | ------------------------------------------- |
+| `<tab>`      | Next completion item.                       |
+| `<S-tab>`    | Previous completion item.                   |
+| `<leader>gd` | \[g\]oto \[d\]efinition.                    |
+| `<leader>gD` | \[g\]oto \[D\]eclaration.                   |
+| `<leader>gi` | \[g\]oto \[i\]mplementation.                |
+| `<leader>gr` | \[g\]et \[r\]eferences.                     |
+| `<leader>ld` | \[l\]ist \[d\]iagnostics.                   |
+| `<leader>li` | \[l\]ist symbol \[i\]nformation             |
+| `<leader>ls` | \[l\]ist function \[s\]ignature.            |
+| `<C-s>`      | List function \[s\]ignature in insert mode. |
+| `<leader>cr` | \[c\]ode \[r\]ename                         |
+| `<leader>ca` | \[c\]ode \[a\]ctions                        |
+| `<leader>cf` | \[c\]ode \[f\]ormat                         |
 
 ## Commands
 
-| command | action |
-| --- | --- |
-| `:Update` | Updates mason, treesitter, and lazy. |
-| `:BufInfo` | Prints basic buffer info. |
+| command     | action                                       |
+| ----------- | -------------------------------------------- |
+| `:Update`   | Updates mason, treesitter, and lazy.         |
+| `:BufInfo`  | Prints basic buffer info.                    |
 | `:WinProse` | Sets a few window options for writing prose. |
-| `:WinCode` | Unsets prose writing options. |
-| `:Toc` | Opens a markdown file's table of contents. |
+| `:WinCode`  | Unsets prose writing options.                |
+| `:Toc`      | Opens a markdown file's table of contents.   |

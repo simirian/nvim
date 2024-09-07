@@ -31,8 +31,55 @@ vdg.config {
 }
 
 -- keymaps {{{2
+
+local H = {}
+
+--- H.feed() {{{3
+--- Thin wrapper for nvim_feedkeys(), converts keycodes.
+--- @param text string The text to feed.
+function H.feed(text)
+  vim.api.nvim_feedkeys(vim.keycode(text), "n", false)
+end
+
+--- H.cmp_next() {{{3
+--- Selects the next item in the completion menu, or opens omnifunc if it isn't
+--- visible.
+function H.cmp_next()
+  local cursor = vim.api.nvim_win_get_cursor(vim.api.nvim_get_current_win())
+  if cursor[1] == 0 or vim.fn.getline(cursor[1]):sub(1, cursor[2]):match("%S") == nil then
+    H.feed("<Esc>v>i")
+    return
+  end
+  if vim.fn.pumvisible() == 1 then
+    H.feed("<C-n>")
+  else
+    H.feed("<C-x><C-o>")
+  end
+end
+
+--- H.cmp_prev() {{{3
+--- Selects the previous item in the completion menu, or opens omnifunc if it is
+--- not visible.
+function H.cmp_prev()
+  local cursor = vim.api.nvim_win_get_cursor(vim.api.nvim_get_current_win())
+  if cursor[1] == 0 or vim.fn.getline(cursor[1]):sub(1, cursor[2]):match("%S") == nil then
+    H.feed("<Esc>v<i")
+    return
+  end
+  if vim.fn.pumvisible() == 1 or vim.fn.state("m") == "m" then
+    H.feed("<C-p>")
+  else
+    H.feed("<C-x><C-o>")
+  end
+end
+
+-- keymap definitions {{{3
 local keys = require("keymaps")
 keys.lsp = {
+  -- completion
+  { "<tab>",     H.cmp_next,          desc = "Next completion item.",         mode = "i" },
+  { "<S-tab>",   H.cmp_prev,          desc = "Previous completion item.",     mode = "i" },
+  -- lsp things
   { "<leader>gd", lspb.definition,     desc = "[g]oto [d]efinition." },
   { "<leader>gD", lspb.declaration,    desc = "[g]oto [D]eclaration." },
   { "<leader>gi", lspb.implementation, desc = "[g]oto [i]mplementation." },
