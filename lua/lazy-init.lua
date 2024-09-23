@@ -16,7 +16,7 @@ vim.opt.rtp:prepend(lazypath)
 
 -- setup {{{1
 require("lazy").setup("plugins", {
-  dev = { path = "~/source/" },
+  dev = { path = "~/Source/" },
   install = { colorscheme = { "yicks", "habamax" } },
   ui = {
     size = { width = 0.8, height = 0.8 },

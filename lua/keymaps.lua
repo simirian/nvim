@@ -71,10 +71,10 @@ M.maps = {
   { "<C-j>",     "<C-w>w",            desc = "Focus previous window." },
   { "<C-k>",     "<C-w>W",            desc = "Focus next window." },
   { "<C-l>",     "gt",                desc = "Go to next tab page." },
-  { "<C-h>",     "<C-\\><C-O>gT",     desc = "Go to previous tab page.",      mode = "t", },
-  { "<C-j>",     "<C-\\><C-O><C-w>w", desc = "Go to previous window.",        mode = "t", },
-  { "<C-k>",     "<C-\\><C-O><C-w>W", desc = "Go to next window.",            mode = "t", },
-  { "<C-l>",     "<C-\\><C-O>gt",     desc = "go to next tab page.",          mode = "t", },
+  { "<C-h>",     "<C-\\><C-o>gT",     desc = "Go to previous tab page.",      mode = "t", },
+  { "<C-j>",     "<C-\\><C-o><C-w>w", desc = "Go to previous window.",        mode = "t", },
+  { "<C-k>",     "<C-\\><C-o><C-w>W", desc = "Go to next window.",            mode = "t", },
+  { "<C-l>",     "<C-\\><C-o>gt",     desc = "go to next tab page.",          mode = "t", },
   -- resizing windows {{{3
   { "<C-Up>",    "1<C-w>+",           desc = "Increase window height." },
   { "<C-Down>",  "1<C-w>-",           desc = "Decrease window height." },
@@ -86,9 +86,9 @@ M.maps = {
   { "<A-j>",     ":move '>+1<CR>gv",  desc = "Move lines down.",              mode = "x" },
   { "<A-k>",     ":move '<-2<CR>gv",  desc = "Move lines up.",                mode = "x" },
   -- quick escape {{{3
-  { "kk",        "<Esc>",             desc = "Escape insert mode.",           mode = "i" },
+  { "jj",        "<Esc>",             desc = "Escape insert mode.",           mode = "i" },
   -- registers {{{3
-  { "<leader>p", "\"_d\"+P",          desc = "Paste from system clipboard.",  mode = { "n", "x" } },
+  { "<leader>p", "\"+p",              desc = "Paste from system clipboard.",  mode = { "n", "x" } },
   { "<leader>y", "\"+y",              desc = "Yank to system clipboard.",     mode = { "n", "x" } },
   { "p",         "\"_dP",             desc = "Cleanly paste over selection.", mode = "x" },
   -- indenting {{{3

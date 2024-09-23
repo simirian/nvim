@@ -69,7 +69,7 @@ return {
       {
         left = true,
         min_width = 30,
-        "%1* %{fnamemodify(getcwd(), ':t')} | %{strftime('%H:%M')} %*  ",
+        "%1* %{fnamemodify(getcwd(), ':t')} | %{strftime('%H:%M')} %*",
       },
       "%=",
       { component = "buflist" },
@@ -77,7 +77,6 @@ return {
       {
         min_width = 30,
         { component = "tablist" },
-
       },
     },
   },
