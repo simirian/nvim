@@ -39,7 +39,7 @@ return {
       { "<leader>fh", builtin.help_tags,  desc = "[f]ind [h]elp" },
     }
     -- find projects with nvim manager
-    if pcall(require, "nvim-manager") then
+    if pcall(require, "manager") then
       table.insert(keys.telescope,
         { "<leader>fp", telescope.extensions.projects.projects, desc = "[f]ind [p]rojects" })
     end

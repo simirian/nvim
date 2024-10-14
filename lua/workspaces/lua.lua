@@ -16,13 +16,17 @@ return {
       cmd = { "lua-language-server" },
       settings = {
         Lua = {
-          runtime = {
+          completion  = {
+            callSnippet = "Disable",
+            keywordSnippet = "Disable",
+          },
+          runtime     = {
             version = "LuaJIT",
           },
           diagnostics = {
             globals = { "vim" },
           },
-          workspace = {
+          workspace   = {
             checkThirdParty = false,
             library = vim.api.nvim_list_runtime_paths(),
           },

@@ -3,6 +3,7 @@
 
 return {
   "nvim-treesitter/nvim-treesitter",
+  -- enabled = false,
   dependencies = { "nvim-manager" },
   opts = {
     sync_install = false,
@@ -21,7 +22,7 @@ return {
     local installed = vim.tbl_map(function(e)
       return vim.fn.fnamemodify(e, ":t:r")
     end, vim.api.nvim_get_runtime_file("parser/*", true))
-    for _, spec in pairs(require("nvim-manager.workspaces").list()) do
+    for _, spec in pairs(require("manager.workspaces").list()) do
       for _, ft in ipairs(spec.filetypes) do
         if not vim.tbl_contains(opts.ensure_installed, ft)
             and not vim.tbl_contains(installed, ft)
