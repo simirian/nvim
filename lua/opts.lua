@@ -22,7 +22,7 @@ local autocmd = vim.api.nvim_create_autocmd
 
 -- appearance {{{2
 o.background = "dark"
-vim.cmd.colorscheme("yicks")
+-- vim.cmd.colorscheme("yicks")
 
 -- textwidth colorcolumn
 autocmd("BufWinEnter", {
