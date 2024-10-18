@@ -46,8 +46,11 @@ end
 --- visible.
 function H.cmp_next()
   local cursor = vim.api.nvim_win_get_cursor(vim.api.nvim_get_current_win())
-  if cursor[1] == 0 or vim.fn.getline(cursor[1]):sub(1, cursor[2]):match("%S") == nil then
-    H.feed("<Esc>v>i")
+  if cursor[2] == 0 then
+    H.feed("\t")
+    return
+  elseif vim.fn.getline(cursor[1]):sub(1, cursor[2]):match("%S") == nil then
+    vim.cmd(">")
     return
   end
   if vim.fn.pumvisible() == 1 then
@@ -62,8 +65,8 @@ end
 --- not visible.
 function H.cmp_prev()
   local cursor = vim.api.nvim_win_get_cursor(vim.api.nvim_get_current_win())
-  if cursor[1] == 0 or vim.fn.getline(cursor[1]):sub(1, cursor[2]):match("%S") == nil then
-    H.feed("<Esc>v<i")
+  if vim.fn.getline(cursor[1]):sub(1, cursor[2]):match("%S") == nil then
+    vim.cmd("<")
     return
   end
   if vim.fn.pumvisible() == 1 or vim.fn.state("m") == "m" then
@@ -77,8 +80,8 @@ end
 local keys = require("keymaps")
 keys.lsp = {
   -- completion
-  { "<tab>",     H.cmp_next,          desc = "Next completion item.",         mode = "i" },
-  { "<S-tab>",   H.cmp_prev,          desc = "Previous completion item.",     mode = "i" },
+  { "<tab>",      H.cmp_next,          desc = "Next completion item.",       mode = "i" },
+  { "<S-tab>",    H.cmp_prev,          desc = "Previous completion item.",   mode = "i" },
   -- lsp things
   { "<leader>gd", lspb.definition,     desc = "[g]oto [d]efinition." },
   { "<leader>gD", lspb.declaration,    desc = "[g]oto [D]eclaration." },
