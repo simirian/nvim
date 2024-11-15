@@ -1,6 +1,7 @@
 -- simirian's NeoVim
 -- lua language settings
 
+--- @type Manager.Workspaces.Spec
 return {
   detector = function()
     local cwd = vim.fn.getcwd()
@@ -16,17 +17,9 @@ return {
       cmd = { "lua-language-server" },
       settings = {
         Lua = {
-          completion  = {
-            callSnippet = "Disable",
-            keywordSnippet = "Disable",
-          },
-          runtime     = {
-            version = "LuaJIT",
-          },
-          diagnostics = {
-            globals = { "vim" },
-          },
-          workspace   = {
+          runtime = { version = "LuaJIT" },
+          diagnostics = { globals = { "vim" } },
+          workspace = {
             checkThirdParty = false,
             library = vim.api.nvim_list_runtime_paths(),
           },

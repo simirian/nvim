@@ -1,11 +1,10 @@
 -- simirian's NeoVim
 -- rust language settings
 
-local vfs = vim.fs
-
+--- @type Manager.Workspaces.Spec
 return {
   detector = function()
-    return vfs.root(vim.fn.getcwd(), { "Cargo.toml", "Cargo.lock" }) ~= nil
+    return vim.fs.root(vim.loop.cwd(), { "Cargo.toml", "Cargo.lock" }) ~= nil
   end,
   filetypes = { "rust" },
 
