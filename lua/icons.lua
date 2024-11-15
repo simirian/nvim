@@ -7,180 +7,147 @@ local vfn = vim.fn
 
 local M = {}
 
--- dedfinitions {{{1
 
---- iconspec definition {{{2
 --- @class iconspec
 --- @field [1] string Patched font icon.
 --- @field [2] string Unicode icon.
 --- @field [3] string Ascii icon.
 
---- icons {{{2
 --- @type { [string]: iconspec }
+--- @enum (key) Icon
 local icons = {
-  -- code types {{{3
-  -- data structures and members {{{4
-  interface    = { "", "⧂", ":" },
-  array        = { "󰅪", "⦂", ":" },
-  struct       = { "", "⊖", ":" },
-  class        = { "", "⧀", ":" },
-  field        = { "", "∈", ";" },
-  property     = { "", "⋿", ";" },
-  enum         = { "󱃣", "⋃", ":" },
-  enum_case    = { "󰎢", "⨃", ";" },
-  -- values and literals {{{4
-  number       = { "", "#", "#" },
-  unit         = { "", "$", "$" },
-  value        = { "󰺢", "¤", "l" },
-  boolean      = { "", "◑", "l" },
-  string       = { "󰬴", "α", "l" },
-  object       = { "󰔇", "❆", "l" },
-  color        = { "", "⬡", "l" },
-  -- callables {{{4
-  func         = { "󰡱", "f", "f" },
-  method       = { "󰘧", "λ", "f" },
-  constructor  = { "", "μ", "f" },
-  -- variables {{{4
-  constant     = { "󰭷", "π", "v" },
-  variable     = { "󰄪", "x", "v" },
-  reference    = { "", "↦", "v" },
-  -- namespaces {{{4
-  namespace    = { "󰅩", "⸬", "m" },
-  module       = { "", "⏍", "m" },
-  package      = { "", "⏍", "m" },
-  -- misc {{{4
-  text         = { "󰈙", "❞", "A" },
-  keyword      = { "", "»", "A" },
-  event        = { "", "↯", "e" },
-  null         = { "󱥸", "∅", "_" },
-  operator     = { "󱓉", "±", "%" },
-  snippet      = { "󰩫", "✀", "&" },
+  -- lsp icons (formatted to match lsp kind names)
+  Text = { "", "❞", "A" },
+  Method = { "󰘧", "λ", "f" },
+  Function = { "󰡱", "f", "f" },
+  Constructor = { "", "μ", "f" },
+  Field = { "", "∈", ";" },
+  Variable = { "󰄪", "x", "v" },
+  Class = { "", "⧀", ":" },
+  Interface = { "", "⧂", ":" },
+  Module = { "", "⏍", "m" },
+  Property = { "", "⋿", ";" },
+  Unit = { "", "$", "$" },
+  Value = { "󰺢", "¤", "l" },
+  Enum = { "󱃣", "⋃", ":" },
+  Keyword = { "", "»", "A" },
+  Snippet = { "󰩫", "✀", "&" },
+  Color = { "", "⬡", "l" },
+  File = { "", "🗏", "F" },
+  Reference = { "", "↦", "v" },
+  Folder = { "", "🗀", "/" },
+  EnumMember = { "󰎢", "⨃", ";" },
+  Constant = { "󰭷", "π", "v" },
+  Struct = { "", "⊖", ":" },
+  Event = { "", "↯", "e" },
+  Operator = { "󱓉", "±", "%" },
+  TypeParameter = { "󰓹", "»", ":" },
 
-  -- status {{{3
-  diagnostics  = { "󱖫", "✓", "d" },
-  ok           = { "", "✓", "=" },
-  error        = { "", "✕", "X" },
-  warning      = { "", "!", "!" },
-  info         = { "", "i", "i" },
-  question     = { "", "?", "?" },
-  hint         = { "󰌵", "*", "*" },
+  -- diagnostic and status icons
+  status = { "󱖫", "✓", "d" },
+  ok = { "", "✓", "=" },
+  error = { "", "✕", "X" },
+  warning = { "", "!", "!" },
+  info = { "", "i", "i" },
+  question = { "", "?", "?" },
+  hint = { "󰌵", "*", "*" },
 
-  -- debug {{{3
-  debug        = { "", "⧞", "#" },
-  trace        = { "", "⬚", "|" },
-  start        = { "", "⯈", ">" },
-  pause        = { "", "∥", "-" },
-  stop         = { "", "■", "|" },
-  pending      = { "", "⧗", "-" },
+  dbg_icon = { "", "⧞", "DBG" },
+  dbg_start = { "", "⯈", "SRT" },
+  dbg_pause = { "", "∥", "PAU" },
+  dbg_stop = { "", "■", "STP" },
+  dbg_rerun = { "", "r", "RER" },
+  dbg_back = { "", "<", "BAK" },
+  dbg_into = { "", "v", "IN" },
+  dbg_out = { "", "^", "OUT" },
+  dbg_over = { "", ">", "OVR" },
 
-  -- files {{{3
-  folder_close = { "", "/", "/" },
-  folder_open  = { "", "/", "/" },
-  folder_empty = { "", "/", "/" },
-  folder_link  = { "", "➤", ">" },
-  file         = { "", "•", "." },
-  file_link    = { "", "↪", ">" },
+  folder_close = { "", "🗀", "/" },
+  folder_open = { "", "🗀", "/" },
+  folder_empty = { "", "🗀", "/" },
+  folder_link = { "", "➤", ">" },
+  file = { "", "🗏", "." },
+  file_link = { "", "↪", ">" },
 
-  -- git {{{3
-  add          = { "", "+", "+" },
-  modify       = { "", "~", "~" },
-  remove       = { "", "-", "-" },
-  rename       = { "", "↪", "r" },
-  ignore       = { "", "◌", "o" },
-  commit       = { "", "⧃", "c" },
-  branch       = { "", "⎇", "b" },
+  git_modified = { "", "~", "~" },
+  git_added = { "", "+", "+" },
+  git_deleted = { "", "-", "-" },
+  git_renamed = { "", "↪", "R" },
+  git_ignored = { "", "◌", "!" },
+  git_untracked = { "", "◌", "?" },
+  git_staged = { "", "S", "S" },
+  git_unstaged = { "", "*", "*" },
+  git_branch = { "", "⎇", "ON:" },
 
-  -- ui {{{3
-  up           = { "", "˄", "^" },
-  down         = { "", "˅", "v" },
-  left         = { "", "˂", "<" },
-  right        = { "", "˃", ">" },
-  dot          = { "", "●", "*" },
-  circle       = { "", "○", "o" },
-  check        = { "󰄬", "✓", "+" },
-  cross        = { "󰅖", "✓", "x" },
-  lock         = { "", "⩍", "D" },
-  key          = { "", "⚿", "~" },
-  vim          = { "", "V", "V" },
-  nvim         = { "", "N", "N" },
-  lazy         = { "󰒲", "◑ ", "z" },
-  telescope    = { "", "⌕", ">" },
-  command      = { "", "⌘", ">" },
-  config       = { "", "⛭", "*" },
-  tag          = { "󰓹", "»", ":" },
-  code         = { "", "◇", "#" },
-  bubbles      = { "󰗣", "⁖", "Q" },
-  aperture     = { "󰄄", "🞉", ";" },
-  default      = { "󰃩", "⪧", "!" },
+  key_keyboard = { "󰌌", "⌨", "KBD" },
+  key_backspace = { "󰁮", "⌫", "BAK" },
+  key_tab = { "", "⇥", "TAB" },
+  key_enter = { "󰌑", "↩", "RET" },
+  key_escape = { "󱊷", "⎋", "ESC" },
+  key_space = { "␣", "␣", "SPC" },
+  key_delete = { "󰹾", "⌦", "DEL" },
+  key_up = { "󰁝", "↑", "UP " },
+  key_down = { "󰁅", "↓", "DWN" },
+  key_left = { "󰁍", "←", "LFT" },
+  key_right = { "󰁔", "→", "RGT" },
+  key_shift = { "󰘶", "⇧", "SFT" },
+  key_control = { "󰠳", "⎈", "CRL" },
+  key_alt = { "󰘵", "⌥", "ALT" },
+  key_leader = { "", "⚑", "LDR" },
+
+  -- generic icons
+  up = { "", "˄", "^" },
+  down = { "", "˅", "v" },
+  left = { "", "˂", "<" },
+  right = { "", "˃", ">" },
+  dot = { "", "●", "*" },
+  circle = { "", "○", "o" },
+  check = { "󰄬", "✓", "+" },
+  cross = { "󰅖", "✓", "x" },
+  pending = { "", "⧗", "-" },
+  lock = { "", "⩍", "D" },
+  key = { "", "⚿", "~" },
+  vim = { "", "V", "V" },
+  nvim = { "", "N", "N" },
+  lazy = { "󰒲", "◑ ", "z" },
+  telescope = { "", "⌕", ">" },
+  command = { "", "⌘", ">" },
+  config = { "", "⛭", "*" },
+  tag = { "󰓹", "»", ":" },
+  code = { "", "◇", "#" },
+  bubbles = { "󰗣", "⁖", "Q" },
+  aperture = { "󰄄", "🞉", ";" },
+  default = { "󰃩", "⪧", "!" },
 }
 
--- module functions {{{1
+--- @type "nerdfont"|"unicode"|"ascii"
+local use = "ascii"
 
---- M.cmp_item() {{{2
---- Gets a vim completion kind icon from its internal name.
---- @param name string The icon name.
---- @return string icon
-function M.cmp_item(name)
-  return ({
-    Array         = M.array,
-    Boolean       = M.boolean,
-    Class         = M.class,
-    Color         = M.color,
-    Constant      = M.constant,
-    Constructor   = M.Constructor,
-    Enum          = M.enum,
-    EnumMember    = M.enum_case,
-    Event         = M.event,
-    Field         = M.field,
-    File          = M.file,
-    Folder        = M.folder_close,
-    Function      = M.func,
-    Interface     = M.interface,
-    Key           = M.key,
-    Keyword       = M.keyword,
-    Method        = M.method,
-    Module        = M.module,
-    Namespace     = M.namespace,
-    Null          = M.null,
-    Number        = M.number,
-    Object        = M.object,
-    Operator      = M.operator,
-    Package       = M.package,
-    Property      = M.property,
-    Reference     = M.reference,
-    Snippet       = M.snippet,
-    String        = M.string,
-    Struct        = M.struct,
-    Text          = M.text,
-    TypeParameter = M.tag,
-    Unit          = M.unit,
-    Value         = M.value,
-    Variable      = M.variable,
-  })[name]
-end
-
---- M.setup() {{{2
 --- Setup the settings module
 --- @param mode? "nerdfont"|"unicode"|"ascii"|"auto"
 function M.setup(mode)
   mode = mode or "auto"
   if mode == "auto" then
-    mode = "nerdfont"
-    -- check if we are in a vc (rather than a terminal emulator)
+    use = "nerdfont"
     if vim.loop.os_uname().sysname == "Linux"
-        and not (vfn.getenv("DISPLAY") or vfn.getenv("WAYLAND_DISPLAY"))
-    then
-      mode = "ascii"
+        and not (vfn.getenv("DISPLAY") or vfn.getenv("WAYLAND_DISPLAY")) then
+      use = "ascii"
     end
-  end
-  for k, v in pairs(icons) do
-    M[k] = v[({
-      nerdfont = 1,
-      unicode = 2,
-      ascii = 3,
-    })[mode]]
+  else
+    use = mode --[[ @as "nerdfont"|"unicode"|"ascii" ]]
   end
 end
 
+--- @type table<Icon, string>
+M = setmetatable(M, {
+  __index = function(_, key)
+    if not icons[key] then return nil end
+    return icons[key][({
+      nerdfont = 1,
+      unicode = 2,
+      ascii = 3,
+    })[use]]
+  end
+})
+
 return M
--- vim:fdm=marker
