@@ -13,7 +13,7 @@ lsp.set_log_level(vim.log.levels.WARN)
 -- diagnostic setings {{{2
 vdg.config {
   underline = true,
-  update_in_insert = false,
+  update_in_insert = true,
   severity_sort = true,
   virtual_text = false,
   signs = {
