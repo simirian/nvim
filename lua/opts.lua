@@ -31,6 +31,7 @@ o.cursorlineopt = "both"
 o.laststatus = 2
 o.showtabline = 2
 o.number = true
+o.signcolumn = "yes:1"
 
 o.shortmess = "lmrOstTcCFS"
 o.showcmd = false
