@@ -14,10 +14,13 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+local osc = vim.loop.os_getenv("YICKS_THEME")
+local colors = osc and osc or "yicks"
+
 -- setup {{{1
 require("lazy").setup("plugins", {
   dev = { path = "~/Source/" },
-  install = { colorscheme = { "yicks", "habamax" } },
+  install = { colorscheme = { colors, "habamax" } },
   ui = {
     size = { width = 0.8, height = 0.8 },
     border = "none",
