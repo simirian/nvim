@@ -58,7 +58,6 @@ o.guicursor = {
 o.foldmethod = "expr"
 o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 o.foldlevelstart = 99
-o.foldopen = "all"
 
 o.wrap = false
 o.linebreak = true
