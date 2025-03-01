@@ -48,6 +48,34 @@ newcmd("Toc", function()
   end
 end, { desc = "Open file table of contents." })
 
+newcmd("Today", function()
+  local vaultpath = vim.fs.normalize(vim.fn.expand("~/Documents/vault/"))
+  -- ensure the folder for the note exists
+  local path = vaultpath .. os.date("/daily/%Y/%m")
+  vim.fn.mkdir(path, "p")
+  -- edit the note
+  path = path .. os.date("/%d.md")
+  vim.cmd.edit(path)
+  -- if there's anything in the note then don't load the template
+  local lines = vim.api.nvim_buf_get_lines(vim.fn.bufnr(), 0, -1, false)
+  if #lines > 1 or lines[1] ~= "" then return end
+  -- load the template and use the current date
+  local template = io.open(vaultpath .. "/templates/template-daily.md", "r")
+  if template then
+    local lines = {}
+    local date = os.date("%Y-%m-%d")
+    for line in template:lines() do
+      lines[#lines + 1] = line:gsub("{{date:YYYY%-MM%-DD}}", date)
+    end
+    vim.api.nvim_buf_set_lines(vim.fn.bufnr(), 0, -1, false, lines)
+    template:close()
+  end
+end, { desc = "Open today's daily note." })
+
+-- links should look for [[...]] in this file
+-- backlinks should look for [[file[#h]]] | [[dir/file[#h]]] etc. in the vault
+-- tags list is " fg#[^\s#]\S*"
+
 api.nvim_create_autocmd("FileType", {
   pattern = "markdown",
   callback = function(event)

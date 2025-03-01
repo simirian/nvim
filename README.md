@@ -66,10 +66,9 @@ another key as shown below.
 
 ## Commands
 
-| command     | action                                       |
-| ----------- | -------------------------------------------- |
-| `:Update`   | Updates mason, treesitter, and lazy.         |
-| `:BufInfo`  | Prints basic buffer info.                    |
-| `:WinProse` | Sets a few window options for writing prose. |
-| `:WinCode`  | Unsets prose writing options.                |
-| `:Toc`      | Opens a markdown file's table of contents.   |
+| command     | action                                     |
+| ----------- | ------------------------------------------ |
+| `:Update`   | Updates mason, treesitter, and lazy.       |
+| `:BufInfo`  | Prints basic buffer info.                  |
+| `:Toc`      | Opens a markdown file's table of contents. |
+| `:Today`    | Open today's daily note.                   |

@@ -8,15 +8,16 @@ local g = vim.g
 local vfn = vim.fn
 local autocmd = vim.api.nvim_create_autocmd
 
--- textwidth colorcolumn
 autocmd("FileType", {
   pattern = { "text", "markdown" },
   callback = function()
     if vim.bo.textwidth == 0 then
       vim.bo.textwidth = 80
     end
+    vim.wo.spell = true
   end
 })
+-- textwidth colorcolumn
 autocmd("BufWinEnter", {
   callback = function()
     local tw = vim.bo.textwidth
