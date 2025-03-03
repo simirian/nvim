@@ -75,7 +75,7 @@ return {
           fields = { "kind", "abbr", "menu" },
           format = function(entry, vim_item)
             -- icon
-            vim_item.kind = icons.cmp_item(vim_item.kind)
+            vim_item.kind = icons.lsp_kind[vim_item.kind]
             -- source
             vim_item.menu = ({
               nvim_lsp = "[LSP]",

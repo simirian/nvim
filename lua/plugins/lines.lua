@@ -8,7 +8,7 @@ local buffer = {
   "buffer",
   items = { "typeicon", "filename", "bufnr", "modified" },
   default_name = "U.N. Owen",
-  modified_icon = icons.dot,
+  modified_icon = icons.shapes.dot,
 }
 local diagnostics = {
   "diagnostics",
@@ -16,11 +16,11 @@ local diagnostics = {
     default = "User2",
   },
   icons = {
-    error = icons.error,
-    warn = icons.warning,
-    info = icons.info,
-    hint = icons.hint,
-    default = icons.status,
+    error = icons.diagnostic.error,
+    warn = icons.diagnostic.warning,
+    info = icons.diagnostic.info,
+    hint = icons.diagnostic.hint,
+    default = icons.diagnostic.status,
   },
 }
 local ruler = {
@@ -48,7 +48,7 @@ local tablist = {
   "tablist",
   tab = {
     "tab",
-    modified_icon = icons.dot,
+    modified_icon = icons.shapes.dot,
   },
 }
 

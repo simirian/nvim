@@ -4,7 +4,6 @@
 --------------------------------------------------------------------------------
 
 local vfn = vim.fn
-local icons = require("icons")
 
 -- bootstrap {{{1
 local lazypath = vfn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -25,26 +24,7 @@ require("lazy").setup("plugins", {
     size = { width = 0.8, height = 0.8 },
     border = "none",
     pills = true,
-    icons = {
-      cmd        = icons.command,
-      config     = icons.config,
-      event      = icons.event,
-      favorite   = icons.star,
-      ft         = icons.file,
-      init       = icons.config,
-      import     = icons.package,
-      keys       = icons.key_keyboard,
-      lazy       = icons.lazy,
-      loaded     = icons.dot,
-      not_loaded = icons.circle,
-      plugin     = icons.package,
-      runtime    = icons.nvim,
-      require    = icons.package,
-      source     = icons.code,
-      start      = icons.start,
-      task       = icons.check,
-      list       = { "-", "-", "-", "-", },
-    },
+    icons = { list = { "-", "-", "-", "-", } },
   },
   change_detection = { notify = false },
   performance = {

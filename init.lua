@@ -10,7 +10,6 @@
 --                       github.com/simirian/nvim                             --
 --------------------------------------------------------------------------------
 
-require("icons").setup()
 require("opts")
 require("keymaps").setup()
 require("commands")

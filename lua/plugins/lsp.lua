@@ -18,10 +18,10 @@ vdg.config {
   virtual_text = false,
   signs = {
     text = {
-      [vdg.severity.ERROR] = icons.error,
-      [vdg.severity.WARN]  = icons.warning,
-      [vdg.severity.INFO]  = icons.info,
-      [vdg.severity.HINT]  = icons.hint,
+      [vdg.severity.ERROR] = icons.diagnostic.error,
+      [vdg.severity.WARN]  = icons.diagnostic.warning,
+      [vdg.severity.INFO]  = icons.diagnostic.info,
+      [vdg.severity.HINT]  = icons.diagnostic.hint,
     },
   },
   float = {
@@ -107,11 +107,6 @@ return {
       border = "none",
       width = 0.8,
       height = 0.8,
-      icons = {
-        package_installed   = icons.check,
-        package_pending     = icons.pending,
-        package_uninstalled = icons.cross,
-      },
     },
   },
 }
