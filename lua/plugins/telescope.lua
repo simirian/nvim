@@ -32,17 +32,21 @@ return {
 
     local builtin = require("telescope.builtin")
     local keys = require("keymaps")
-    keys.telescope = {
-      { "<leader>ff", builtin.find_files, desc = "[f]ind [f]iles" },
-      { "<leader>fg", builtin.live_grep,  desc = "[f]ind [g]rep" },
-      { "<leader>fb", builtin.buffers,    desc = "[f]ind [b]uffer" },
-      { "<leader>fh", builtin.help_tags,  desc = "[f]ind [h]elp" },
-    }
+    keys.add("telescope", {
+      { "<leader>ff", builtin.find_files, desc = "[f]ind [f]iles",  mode = { "n", "t" } },
+      { "<leader>fg", builtin.live_grep,  desc = "[f]ind [g]rep",   mode = { "n", "t" } },
+      { "<leader>fb", builtin.buffers,    desc = "[f]ind [b]uffer", mode = { "n", "t" } },
+      { "<leader>fh", builtin.help_tags,  desc = "[f]ind [h]elp",   mode = { "n", "t" } },
+    })
     -- find projects with nvim manager
     if pcall(require, "manager") then
-      table.insert(keys.telescope,
-        { "<leader>fp", telescope.extensions.projects.projects, desc = "[f]ind [p]rojects" })
+      keys.add("telescope", {
+        "<leader>fp",
+        telescope.extensions.projects.projects,
+        desc = "[f]ind [p]rojects",
+        mode = { "n", "t" }
+      })
     end
-    keys.setup("telescope")
+    keys.bind("telescope")
   end,
 }

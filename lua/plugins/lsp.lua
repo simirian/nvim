@@ -78,7 +78,7 @@ end
 
 -- keymap definitions {{{3
 local keys = require("keymaps")
-keys.lsp = {
+keys.add("lsp", {
   -- completion
   { "<tab>",      H.cmp_next,          desc = "Next completion item.",       mode = "i" },
   { "<S-tab>",    H.cmp_prev,          desc = "Previous completion item.",   mode = "i" },
@@ -94,9 +94,12 @@ keys.lsp = {
   { "<leader>cr", lspb.rename,         desc = "[c]ode [r]ename" },
   { "<leader>ca", lspb.code_action,    desc = "[c]ode [a]ctions" },
   { "<leader>cf", lspb.format,         desc = "[c]ode [f]ormat" },
-}
-vim.api.nvim_create_autocmd("LspAttach",
-  { callback = function(event) keys.setup("lsp", event.buffer) end })
+})
+vim.api.nvim_create_autocmd("LspAttach", {
+  callback = function(e)
+    keys.bind("lsp", e.buf)
+  end
+})
 
 -- plugin {{{1
 return {

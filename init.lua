@@ -11,6 +11,6 @@
 --------------------------------------------------------------------------------
 
 require("opts")
-require("keymaps").setup()
+require("keymaps").bind("default")
 require("commands")
 require("lazy-init")
