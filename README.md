@@ -4,25 +4,15 @@ simirian's NeoVim config
 
 ## Install
 
-Install the latest version of NeoVim. (older versions are untested but may
-work) Run `git clone https://github.com/simirian/nvim` in your configuration
+Install the latest version of NeoVim. (Older versions are untested but may
+work.) Run `git clone https://github.com/simirian/nvim` in your configuration
 directory. Run NeoVim like normal (`nvim`), and everything SHOULD be installed.
-
-## Configuration
-
-Most configuration is straightforwards, keybinds can go in lua/keys.lua, vim
-options can go in lua/opts.lua, etc.. Plugins and their settings go in
-lua/plugins/ according to the lazy.nvim spec.
-
-To add support for additional languages those languages should be added to
-`lua/languages/`. This should specify the language server, treesitter parser,
-and filetypes for the language.
 
 ## Keymaps
 
 | map                | action                                          |
 | ------------------ | ----------------------------------------------- |
-| `kk`               | Exit insert mode.                               |
+| `jj`               | Exit insert mode.                               |
 | `U`                | Redo.                                           |
 | `<C-f>`            | Format in insert mode.                          |
 | `<C-j>`, `<C-k>`   | Next and previous window in tabpage.            |
@@ -34,10 +24,7 @@ and filetypes for the language.
 | `<Tab>`, `<S-Tab>` | Invoke completion or indentation.               |
 | `<leader>e`        | Open popup file explorer.                       |
 
-### Telescope
-
-Begin telescope mappings with the keybind `leader` > `f`, then continue with
-another key as shown below.
+Telescope:
 
 | map          | action                 |
 | ------------ | ---------------------- |
@@ -46,7 +33,7 @@ another key as shown below.
 | `<leader>fb` | \[f\]ind \[b\]uffer    |
 | `<leader>fh` | \[f\]ind \[h\]elp      |
 
-### LSP
+Language servers:
 
 | map          | action                                      |
 | ------------ | ------------------------------------------- |
@@ -72,3 +59,39 @@ another key as shown below.
 | `:BufInfo`  | Prints basic buffer info.                  |
 | `:Toc`      | Opens a markdown file's table of contents. |
 | `:Today`    | Open today's daily note.                   |
+
+## Plugins
+
+This branch (`centralize`) aims to minimize dependencies at all costs. This
+means that as many plugins as possible will be gradually removed and replaces
+with top level `lua/*` modules. Current progress is tracked below, and this list
+will be removed once this branch is merged into main.
+
+- [x] `nvim-contour` -> `lines`
+- [ ] `nvim-tree` -> `fex`
+    - [ ] view directories
+    - [ ] basic manipulations (add, remove, move, copy)
+    - [ ] copy/move across buffers
+- [o] `nvim-cmp` -> `cmp`
+    - currently inactive, but still needs a proper replacement
+    - [ ] automatic live completion
+    - [ ] snippet completion
+- [ ] `telescope.nvim`, `plenary.nvim` -> `select` (use `vim.ui.select`)
+    - this is a monumental task and will probably be one of the last things to
+      get replaced
+- [ ] `lazy.nvim` -> git sub-modules
+    - this shouldn't be too hard with git sub-modules
+- [ ] `mason.nvim` -> `lsp`
+    - this should be nearly trivial to remove, even with `winget`
+- [ ] `nvim-manager` -> `lsp`, `projects`
+    - I don't know how easy this will be to remove, but it can't be that hard
+- [ ] `nvim-autopairs` (add surround functionality) -> pairs
+    - I imagine this won't be too hard, and I'm looking forward to getting rid
+      of it
+- [ ] `yicks` -> `colors`, move to this repo
+    - it's just a color scheme, I imagine this should be trivial
+    - might be good to do something like mini's base 16 color schemes
+- [ ] `nvim-treesitter`
+    - I don't actually think this is practical to remove
+- [ ] `nvim-web-devicons`
+    - again, I don't actually think this is practical to remove

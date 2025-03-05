@@ -13,4 +13,5 @@
 require("opts")
 require("keymaps").bind("default")
 require("commands")
+require("lines")
 require("lazy-init")
