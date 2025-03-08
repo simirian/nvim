@@ -55,7 +55,7 @@ Language servers:
 
 | command     | action                                     |
 | ----------- | ------------------------------------------ |
-| `:Update`   | Updates mason, treesitter, and lazy.       |
+| `:Update`   | Updates treesitter and lazy.               |
 | `:BufInfo`  | Prints basic buffer info.                  |
 | `:Toc`      | Opens a markdown file's table of contents. |
 | `:Today`    | Open today's daily note.                   |
@@ -68,6 +68,7 @@ with top level `lua/*` modules. Current progress is tracked below, and this list
 will be removed once this branch is merged into main.
 
 - [x] `nvim-contour` -> `lines`
+- [x] `mason.nvim` -> `lsp`
 - [ ] `nvim-tree` -> `fex`
     - [ ] view directories
     - [ ] basic manipulations (add, remove, move, copy)
@@ -81,8 +82,6 @@ will be removed once this branch is merged into main.
       get replaced
 - [ ] `lazy.nvim` -> git sub-modules
     - this shouldn't be too hard with git sub-modules
-- [ ] `mason.nvim` -> `lsp`
-    - this should be nearly trivial to remove, even with `winget`
 - [ ] `nvim-manager` -> `lsp`, `projects`
     - I don't know how easy this will be to remove, but it can't be that hard
 - [ ] `nvim-autopairs` (add surround functionality) -> pairs

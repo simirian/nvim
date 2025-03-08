@@ -9,8 +9,7 @@ local newcmd = api.nvim_create_user_command
 newcmd("Update", function()
   require("lazy").sync { show = false }
   vim.cmd("TSUpdate")
-  vim.cmd("MasonUpdate")
-end, { desc = "Updates Lazy, Mason, and Treesitter." })
+end, { desc = "Updates Lazy and Treesitter." })
 
 newcmd("BufInfo", function()
   vim.print(vim.fn.getbufinfo("%")[1])

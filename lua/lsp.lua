@@ -77,7 +77,7 @@ keys.add("lsp", {
   { "<leader>cr", vim.lsp.buf.references, desc = "Find word references." },
   { "<leader>cs", vim.lsp.buf.signature_help, desc = "Show function signature." },
   { "<C-s>", vim.lsp.buf.signature_help, desc = "Show function signature.", mode = "i" },
-  { "<leader>cr", vim.lsp.buf.rename, desc = "Reame word." },
+  { "<leader>cn", vim.lsp.buf.rename, desc = "Reame word." },
   { "<leader>ca", vim.lsp.buf.code_action, desc = "Code actions." },
   { "<leader>cf", vim.lsp.buf.format, desc = "Code format." },
 })
