@@ -56,11 +56,11 @@ end
 
 --- Gets a string to represent a buffer in the status line.
 --- @param bufnr integer The buffer to render a string for.
+--- @param current boolean if the buffer should be rendered as currently active.
 --- @return string statusline
 --- @return integer width
-function H.buffer(bufnr)
+function H.buffer(bufnr, current)
   local bufname = vim.api.nvim_buf_get_name(bufnr)
-  local current = bufnr == vim.api.nvim_get_current_buf()
 
   local hl = current and "StatusLine" or "StatusLineNC"
   local fname = vim.fs.basename(bufname)
@@ -99,7 +99,7 @@ function M.statusline()
   local hl = bufnr == vim.api.nvim_get_current_buf() and "%#StatusLine#" or "%##"
 
   local left, lwidth = H.diagnostics(bufnr)
-  local center, cwidth = H.buffer(bufnr)
+  local center, cwidth = H.buffer(bufnr, winid == vim.api.nvim_get_current_win())
   local right, rwidth = H.ruler(winid)
 
   local lspace = (" "):rep(math.floor((width - cwidth) / 2) - lwidth)
