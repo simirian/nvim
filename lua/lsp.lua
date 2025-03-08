@@ -3,14 +3,10 @@
 
 local icons = require("icons")
 local lsp = vim.lsp
-local lspb = lsp.buf
 local vdg = vim.diagnostic
-
--- definitions {{{1
 
 lsp.set_log_level(vim.log.levels.WARN)
 
--- diagnostic setings {{{2
 vdg.config {
   underline = true,
   update_in_insert = true,
@@ -18,10 +14,10 @@ vdg.config {
   virtual_text = false,
   signs = {
     text = {
-      [vdg.severity.ERROR] = icons.diagnostic.error,
-      [vdg.severity.WARN]  = icons.diagnostic.warning,
-      [vdg.severity.INFO]  = icons.diagnostic.info,
-      [vdg.severity.HINT]  = icons.diagnostic.hint,
+      icons.diagnostic.error,
+      icons.diagnostic.warning,
+      icons.diagnostic.info,
+      icons.diagnostic.hint,
     },
   },
   float = {
@@ -30,18 +26,14 @@ vdg.config {
   },
 }
 
--- keymaps {{{2
-
 local H = {}
 
---- H.feed() {{{3
 --- Thin wrapper for nvim_feedkeys(), converts keycodes.
 --- @param text string The text to feed.
 function H.feed(text)
   vim.api.nvim_feedkeys(vim.keycode(text), "n", false)
 end
 
---- H.cmp_next() {{{3
 --- Selects the next item in the completion menu, or opens omnifunc if it isn't
 --- visible.
 function H.cmp_next()
@@ -60,7 +52,6 @@ function H.cmp_next()
   end
 end
 
---- H.cmp_prev() {{{3
 --- Selects the previous item in the completion menu, or opens omnifunc if it is
 --- not visible.
 function H.cmp_prev()
@@ -76,41 +67,22 @@ function H.cmp_prev()
   end
 end
 
--- keymap definitions {{{3
 local keys = require("keymaps")
 keys.add("lsp", {
   -- completion
-  { "<tab>",      H.cmp_next,          desc = "Next completion item.",       mode = "i" },
-  { "<S-tab>",    H.cmp_prev,          desc = "Previous completion item.",   mode = "i" },
+  { "<tab>", H.cmp_next, desc = "Next completion item.", mode = "i" },
+  { "<S-tab>", H.cmp_prev, desc = "Previous completion item.", mode = "i" },
   -- lsp things
-  { "<leader>gd", lspb.definition,     desc = "[g]oto [d]efinition." },
-  { "<leader>gD", lspb.declaration,    desc = "[g]oto [D]eclaration." },
-  { "<leader>gi", lspb.implementation, desc = "[g]oto [i]mplementation." },
-  { "<leader>gr", lspb.references,     desc = "[g]et [r]eferences." },
-  { "<leader>ld", vdg.open_float,      desc = "[l]ist [d]iagnostics." },
-  { "<leader>li", lspb.hover,          desc = "[l]ist symbol [i]nformation" },
-  { "<leader>ls", lspb.signature_help, desc = "[l]ist function [s]ignature." },
-  { "<C-s>",      lspb.signature_help, desc = "List function [s]ignature.",  mode = "i" },
-  { "<leader>cr", lspb.rename,         desc = "[c]ode [r]ename" },
-  { "<leader>ca", lspb.code_action,    desc = "[c]ode [a]ctions" },
-  { "<leader>cf", lspb.format,         desc = "[c]ode [f]ormat" },
+  { "<leader>cd", vim.lsp.buf.definition, desc = "Go to word definition." },
+  { "<leader>cr", vim.lsp.buf.references, desc = "Find word references." },
+  { "<leader>cs", vim.lsp.buf.signature_help, desc = "Show function signature." },
+  { "<C-s>", vim.lsp.buf.signature_help, desc = "Show function signature.", mode = "i" },
+  { "<leader>cr", vim.lsp.buf.rename, desc = "Reame word." },
+  { "<leader>ca", vim.lsp.buf.code_action, desc = "Code actions." },
+  { "<leader>cf", vim.lsp.buf.format, desc = "Code format." },
 })
 vim.api.nvim_create_autocmd("LspAttach", {
   callback = function(e)
     keys.bind("lsp", e.buf)
   end
 })
-
--- plugin {{{1
-return {
-  "williamboman/mason.nvim",
-  opts = {
-    ui = {
-      check_outdated_packages_on_open = true,
-      border = "none",
-      width = 0.8,
-      height = 0.8,
-    },
-  },
-}
--- vim:fdm=marker
