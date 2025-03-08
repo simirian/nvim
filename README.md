@@ -69,27 +69,31 @@ will be removed once this branch is merged into main.
 
 - [x] `nvim-contour` -> `lines`
 - [x] `mason.nvim` -> `lsp`
-- [ ] `nvim-tree` -> `fex`
-    - [ ] view directories
-    - [ ] basic manipulations (add, remove, move, copy)
-    - [ ] copy/move across buffers
-- [o] `nvim-cmp` -> `cmp`
-    - currently inactive, but still needs a proper replacement
-    - [ ] automatic live completion
-    - [ ] snippet completion
-- [ ] `telescope.nvim`, `plenary.nvim` -> `select` (use `vim.ui.select`)
-    - this is a monumental task and will probably be one of the last things to
-      get replaced
-- [ ] `lazy.nvim` -> git sub-modules
-    - this shouldn't be too hard with git sub-modules
-- [ ] `nvim-manager` -> `lsp`, `projects`
-    - I don't know how easy this will be to remove, but it can't be that hard
-- [ ] `nvim-autopairs` (add surround functionality) -> pairs
+- [o] `nvim-autopairs` (add surround functionality) -> `pairs`
+    - [x] simple pairing of `()`, `[]`, `{}`, `""`, `''`, ` `` `
+    - [ ] surround capability with operators for add, change, and remove on
+      those pairs
+        - maps like `vim-surround` or `mini-surround`
     - I imagine this won't be too hard, and I'm looking forward to getting rid
       of it
 - [ ] `yicks` -> `colors`, move to this repo
     - it's just a color scheme, I imagine this should be trivial
     - might be good to do something like mini's base 16 color schemes
+- [ ] `nvim-tree` -> `fex`
+    - [ ] view directories
+    - [ ] basic manipulations (add, remove, move, copy)
+    - [ ] copy/move across buffers
+- [ ] `nvim-manager` -> `lsp`, `projects`
+    - I don't know how easy this will be to remove, but it can't be that hard
+- [o] `nvim-cmp` -> `cmp`
+    - currently inactive, but still needs a proper replacement
+    - [ ] automatic live completion
+    - [ ] snippet completion
+- [ ] `lazy.nvim` -> git sub-modules
+    - this shouldn't be too hard with git sub-modules
+- [ ] `telescope.nvim`, `plenary.nvim` -> `select` (use `vim.ui.select`)
+    - this is a monumental task and will probably be one of the last things to
+      get replaced
 - [ ] `nvim-treesitter`
     - I don't actually think this is practical to remove
 - [ ] `nvim-web-devicons`

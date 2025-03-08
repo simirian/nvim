@@ -5,16 +5,6 @@ local icons = require("icons")
 
 return {
   {
-    "windwp/nvim-autopairs",
-    opts = {
-      disable_in_macro = true,
-      disable_in_visualblock = true,
-      disable_in_replace_mode = true,
-      enable_afterquote = false,
-      check_ts = true,
-    },
-  },
-  {
     "hrsh7th/nvim-cmp",
     enabled = false,
     dependencies = {
