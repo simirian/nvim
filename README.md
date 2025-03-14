@@ -1,6 +1,6 @@
 # NeoVim
 
-simirian's NeoVim config
+simirian's NeoVim configuration
 
 ## Install
 
@@ -69,6 +69,7 @@ will be removed once this branch is merged into main.
 
 - [x] `nvim-contour` -> `lines`
 - [x] `mason.nvim` -> `lsp`
+- [x] `yicks` -> `colors`
 - [o] `nvim-autopairs` (add surround functionality) -> `pairs`
     - [x] simple pairing of `()`, `[]`, `{}`, `""`, `''`, ` `` `
     - [ ] surround capability with operators for add, change, and remove on
@@ -76,9 +77,6 @@ will be removed once this branch is merged into main.
         - maps like `vim-surround` or `mini-surround`
     - I imagine this won't be too hard, and I'm looking forward to getting rid
       of it
-- [ ] `yicks` -> `colors`, move to this repo
-    - it's just a color scheme, I imagine this should be trivial
-    - might be good to do something like mini's base 16 color schemes
 - [ ] `nvim-tree` -> `fex`
     - [ ] view directories
     - [ ] basic manipulations (add, remove, move, copy)
