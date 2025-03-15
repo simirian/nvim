@@ -92,7 +92,6 @@ function H.pairenter()
   local col = vim.api.nvim_win_get_cursor(0)[2]
   local before = line:sub(col, col)
   local after = line:sub(col + 1, col + 1)
-  print("pair <cr>")
   if H.open[before] == after and before ~= after then
     H.feed("<cr><up><end><cr>")
   else
