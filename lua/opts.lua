@@ -25,14 +25,7 @@ autocmd("BufWinEnter", {
   end
 })
 
-o.cursorcolumn = false
 o.cursorline = true
-o.cursorlineopt = "both"
-
-o.laststatus = 2
-o.showtabline = 2
-o.number = true
-o.signcolumn = "yes:1"
 
 o.shortmess = "lmrOstTcCFS"
 o.showcmd = false
@@ -41,15 +34,6 @@ o.confirm = true
 
 o.guifont = "JetBrainsMono NFM:h9"
 o.display = { "truncate", "uhex" }
-o.fillchars = {
-  horiz = " ",
-  horizup = " ",
-  horizdown = " ",
-  vert = " ",
-  vertleft = " ",
-  vertright = " ",
-  verthoriz = " ",
-}
 o.guicursor = {
   "n-v-sm:block",
   "o-r-cr:hor20",
@@ -62,8 +46,6 @@ o.foldlevelstart = 99
 
 o.wrap = false
 o.linebreak = true
-o.breakat = "/- "
-o.showbreak = "^ "
 
 o.virtualedit = { "block" }
 
@@ -93,19 +75,18 @@ o.winaltkeys = "no"
 o.termguicolors = true
 o.title = true
 o.titlestring = "%t %M NVIM"
-o.mousemodel = "popup"
 o.switchbuf = "useopen,uselast"
 o.equalalways = false
 o.wildignorecase = true
 
 if vim.loop.os_uname().sysname == "Windows_NT" then
-  o.shell        = vfn.executable("pwsh") == 1 and "pwsh" or "powershell"
+  o.shell = vfn.executable("pwsh") == 1 and "pwsh" or "powershell"
   o.shellcmdflag =
   "-NoLogo -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.UTF8Encoding]::new();$PSDefaultParameterValues['Out-File:Encoding']='utf8';"
-  o.shellredir   = "2>&1 | %%{ \"$_\" } | Out-File %s; exit $LastExitCode"
-  o.shellpipe    = "2>&1 | %%{ \"$_\" } | tee.exe %s; exit $LastExitCode"
-  o.shellquote   = ""
-  o.shellxquote  = ""
+  o.shellredir = "2>&1 | %%{ \"$_\" } | Out-File %s; exit $LastExitCode"
+  o.shellpipe = "2>&1 | %%{ \"$_\" } | tee.exe %s; exit $LastExitCode"
+  o.shellquote = ""
+  o.shellxquote = ""
 end
 
 -- disable unwanted providers
@@ -114,12 +95,5 @@ g.loaded_ruby_provider = 0
 g.loaded_perl_provider = 0
 g.loaded_node_provider = 0
 
-autocmd({ "BufEnter", "TermOpen" }, {
-  pattern = "term://*",
-  callback = function()
-    vim.wo.number = false
-    vim.wo.relativenumber = false
-    vim.cmd.startinsert()
-  end
-})
+autocmd({ "BufEnter", "TermOpen" }, { pattern = "term://*", command = "startinsert" })
 autocmd("TermLeave", { command = "stopinsert" })

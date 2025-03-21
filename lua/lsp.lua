@@ -9,21 +9,23 @@ lsp.set_log_level(vim.log.levels.WARN)
 
 vdg.config {
   underline = true,
-  update_in_insert = true,
-  severity_sort = true,
-  virtual_text = false,
-  signs = {
-    text = {
-      icons.diagnostic.error,
-      icons.diagnostic.warning,
-      icons.diagnostic.info,
-      icons.diagnostic.hint,
-    },
+  virtual_text = {
+    prefix = function(diagnostic)
+      return ({
+        icons.diagnostic.error,
+        icons.diagnostic.warning,
+        icons.diagnostic.info,
+        icons.diagnostic.hint,
+      })[diagnostic.severity] .. " "
+    end,
   },
+  signs = false,
   float = {
     source = true,
     border = "none",
   },
+  update_in_insert = true,
+  severity_sort = true,
 }
 
 local H = {}
