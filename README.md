@@ -80,8 +80,9 @@ will be removed once this branch is merged into main.
         - maps like `vim-surround` or `mini-surround`
     - I imagine this won't be too hard, and I'm looking forward to getting rid
       of it
-- [ ] `nvim-tree` -> `fex`
-    - [ ] view directories
+- [o] `nvim-tree` -> `fex`
+    - [x] view directories
+    - [ ] navigate directories
     - [ ] basic manipulations (add, remove, move, copy)
     - [ ] copy/move across buffers
 - [ ] `nvim-manager` -> `lsp`, `projects`
