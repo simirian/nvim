@@ -10,6 +10,7 @@
 --                       github.com/simirian/nvim                             --
 --------------------------------------------------------------------------------
 
+vim.cmd.colorscheme("yicks")
 require("opts")
 require("keymaps").bind("default")
 require("commands")

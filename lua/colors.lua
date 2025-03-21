@@ -70,11 +70,11 @@ H.highlights = {
   Conceal = { fg = "b6" },
   Whitespace = "NonText",
   SpecialKey = "NonText",
-  EndOfBuffer = "NonText",
+  EndOfBuffer = { fg = "b3" },
   Folded = "NonText",
   MatchParen = { fg = "b6" },
 
-  WinSeparator = { bg = "b3" },
+  WinSeparator = { fg = "b3", bg = "b3" },
   NormalFloat = { bg = "b2" },
   FloatTitle = "NormalFloat",
   FloatBorder = { fg = "b4", bg = "b2" },
@@ -230,6 +230,27 @@ function M.set(colors)
   H.set_palette(colors)
   for group, highlight in pairs(H.highlights) do
     H.hl(group, highlight)
+  end
+  vim.g.terminal_ansi_colors = {
+    [0] = H.palette.b0,
+    H.palette.cr,
+    H.palette.cg,
+    H.palette.cy,
+    H.palette.cb,
+    H.palette.cm,
+    H.palette.cc,
+    H.palette.b4,
+    H.palette.b3,
+    H.palette.cR,
+    H.palette.cG,
+    H.palette.cY,
+    H.palette.cB,
+    H.palette.cM,
+    H.palette.cC,
+    H.palette.b6,
+  }
+  for i = 1, 16 do
+    vim.g["terminal_color_" .. i - 1] = vim.g.terminal_ansi_colors[i - 1]
   end
 end
 
