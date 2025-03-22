@@ -21,8 +21,10 @@ directory. Run NeoVim like normal (`nvim`), and everything SHOULD be installed.
 | `<A-j>`, `<A-k>`   | Moves the current line or selection up or down. |
 | `<leader>p`        | Paste from system clipboard.                    |
 | `<leader>y`        | Yank to system clipboard.                       |
-| `<Tab>`, `<S-Tab>` | Invoke completion or indentation.               |
-| `<leader>e`        | Open popup file explorer.                       |
+| `<Tab>`, `<S-Tab>` | Invoke completion or indentation in insert.     |
+| `<leader>e`        | Open popup file tree.                           |
+| `_`                | Open vim's current directory in fex.            |
+| `-`                | Open the parent of the current file in fex.     |
 
 Telescope:
 
@@ -35,21 +37,17 @@ Telescope:
 
 Language servers:
 
-| map          | action                                      |
-| ------------ | ------------------------------------------- |
-| `<tab>`      | Next completion item.                       |
-| `<S-tab>`    | Previous completion item.                   |
-| `<leader>gd` | \[g\]oto \[d\]efinition.                    |
-| `<leader>gD` | \[g\]oto \[D\]eclaration.                   |
-| `<leader>gi` | \[g\]oto \[i\]mplementation.                |
-| `<leader>gr` | \[g\]et \[r\]eferences.                     |
-| `<leader>ld` | \[l\]ist \[d\]iagnostics.                   |
-| `<leader>li` | \[l\]ist symbol \[i\]nformation             |
-| `<leader>ls` | \[l\]ist function \[s\]ignature.            |
-| `<C-s>`      | List function \[s\]ignature in insert mode. |
-| `<leader>cr` | \[c\]ode \[r\]ename                         |
-| `<leader>ca` | \[c\]ode \[a\]ctions                        |
-| `<leader>cf` | \[c\]ode \[f\]ormat                         |
+| map          | action                             |
+| ------------ | ---------------------------------- |
+| `<tab>`      | Next completion item.              |
+| `<S-tab>`    | Previous completion item.          |
+| `<leader>cd` | Go to word definition.             |
+| `<leader>cr` | Find word references.              |
+| `<leader>cs` | Show function signature.           |
+| `<C-s>`      | Show function signature in insert. |
+| `<leader>cn` | Rename word.                       |
+| `<leader>ca` | Execute code actions.              |
+| `<leader>cf` | Format code.                       |
 
 ## Commands
 
@@ -82,7 +80,7 @@ will be removed once this branch is merged into main.
       of it
 - [o] `nvim-tree` -> `fex`
     - [x] view directories
-    - [ ] navigate directories
+    - [x] navigate directories
     - [ ] basic manipulations (add, remove, move, copy)
     - [ ] copy/move across buffers
 - [ ] `nvim-manager` -> `lsp`, `projects`

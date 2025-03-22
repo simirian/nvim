@@ -2,6 +2,7 @@
 -- file explorer
 
 local icons = require("icons")
+local keys = require("keymaps")
 
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwplugin = 1
@@ -148,6 +149,8 @@ vim.api.nvim_create_autocmd("BufNew", {
       end,
     })
 
+    keys.bind("fex_local")
+
     vim.bo[e.buf].bufhidden = "hide"
     vim.bo[e.buf].swapfile = false
     vim.bo[e.buf].filetype = "fex"
@@ -175,5 +178,23 @@ function M.sort(first, second)
   end
   return first.name < second.name
 end
+
+keys.add("fex_global", {
+  { "-", "<Cmd>e %:h<CR>", desc = "Open current buffer's parent." },
+  { "_", "<Cmd>e .<CR>",   desc = "Open cwd." },
+})
+keys.add("fex_local", {
+  {
+    "<CR>",
+    function()
+      local bufnr = vim.api.nvim_get_current_buf()
+      local line = vim.api.nvim_get_current_line()
+      --- @diagnostic disable-next-line: undefined-field
+      vim.cmd.edit(vim.loop.fs_realpath(H.get_child_path(bufnr, line)))
+    end,
+    desc = "Open the item under the cursor."
+  }
+})
+keys.bind("fex_global")
 
 return M
