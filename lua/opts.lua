@@ -1,7 +1,5 @@
---------------------------------------------------------------------------------
---                              simirian's NeoVim                             --
---                                  ~ opts ~                                  --
---------------------------------------------------------------------------------
+-- simple vim options
+-- by simirian
 
 local o = vim.opt
 local g = vim.g
@@ -27,13 +25,6 @@ autocmd("BufWinEnter", {
 
 o.cursorline = true
 
-o.shortmess = "lmrOstTcCFS"
-o.showcmd = false
-o.showmode = false
-o.confirm = true
-
-o.guifont = "JetBrainsMono NFM:h9"
-o.display = { "truncate", "uhex" }
 o.guicursor = {
   "n-v-sm:block",
   "o-r-cr:hor20",
@@ -47,17 +38,9 @@ o.foldlevelstart = 99
 o.wrap = false
 o.linebreak = true
 
-o.virtualedit = { "block" }
-
 o.tabstop = 2
-o.softtabstop = 2
 o.shiftwidth = 0
 o.expandtab = true
-o.shiftround = true
-
-o.startofline = true
-o.matchpairs = "(:),{:},[:],<:>"
-o.whichwrap = "b,<,>,[,]"
 
 o.ignorecase = true
 o.smartcase = true
@@ -67,17 +50,11 @@ o.wrapscan = true
 o.sidescrolloff = 1
 o.smoothscroll = true
 
-o.cdhome = true
 o.isfname:remove { "[", "]" }
 o.suffixesadd = { ".md" }
 
-o.winaltkeys = "no"
 o.termguicolors = true
-o.title = true
-o.titlestring = "%t %M NVIM"
 o.switchbuf = "useopen,uselast"
-o.equalalways = false
-o.wildignorecase = true
 
 if vim.loop.os_uname().sysname == "Windows_NT" then
   o.shell = vfn.executable("pwsh") == 1 and "pwsh" or "powershell"
