@@ -72,6 +72,22 @@ newcmd("Today", function()
   end
 end, { desc = "Open today's daily note." })
 
+vim.api.nvim_create_user_command("Scratch", function(args)
+  local bufname = " scratch"
+  if args.count and args.count ~= 0 then
+    bufname = bufname .. args.count
+  end
+  --- @diagnostic disable-next-line: param-type-mismatch
+  local ok, err = pcall(vim.cmd, "edit" .. (args.bang and "!" or "") .. bufname)
+  if not ok then
+    vim.notify(err:match("E%d%d:.*$"), vim.log.levels.ERROR, {})
+  else
+    vim.bo.buftype = "nofile"
+    vim.bo.bufhidden = "hide"
+    vim.bo.swapfile = false
+  end
+end, { desc = "Open a scratch buffer.", count = 0, bang = true, bar = true })
+
 -- links should look for [[...]] in this file
 -- backlinks should look for [[file[#h]]] | [[dir/file[#h]]] etc. in the vault
 -- tags list is " fg#[^\s#]\S*"
