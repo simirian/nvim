@@ -160,7 +160,7 @@ function H.dir_get_changes(bufnr) return { bufnr } end
 
 --- Gets and compiles all changes in all fex buffers
 --- @return FexChanges The changes in fex buffers.
-function H.get_changes() return {}  end
+function H.get_changes() return {} end
 
 --- Asks the user to confirm the changes that are noted in a fex buffer before
 --- committing those changes.
