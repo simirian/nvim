@@ -102,7 +102,10 @@ function H.dir_set_lines(bufnr)
       lines[i] = lines[i] .. "/"
     end
   end
+  local oldul = vim.bo[bufnr].undolevels
+  vim.bo[bufnr].undolevels = -1
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+  vim.bo[bufnr].undolevels = oldul
   vim.bo[bufnr].modified = false
 end
 
@@ -146,32 +149,136 @@ function H.dir_set_marks(bufnr)
   end
 end
 
---- Gathers the diff of fex directory buffers and the file system.
---- @class FexChanges
---- Source files to a set of all destinations they should be copied to.
---- @field add table<integer, { [string]: true }>
---- Set of file ids to be removed in the file system.
---- @field remove table<integer, true>
+--- Map from source ids to a set of paths. An id of 0 indicates a new file, and
+--- an id of -1 indicates deleted files
+--- @type table<integer, table<string, true>>
+H.changes = {}
 
---- Gets the changes that were made to a buffer.
---- @param bufnr integer The fex buffer to get changes for.
---- @return FexChanges changes
-function H.dir_get_changes(bufnr) return { bufnr } end
+--- Map from targets to their status.
+--- @type table<string, "found"|"error">
+H.targets = {}
 
---- Gets and compiles all changes in all fex buffers
---- @return FexChanges The changes in fex buffers.
-function H.get_changes() return {} end
+--- Gets the changes in a buffer and returns true if there were no errors.
+--- @param bufnr integer The fex buffer to get changes from.
+--- @return boolean success
+function H.dir_get_changes(bufnr)
+  if not vim.bo[bufnr].modified then return true end
+  local bufname = vim.api.nvim_buf_get_name(bufnr)
+  local ok = true
+  local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+  for lnum, line in ipairs(lines) do
+    line = line:match("^%s*(.-)%s*$")
+    local id, target = 0, line
+    if line:sub(1, 1) == "/" then
+      id, target = line:match("^/([%da-f]+)%s+(.+)$")
+      id = tonumber(id, 16)
+    end
+    if line == "" then
+      vim.notify("empty line: " .. bufnr .. ":" .. lnum, vim.log.levels.WARN, {})
+    elseif not id or not target then
+      vim.notify("malformed line: " .. line, vim.log.levels.ERROR, {})
+      ok = false
+    else
+      target = fcache.path(bufname, target)
+      if H.targets[target] then
+        if H.targets[target] == "found" then
+          vim.notify("multiply defined target: " .. target, vim.log.levels.ERROR, {})
+          H.targets[target] = "error"
+        end
+        ok = false
+      else
+        if not H.changes[id] then
+          H.changes[id] = {}
+        end
+        H.changes[id][target] = true
+        H.targets[target] = "found"
+      end
+    end
+  end
+  if not ok then return ok end
+  for _, child in ipairs(vim.b[bufnr].fex_visible) do
+    if not H.changes[child.id] or not H.changes[child.id][child.path] then
+      if not H.changes[-1] then
+        H.changes[-1] = {}
+      end
+      H.changes[-1][child.path] = true
+    elseif H.changes[child.id][child.path] then
+      H.changes[child.id][child.path] = nil
+      if next(H.changes[child.id]) == nil then
+        H.changes[child.id] = nil
+      end
+    end
+  end
+  return ok
+end
+
+--- Gets all changes in all fex buffers. Returns false when there are errors.
+--- @return boolean success
+function H.get_changes()
+  H.changes = {}
+  H.targets = {}
+  local ok = true
+  for bufnr in pairs(H.buffers) do
+    ok = ok and H.dir_get_changes(bufnr)
+  end
+  return ok
+end
 
 --- Asks the user to confirm the changes that are noted in a fex buffer before
 --- committing those changes.
---- @param changes FexChanges The changes to confirm.
 --- @return boolean confirmed
-function H.confirm_changes(changes) return changes and true end
+function H.confirm_changes()
+  local msg = "Commit changes to file system?\n"
+  for id, paths in pairs(H.changes) do
+    if id == -1 then
+      msg = msg .. "//rm"
+    elseif id == 0 then
+      msg = msg .. "//touch"
+    else
+      msg = msg .. vim.fn.fnamemodify(fcache.get(id).path, ":~:.") .. ""
+    end
+    local str = ""
+    for path in pairs(paths) do
+      str = str .. "\n" .. vim.fn.fnamemodify(path, ":~:.")
+    end
+    msg = msg .. str:gsub("\n", "\n  ") .. "\n"
+  end
+  return vim.fn.confirm(msg, "&yes\n&no", 2) == 1
+end
 
 --- Commits changes in fex buffers to the file system, notifies the user of any
 --- errors, and then updates buffers to reflect the actual file system.
---- @param changes FexChanges The changes to commit.
-function H.commit_changes(changes) return changes and nil end
+function H.commit_changes()
+  local copy = vim.deepcopy(H.changes)
+  local tmp = {}
+  if copy[-1] then
+    for fname in pairs(copy[-1]) do
+      local id = fcache.get(fname).id
+      if copy[id] then
+        tmp[id] = vim.fn.tempname()
+        fcache.mv(fname, tmp[id])
+      else
+        fcache.rm(fname)
+      end
+    end
+    copy[-1] = nil
+  end
+  if copy[0] then
+    for fname in pairs(copy[0]) do
+      fcache.mk(fname)
+    end
+    copy[0] = nil
+  end
+  for id, paths in pairs(copy) do
+    local fname = tmp[id] or fcache.get(id).path
+    for path in pairs(paths) do
+      fcache.cp(fname, path)
+    end
+  end
+  for _, file in pairs(tmp) do
+    fcache.rm(file)
+  end
+end
 
 vim.api.nvim_create_autocmd("BufNew", {
   desc = "Set up fex buffers when they are opened.",
@@ -260,9 +367,13 @@ end
 
 --- Synchronizes all fex directory buffers with the file system.
 function M.sync()
-  local changes = H.get_changes()
-  if H.confirm_changes(changes) then
-    H.commit_changes(changes)
+  if H.get_changes() and H.confirm_changes() then
+    H.commit_changes()
+    for bufnr in pairs(H.buffers) do
+      if vim.bo[bufnr].modified then
+        H.read(bufnr)
+      end
+    end
   end
 end
 
