@@ -92,14 +92,11 @@ end
 --- directories as needed.
 --- @param path string The path to the directory.
 function H.mkdirp(path)
-  local parent = path:match("^(.*/).+")
-  if not parent then
-    --- @diagnostic disable-next-line: undefined-field
-    parent = vim.loop.cwd()
-  end
+  --- @diagnostic disable-next-line: undefined-field
+  local parent = path:match("^(.*/).+") or vim.loop.cwd()
   --- @diagnostic disable-next-line: undefined-field
   if not vim.loop.fs_stat(parent) then
-    M.mkdirp(parent)
+    H.mkdirp(parent)
   end
   --- @diagnostic disable-next-line: undefined-field
   vim.loop.fs_mkdir(path, 493)
@@ -114,7 +111,7 @@ function M.cp(src, dst)
       --- @diagnostic disable-next-line: undefined-field
       vim.loop.fs_mkdir(cdst, 493)
       for name, type in vim.fs.dir(csrc) do
-        copy(fcache.path(csrc, name), fcache.path(cdst, name), type)
+        copy(M.path(csrc, name), M.path(cdst, name), type)
       end
     elseif ctype == "link" then
       --- @diagnostic disable-next-line: undefined-field
@@ -127,19 +124,13 @@ function M.cp(src, dst)
     end
   end
   --- @diagnostic disable-next-line: undefined-field
-  vim.loop.fs_lstat(src, function(err, stat)
-    if err then return end
-    local parent = dst:match("^(.*/).+")
-    if not parent then
-      --- @diagnostic disable-next-line: undefined-field
-      parent = vim.loop.cwd()
-    end
-    --- @diagnostic disable-next-line: undefined-field
-    if not vim.loop.fs_stat(parent) then
-      M.mkdirp(parent)
-    end
-    copy(src, dst, stat.type)
-  end)
+  local parent = dst:match("^(.*/).+") or vim.loop.cwd()
+  --- @diagnostic disable-next-line: undefined-field
+  if not vim.loop.fs_stat(parent) then
+    H.mkdirp(parent)
+  end
+  --- @diagnostic disable-next-line: undefined-field
+  copy(src, dst, vim.loop.fs_lstat(src).type)
 end
 
 --- Moves a file or directory from src to dst.
@@ -147,20 +138,15 @@ end
 --- @param dst string The destination path.
 function M.mv(src, dst)
   --- @diagnostic disable-next-line: undefined-field
-  vim.loop.fs_stat(src, function(err)
-    if err then return end
-    local parent = dst:match("^(.*/).+")
-    if not parent then
-      --- @diagnostic disable-next-line: undefined-field
-      parent = vim.loop.cwd()
-    end
-    --- @diagnostic disable-next-line: undefined-field
-    if not vim.loop.fs_stat(parent) then
-      M.mkdirp(parent)
-    end
-    --- @diagnostic disable-next-line: undefined-field
-    vim.loop.fs_rename(src, dst)
-  end)
+  if not vim.loop.fs_stat(src) then return end
+  --- @diagnostic disable-next-line: undefined-field
+  local parent = dst:match("^(.*/).+") or vim.loop.cwd()
+  --- @diagnostic disable-next-line: undefined-field
+  if not vim.loop.fs_stat(parent) then
+    H.mkdirp(parent)
+  end
+  --- @diagnostic disable-next-line: undefined-field
+  vim.loop.fs_rename(src, dst)
 end
 
 --- Creates a new file system entry based on the given path. A trailing / will
@@ -168,28 +154,23 @@ end
 --- directories as needed.
 --- @param path string The path to create the item at.
 function M.mk(path)
-  local parent = path:match("^(.*/).+")
-  if not parent then
-    --- @diagnostic disable-next-line: undefined-field
-    parent = vim.loop.cwd()
-  end
   --- @diagnostic disable-next-line: undefined-field
-  vim.loop.fs_stat(parent, function(err)
-    if err then
-      M.mkdirp(parent)
-    end
-    if path:sub(#path) == "/" then
+  local parent = path:match("^(.*/).+") or vim.loop.cwd()
+  --- @diagnostic disable-next-line: undefined-field
+  if not vim.loop.fs_stat(parent) then
+    H.mkdirp(parent)
+  end
+  if path:sub(#path) == "/" then
+    --- @diagnostic disable-next-line: undefined-field
+    vim.loop.fs_mkdir(path, 493)
+  else
+    --- @diagnostic disable-next-line: undefined-field
+    local fd = vim.loop.fs_open(path, "a", 420)
+    if fd then
       --- @diagnostic disable-next-line: undefined-field
-      vim.loop.fs_mkdir(path, 493)
-    else
-      --- @diagnostic disable-next-line: undefined-field
-      local fd = vim.loop.fs_open(path, "a", 420)
-      if fd then
-        --- @diagnostic disable-next-line: undefined-field
-        vim.loop.fs_close(fd)
-      end
+      vim.loop.fs_close(fd)
     end
-  end)
+  end
 end
 
 --- Recursively removes the item at the specified path.
@@ -198,7 +179,7 @@ function M.rm(path)
   local function remove(rpath, rtype)
     if rtype == "directory" then
       for name, type in vim.fs.dir(rpath) do
-        remove(fcache.path(rpath, name), type)
+        remove(M.path(rpath, name), type)
       end
       --- @diagnostic disable-next-line: undefined-field
       vim.loop.fs_rmdir(rpath)
@@ -208,12 +189,8 @@ function M.rm(path)
     end
   end
   --- @diagnostic disable-next-line: undefined-field
-  vim.loop.fs_stat(path, function(err, stat)
-    if err then return end
-    remove(path, stat.type)
-  end)
+  remove(path, vim.loop.fs_stat(path).type)
 end
-
 
 --- Joins and normalizes a path.
 --- @param start string The first section of the path.
