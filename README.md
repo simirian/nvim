@@ -66,7 +66,7 @@ with top level `lua/*` modules. Current progress is tracked below, and this list
 will be removed once this branch is merged into main.
 
 - [x] `nvim-contour` -> `lines`
-    - [ ] this dies on `:hi clear` because `nvim-web-devicons` gets cleared
+    - [x] this dies on `:hi clear` because `nvim-web-devicons` gets cleared
 - [x] `mason.nvim` -> `lsp`
 - [x] `yicks` -> `colors`
     - [x] set internal terminal colors
