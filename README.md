@@ -81,8 +81,9 @@ will be removed once this branch is merged into main.
 - [o] `nvim-tree` -> `fex`
     - [x] view directories
     - [x] navigate directories
-    - [ ] basic manipulations (add, remove, move, copy)
-    - [ ] copy/move across buffers
+    - [x] basic manipulations (add, remove, move, copy)
+    - [x] copy/move across buffers
+    - [ ] file tree view for current directory
 - [ ] `nvim-manager` -> `lsp`, `projects`
     - I don't know how easy this will be to remove, but it can't be that hard
 - [o] `nvim-cmp` -> `cmp`
