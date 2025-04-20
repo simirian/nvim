@@ -369,15 +369,21 @@ function M.sort(bufnr, first, second) --- @diagnostic disable-line: unused-local
   return fname < sname
 end
 
+--- Update the contents of all fex buffers.
+--- @param force? boolean Force update of modified fex buffers as well.
+function M.update(force)
+  for bufnr in pairs(H.buffers) do
+    if force or not vim.bo[bufnr].modified then
+      H.read(bufnr)
+    end
+  end
+end
+
 --- Synchronizes all fex directory buffers with the file system.
 function M.sync()
   if H.get_changes() and H.confirm_changes() then
     H.commit_changes()
-    for bufnr in pairs(H.buffers) do
-      if vim.bo[bufnr].modified then
-        H.read(bufnr)
-      end
-    end
+    M.update(true)
   end
 end
 
