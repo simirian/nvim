@@ -175,13 +175,13 @@ function H.dir_get_changes(bufnr)
       id, target = line:match("^/([%da-f]+)%s+(.+)$")
       id = tonumber(id, 16)
     end
-    if line == "" then
+    if line == "" and #lines > 1 then
       vim.notify("empty line: " .. bufnr .. ":" .. lnum, vim.log.levels.WARN, {})
     elseif not id or not target then
       vim.notify("malformed line: " .. line, vim.log.levels.ERROR, {})
       ok = false
     else
-      target = fcache.path(bufname, target)
+      target = fcache.path(bufname, target) .. target:match("/?$")
       if H.targets[target] then
         if H.targets[target] == "found" then
           vim.notify("multiply defined target: " .. target, vim.log.levels.ERROR, {})
