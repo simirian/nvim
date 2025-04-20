@@ -76,6 +76,8 @@ H.ns["default"] = {
     { "cw",        "caw",               desc = "Change to next word." },
     -- funky character found with <C-v><C-BS> in insert mode with 'display' uhex
     { "\x08",      "<C-w>",             desc = "Delete back a word.",           mode = "i" },
+    { "-",         ":e %:h<cr>",        desc = "Open current buffer's parent." },
+    { "_",         ":e .<cr>",          desc = "Open nvim's current directory." },
   },
   buffers = {},
 }
