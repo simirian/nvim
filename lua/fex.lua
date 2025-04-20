@@ -27,18 +27,20 @@ function H.icon(fname)
 end
 
 --- Filters the children of a fex buffer.
+--- @param bufnr integer The buffer to filter the children of.
 --- @param children FileData[] The children to be filtered.
 --- @return FileData[] children
-function H.filter_children(children)
-  return vim.tbl_filter(M.filter, children)
+function H.filter_children(bufnr, children)
+  return vim.tbl_filter(function(child) return M.filter(bufnr, child) end, children)
 end
 
 --- Sorts the children of a fex buffer.
+--- @param bufnr integer The buffer to sort the children of.
 --- @param children FileData[] The children to sort.
 --- @return FileData[] children
-function H.sort_children(children)
+function H.sort_children(bufnr, children)
   local copy = vim.deepcopy(children)
-  table.sort(copy, M.sort)
+  table.sort(copy, function(first, second) return M.sort(bufnr, first, second) end)
   return copy
 end
 
@@ -80,7 +82,7 @@ function H.dir_setup(bufnr)
     buffer = bufnr,
     callback = M.sync,
   })
-  keys.bind("fex_local", bufnr)
+  keys.bind("fex", bufnr)
   H.buffers[bufnr] = true
   vim.bo[bufnr].bufhidden = "hide"
   vim.bo[bufnr].swapfile = false
@@ -91,7 +93,7 @@ end
 --- @param bufnr integer The fex buffer to update the content of.
 function H.dir_set_lines(bufnr)
   local dir = fcache.get(vim.api.nvim_buf_get_name(bufnr)) --[[@as FileData]]
-  local visible = H.sort_children(H.filter_children(dir.children))
+  local visible = H.sort_children(bufnr, H.filter_children(bufnr, dir.children))
   vim.b[bufnr].fex_visible = visible
   local lines = {}
   local idwidth = math.max(("%x"):format(fcache.nextid() - 1):len(), 4)
@@ -330,18 +332,20 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
 
 --- The function used to filter children that get displayed in fex buffers.
 --- Should return true if the child should be displayed.
+--- @param bufnr integer The buffer to fileter the children of.
 --- @param child FileData The child that might need to be included.
 --- @return boolean include
-function M.filter(child)
-  return child.path:match("[^/]*$"):sub(1, 1) ~= "."
+function M.filter(bufnr, child)
+  return not vim.b[bufnr].fex_hide or child.path:match("[^/]*$"):sub(1, 1) ~= "."
 end
 
 --- The function used to sort children that get displayed in fex buffers.
 --- Return true if first should come before second.
+--- @param bufnr integer The buffer whose children are being sorted.
 --- @param first FileData The candidate for first in the list.
 --- @param second FileData The candidate for second in the list.
 --- @return boolean correct
-function M.sort(first, second)
+function M.sort(bufnr, first, second) --- @diagnostic disable-line: unused-local
   local fetype = first.type
   if fetype == "link" then
     if not first.target then
@@ -377,17 +381,13 @@ function M.sync()
   end
 end
 
-keys.add("fex_global", {
-  { "-", "<Cmd>e %:h<CR>", desc = "Open current buffer's parent." },
-  { "_", "<Cmd>e .<CR>",   desc = "Open cwd." },
-})
-keys.add("fex_local", {
+keys.add("fex", {
   {
     "<CR>",
     function()
       local line = vim.api.nvim_get_current_line()
       if line:sub(1, 1) == "/" then
-        local _, name = line:match("^/([%da-f]+) (.+)$")
+        local name = line:match("^/[%da-f]+ (.+)$")
         if not name then
           print("fex: malformed file entry", line)
         else
@@ -399,8 +399,15 @@ keys.add("fex_local", {
       end
     end,
     desc = "Open the item under the cursor."
+  },
+  {
+    "<C-h>",
+    function()
+      vim.b.fex_hide = not vim.b.fex_hide
+      H.read(vim.api.nvim_get_current_buf())
+    end,
+    desc = "Toggle hidden files in fex buffer."
   }
 })
-keys.bind("fex_global")
 
 return M
