@@ -6,7 +6,7 @@ local keys = require("keymaps")
 local fcache = require("fcache")
 
 vim.g.loaded_netrw = 1
-vim.g.loaded_netrwplugin = 1
+vim.g.loaded_netrwPlugin = 1
 
 local M = {}
 local H = {}
