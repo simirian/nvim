@@ -22,7 +22,6 @@ directory. Run NeoVim like normal (`nvim`), and everything SHOULD be installed.
 | `<leader>p`        | Paste from system clipboard.                    |
 | `<leader>y`        | Yank to system clipboard.                       |
 | `<Tab>`, `<S-Tab>` | Invoke completion or indentation in insert.     |
-| `<leader>e`        | Open popup file tree.                           |
 | `_`                | Open vim's current directory in fex.            |
 | `-`                | Open the parent of the current file in fex.     |
 
@@ -83,6 +82,7 @@ will be removed once this branch is merged into main.
     - [x] navigate directories
     - [x] basic manipulations (add, remove, move, copy)
     - [x] copy/move across buffers
+    - [ ] safe file system modification (as much error checking as possible)
     - [ ] file tree view for current directory
 - [ ] `nvim-manager` -> `lsp`, `projects`
     - I don't know how easy this will be to remove, but it can't be that hard
