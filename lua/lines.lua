@@ -158,4 +158,12 @@ vim.o.laststatus = 2
 vim.o.tabline = "%!v:lua.require'lines'.tabline()"
 vim.o.showtabline = 2
 
+local timer = vim.loop.new_timer()
+timer:start(61000 - os.date("*t").sec * 1000, 60000, function()
+  vim.schedule(function()
+    vim.cmd.redrawstatus()
+    vim.cmd.redrawtabline()
+  end)
+end)
+
 return M
