@@ -72,9 +72,11 @@ will be removed once this branch is merged into main.
     - [ ] allow command line window (`q:`) highlighting
 - [o] `nvim-autopairs` (add surround functionality) -> `pairs`
     - [x] simple pairing of `()`, `[]`, `{}`, `""`, `''`, ` `` `
-    - [ ] surround capability with operators for add, change, and remove on
+    - [o] surround capability with operators for add, change, and remove on
       those pairs
-        - maps like `vim-surround` or `mini-surround`
+        - [x] character-wise surrounds
+        - [ ] line-wise surrounds
+        - [ ] block-size surrounds
     - I imagine this won't be too hard, and I'm looking forward to getting rid
       of it
 - [o] `nvim-tree` -> `fex`
