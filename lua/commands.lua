@@ -79,8 +79,11 @@ vim.api.nvim_create_user_command("Scratch", function(args)
     bufnr = vim.api.nvim_create_buf(true, true)
     vim.api.nvim_buf_set_name(bufnr, bufname)
   end
+  if args.fargs[1] then
+    vim.bo[bufnr].ft = args.fargs[1]
+  end
   vim.cmd("buffer" .. (args.bang and "! " or " ") .. bufname)
-end, { desc = "Open a scratch buffer.", count = 0, bang = true, bar = true })
+end, { desc = "Open a scratch buffer.", count = 0, bang = true, bar = true, nargs = "?" })
 
 -- links should look for [[...]] in this file
 -- backlinks should look for [[file[#h]]] | [[dir/file[#h]]] etc. in the vault
