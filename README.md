@@ -87,7 +87,10 @@ will be removed once this branch is merged into main.
     - [x] copy/move across buffers
     - [ ] safe file system modification (as much error checking as possible)
     - [ ] file tree view for current directory
-- [ ] `nvim-manager` -> `lsp`, `projects`
+- [o] `nvim-manager` -> `lsp`, `projects`
+    - [x] `projects` to save project directories
+    - [x] `lsp` to load language servers
+    - [ ] `workspaces` to detect and activate special configurations
     - I don't know how easy this will be to remove, but it can't be that hard
 - [o] `nvim-cmp` -> `cmp`
     - currently inactive, but still needs a proper replacement
