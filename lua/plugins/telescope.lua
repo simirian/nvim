@@ -9,7 +9,6 @@ return {
     "nvim-lua/plenary.nvim",
     "nvim-tree/nvim-web-devicons",
     "nvim-treesitter/nvim-treesitter",
-    "nvim-manager",
   },
   config = function()
     local telescope = require("telescope")
@@ -38,15 +37,6 @@ return {
       { "<leader>fb", builtin.buffers,    desc = "[f]ind [b]uffer", mode = "n" },
       { "<leader>fh", builtin.help_tags,  desc = "[f]ind [h]elp",   mode = "n" },
     })
-    -- find projects with nvim manager
-    if pcall(require, "manager") then
-      keys.add("telescope", {
-        "<leader>fp",
-        telescope.extensions.projects.projects,
-        desc = "[f]ind [p]rojects",
-        mode = "n",
-      })
-    end
     keys.bind("telescope")
   end,
 }

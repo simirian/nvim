@@ -1,5 +1,5 @@
 -- simirian's NeoVim
--- LSP config loader, configured in nvim-manager
+-- LSP config loader
 
 local icons = require("icons")
 
