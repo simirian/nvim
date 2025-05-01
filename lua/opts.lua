@@ -1,12 +1,55 @@
 -- simple vim options
 -- by simirian
 
-local o = vim.opt
-local g = vim.g
-local vfn = vim.fn
-local autocmd = vim.api.nvim_create_autocmd
+vim.o.cursorline = true
+vim.o.showmode = false
+vim.opt.guicursor = {
+  "n-v-sm:block",
+  "o-r-cr:hor20",
+  "i-c-ci:ver25",
+}
 
-autocmd("FileType", {
+vim.o.foldmethod = "expr"
+vim.o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+vim.o.foldlevelstart = 99
+
+vim.o.wrap = false
+vim.o.linebreak = true
+vim.o.smoothscroll = true
+
+vim.o.tabstop = 2
+vim.o.shiftwidth = 0
+vim.o.expandtab = true
+
+vim.o.ignorecase = true
+vim.o.smartcase = true
+vim.o.hlsearch = false
+vim.o.wrapscan = true
+
+vim.opt.isfname:remove { "[", "]" }
+vim.opt.suffixesadd = { ".md" }
+
+vim.o.termguicolors = true
+vim.opt.switchbuf = { "useopen", "uselast" }
+
+--- @diagnostic disable-next-line: undefined-field
+if vim.loop.os_uname().sysname == "Windows_NT" then
+  vim.o.shell = vim.fn.executable("pwsh") == 1 and "pwsh" or "powershell"
+  vim.o.shellcmdflag = "-Command"
+  vim.o.shellredir = "2>&1 | %%{ \"$_\" } | Out-File %s; exit $LastExitCode"
+  vim.o.shellpipe = "2>&1 | %%{ \"$_\" } | tee.exe %s; exit $LastExitCode"
+  vim.o.shellquote = ""
+  vim.o.shellxquote = ""
+end
+
+-- disable unwanted providers
+vim.g.loaded_python3_provider = 0
+vim.g.loaded_ruby_provider = 0
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_node_provider = 0
+
+vim.api.nvim_create_autocmd("FileType", {
+  desc = "Set textwidth for text and markdown files.",
   pattern = { "text", "markdown" },
   callback = function()
     if vim.bo.textwidth == 0 then
@@ -15,62 +58,19 @@ autocmd("FileType", {
     vim.wo.spell = true
   end
 })
--- textwidth colorcolumn
-autocmd("BufWinEnter", {
+vim.api.nvim_create_autocmd("BufWinEnter", {
+  desc = "Ensure colorcolumn matches textwidth.",
   callback = function()
     local tw = vim.bo.textwidth
     vim.wo.colorcolumn = tw == 0 and "81" or "+1"
   end
 })
 
-o.cursorline = true
-
-o.guicursor = {
-  "n-v-sm:block",
-  "o-r-cr:hor20",
-  "i-c-ci:ver25",
-}
-
-o.foldmethod = "expr"
-o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
-o.foldlevelstart = 99
-
-o.wrap = false
-o.linebreak = true
-
-o.tabstop = 2
-o.shiftwidth = 0
-o.expandtab = true
-
-o.ignorecase = true
-o.smartcase = true
-o.hlsearch = false
-o.wrapscan = true
-
-o.sidescrolloff = 1
-o.smoothscroll = true
-
-o.isfname:remove { "[", "]" }
-o.suffixesadd = { ".md" }
-
-o.termguicolors = true
-o.switchbuf = "useopen,uselast"
-
-if vim.loop.os_uname().sysname == "Windows_NT" then
-  o.shell = vfn.executable("pwsh") == 1 and "pwsh" or "powershell"
-  o.shellcmdflag =
-  "-NoLogo -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.UTF8Encoding]::new();$PSDefaultParameterValues['Out-File:Encoding']='utf8';"
-  o.shellredir = "2>&1 | %%{ \"$_\" } | Out-File %s; exit $LastExitCode"
-  o.shellpipe = "2>&1 | %%{ \"$_\" } | tee.exe %s; exit $LastExitCode"
-  o.shellquote = ""
-  o.shellxquote = ""
-end
-
--- disable unwanted providers
-g.loaded_python3_provider = 0
-g.loaded_ruby_provider = 0
-g.loaded_perl_provider = 0
-g.loaded_node_provider = 0
-
-autocmd({ "BufEnter", "TermOpen" }, { pattern = "term://*", command = "startinsert" })
-autocmd("TermLeave", { command = "stopinsert" })
+vim.api.nvim_create_autocmd({ "BufEnter", "TermOpen" }, {
+  desc = "Enter insert mode upon entering a terminal buffer.",
+  pattern = "term://*", command = "startinsert"
+})
+vim.api.nvim_create_autocmd("TermLeave", {
+  desc = "Leave insert mode when leaving a terminal buffer.",
+  command = "stopinsert"
+})
