@@ -2,12 +2,9 @@
 -- LSP config loader, configured in nvim-manager
 
 local icons = require("icons")
-local lsp = vim.lsp
-local vdg = vim.diagnostic
 
-lsp.set_log_level(vim.log.levels.WARN)
-
-vdg.config {
+vim.lsp.set_log_level(vim.log.levels.WARN)
+vim.diagnostic.config {
   underline = true,
   virtual_text = {
     prefix = function(diagnostic)
@@ -39,15 +36,13 @@ end
 --- Selects the next item in the completion menu, or opens omnifunc if it isn't
 --- visible.
 function H.cmp_next()
-  local cursor = vim.api.nvim_win_get_cursor(vim.api.nvim_get_current_win())
-  if cursor[2] == 0 then
-    H.feed("\t")
-    return
-  elseif vim.fn.getline(cursor[1]):sub(1, cursor[2]):match("%S") == nil then
+  local line = vim.api.nvim_get_current_line()
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  if line == "" then
+    H.feed("<tab>")
+  elseif line:sub(1, cursor[2]):match("^%s*$") then
     vim.cmd(">")
-    return
-  end
-  if vim.fn.pumvisible() == 1 then
+  elseif vim.fn.pumvisible() == 1 then
     H.feed("<C-n>")
   else
     H.feed("<C-x><C-o>")
@@ -57,12 +52,11 @@ end
 --- Selects the previous item in the completion menu, or opens omnifunc if it is
 --- not visible.
 function H.cmp_prev()
-  local cursor = vim.api.nvim_win_get_cursor(vim.api.nvim_get_current_win())
-  if vim.fn.getline(cursor[1]):sub(1, cursor[2]):match("%S") == nil then
+  local line = vim.api.nvim_get_current_line()
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  if line:sub(1, cursor[2]):match("^%s*$") then
     vim.cmd("<")
-    return
-  end
-  if vim.fn.pumvisible() == 1 or vim.fn.state("m") == "m" then
+  elseif vim.fn.pumvisible() == 1 or vim.fn.state("m") == "m" then
     H.feed("<C-p>")
   else
     H.feed("<C-x><C-o>")
