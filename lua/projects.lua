@@ -134,7 +134,7 @@ function M.setup(opts)
   vim.api.nvim_create_user_command("Project", function(args)
     if args.fargs[1] == "add" then
       --- @diagnostic disable-next-line: undefined-field
-      M.add(vim.loop.cwd(), args.fargs[2])
+      M.add(args.fargs[2], vim.loop.cwd())
     elseif args.fargs[1] == "remove" then
       --- @diagnostic disable-next-line: undefined-field
       M.remove(vim.loop.cwd())
