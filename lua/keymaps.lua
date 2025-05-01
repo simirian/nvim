@@ -1,7 +1,5 @@
---------------------------------------------------------------------------------
---                              simirian's NeoVim                             --
---                                  ~ keys ~                                  --
---------------------------------------------------------------------------------
+-- simirian's NeoVim
+-- keymaps manager module
 
 local M = {}
 local H = {}
@@ -34,50 +32,51 @@ vim.g.localleader = " "
 --- Mode in which this mapping applies.
 --- @field mode? VimMode|VimMode[]
 
---- @alias KeymapNamespace { maps: Keymap[], buffers: table<integer, boolean> }
+--- @alias MapNS { maps: Keymap[], buffers: table<integer, boolean> }
 
---- @type KeymapNamespace[]
+--- @type table<string, MapNS>
 H.ns = {}
 
 --- Default maps.
 H.ns["default"] = {
   maps = {
     -- window and tab navigation
-    { "<C-h>",     "gT",                desc = "Go to previous tab page." },
-    { "<C-j>",     "<C-w>w",            desc = "Focus previous window." },
-    { "<C-k>",     "<C-w>W",            desc = "Focus next window." },
-    { "<C-l>",     "gt",                desc = "Go to next tab page." },
-    { "<C-h>",     "<C-\\><C-o>gT",     desc = "Go to previous tab page.",      mode = "t", },
-    { "<C-j>",     "<C-\\><C-o><C-w>w", desc = "Go to previous window.",        mode = "t", },
-    { "<C-k>",     "<C-\\><C-o><C-w>W", desc = "Go to next window.",            mode = "t", },
-    { "<C-l>",     "<C-\\><C-o>gt",     desc = "go to next tab page.",          mode = "t", },
+    { "<C-h>",      "gT",                desc = "Go to previous tab page." },
+    { "<C-j>",      "<C-w>w",            desc = "Focus previous window." },
+    { "<C-k>",      "<C-w>W",            desc = "Focus next window." },
+    { "<C-l>",      "gt",                desc = "Go to next tab page." },
+    { "<C-h>",      "<C-\\><C-o>gT",     desc = "Go to previous tab page.",      mode = "t", },
+    { "<C-j>",      "<C-\\><C-o><C-w>w", desc = "Go to previous window.",        mode = "t", },
+    { "<C-k>",      "<C-\\><C-o><C-w>W", desc = "Go to next window.",            mode = "t", },
+    { "<C-l>",      "<C-\\><C-o>gt",     desc = "go to next tab page.",          mode = "t", },
     -- resizing windows
-    { "<C-Up>",    "1<C-w>+",           desc = "Increase window height." },
-    { "<C-Down>",  "1<C-w>-",           desc = "Decrease window height." },
-    { "<C-Left>",  "2<C-w><",           desc = "Decrease window width." },
-    { "<C-Right>", "2<C-w>>",           desc = "Increase window width." },
+    { "<C-up>",     "1<C-w>+",           desc = "Increase window height." },
+    { "<C-down>",   "1<C-w>-",           desc = "Decrease window height." },
+    { "<C-left>",   "2<C-w><",           desc = "Decrease window width." },
+    { "<C-right>",  "2<C-w>>",           desc = "Increase window width." },
     -- move lines
-    { "<A-j>",     ":move +1<cr>",      desc = "Move line down." },
-    { "<A-k>",     ":move -2<cr>",      desc = "Move line up" },
-    { "<A-j>",     ":move '>+1<CR>gv",  desc = "Move lines down.",              mode = "x" },
-    { "<A-k>",     ":move '<-2<CR>gv",  desc = "Move lines up.",                mode = "x" },
+    { "<A-j>",      ":move +1<cr>",      desc = "Move line down." },
+    { "<A-k>",      ":move -2<cr>",      desc = "Move line up" },
+    { "<A-j>",      ":move '>+1<cr>gv",  desc = "Move lines down.",              mode = "x" },
+    { "<A-k>",      ":move '<-2<cr>gv",  desc = "Move lines up.",                mode = "x" },
     -- quick escape
-    { "jj",        "<Esc>",             desc = "Escape insert mode.",           mode = "i" },
+    { "jj",         "<esc>",             desc = "Escape insert mode.",           mode = "i" },
+    { "<esc><esc>", "<esc>",             desc = "leave terminal mode",           mode = "t" },
     -- registers
-    { "<leader>p", "\"+p",              desc = "Paste from system clipboard.",  mode = { "n", "x" } },
-    { "<leader>y", "\"+y",              desc = "Yank to system clipboard.",     mode = { "n", "x" } },
-    { "p",         "\"_dP",             desc = "Cleanly paste over selection.", mode = "x" },
+    { "<leader>p",  "\"+p",              desc = "Paste from system clipboard.",  mode = { "n", "x" } },
+    { "<leader>y",  "\"+y",              desc = "Yank to system clipboard.",     mode = { "n", "x" } },
+    { "p",          "\"_dP",             desc = "Cleanly paste over selection.", mode = "x" },
     -- indenting
-    { "<Tab>",     ">gv",               desc = "Indent selected liens",         mode = "v" },
-    { "<S-Tab>",   "<gv",               desc = "Unindent selected lines",       mode = "v" },
+    { "<tab>",      ">gv",               desc = "Indent selected liens",         mode = "v" },
+    { "<S-tab>",    "<gv",               desc = "Unindent selected lines",       mode = "v" },
     -- misc mappings
-    { "U",         "<C-r>",             desc = "Redo." },
-    { "<C-f>",     "<Esc>m`gqap``a",    desc = "Format in insert mode.",        mode = "i" },
-    { "cw",        "caw",               desc = "Change to next word." },
+    { "U",          "<C-r>",             desc = "Redo." },
+    { "<C-f>",      "<esc>m`gqap``a",    desc = "Format in insert mode.",        mode = "i" },
+    { "cw",         "caw",               desc = "Change to next word." },
     -- funky character found with <C-v><C-BS> in insert mode with 'display' uhex
-    { "\x08",      "<C-w>",             desc = "Delete back a word.",           mode = "i" },
-    { "-",         ":e %:h<cr>",        desc = "Open current buffer's parent." },
-    { "_",         ":e .<cr>",          desc = "Open nvim's current directory." },
+    { "\x08",       "<C-w>",             desc = "Delete back a word.",           mode = "i" },
+    { "-",          ":e %:h<cr>",        desc = "Open current buffer's parent." },
+    { "_",          ":e .<cr>",          desc = "Open nvim's current directory." },
   },
   buffers = {},
 }
@@ -95,7 +94,7 @@ function H.map(map, buffer)
     noremap = true,
     silent = true,
   })
-  vim.keymap.set(map.mode or "n", map[1], map[2], copy)
+  vim.keymap.set(map.mode or "", map[1], map[2], copy)
 end
 
 --- Adds a mapping or list of mappings to a keymap namespace.
