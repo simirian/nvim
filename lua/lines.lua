@@ -11,6 +11,7 @@ function H.icon(fname)
   if has_devicons then
     return devicons.get_icon(fname, fname:match("%.([^%.]+)$"), { default = true })
   end
+  return "?", "StatusLineNC"
 end
 
 H.ns = vim.api.nvim_create_namespace("LinesHighlight")
@@ -65,13 +66,11 @@ function H.buffer(bufnr, current)
   local hl = current and "StatusLine" or "StatusLineNC"
   local fname = vim.fs.basename(bufname)
   local icon, icohl = H.icon(fname)
+  icohl = icohl or hl
   if not fname or fname == "" then
     fname = "U.N. Owen"
   end
   local fg = vim.api.nvim_get_hl(0, { name = icohl }).fg
-  if not fg then
-    fg = vim.api.nvim_get_hl(0, { name = current and "StatusLine" or "StatusLineNC" }).fg
-  end
   vim.api.nvim_set_hl(0, "LineIco" .. bufnr, {
     fg = ("#%06x"):format(fg),
     bg = ("#%06x"):format(vim.api.nvim_get_hl(0, { name = hl }).bg),
