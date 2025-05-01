@@ -61,7 +61,7 @@ H.ns["default"] = {
     { "<A-k>",      ":move '<-2<cr>gv",  desc = "Move lines up.",                mode = "x" },
     -- quick escape
     { "jj",         "<esc>",             desc = "Escape insert mode.",           mode = "i" },
-    { "<esc><esc>", "<esc>",             desc = "leave terminal mode",           mode = "t" },
+    { "<esc><esc>", "<C-\\><C-n>",       desc = "leave terminal mode",           mode = "t" },
     -- registers
     { "<leader>p",  "\"+p",              desc = "Paste from system clipboard.",  mode = { "n", "x" } },
     { "<leader>y",  "\"+y",              desc = "Yank to system clipboard.",     mode = { "n", "x" } },
