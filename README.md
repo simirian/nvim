@@ -21,7 +21,8 @@ directory. Run NeoVim like normal (`nvim`), and everything SHOULD be installed.
 | `<A-j>`, `<A-k>`   | Moves the current line or selection up or down. |
 | `<leader>p`        | Paste from system clipboard.                    |
 | `<leader>y`        | Yank to system clipboard.                       |
-| `<Tab>`, `<S-Tab>` | Invoke completion or indentation in insert.     |
+| `<tab>`, `<S-tab>` | Invoke completion or indentation in insert.     |
+| `<esc><esc>`       | Exit terminal mode.                             |
 | `_`                | Open vim's current directory in fex.            |
 | `-`                | Open the parent of the current file in fex.     |
 
