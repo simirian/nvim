@@ -259,7 +259,7 @@ end
 
 --- Operator function for surrounding text.
 --- @param mode "line"|"char"|"block" The selection mode.
-function M.opfunc(mode)
+function M._opfunc(mode)
   -- TODO line and block surround
   if mode ~= "char" then return end
   local start = vim.api.nvim_buf_get_mark(0, "[")
@@ -301,9 +301,9 @@ function M.setup(opts)
   })
 
   keys.add("pairs", {
-    { "<bs>", H.del,                                               desc = "Delete a pair.",                  mode = "i" },
-    { "<cr>", H.cr,                                                desc = "Neatly split a pair over lines.", mode = "i" },
-    { "s",    "<cmd>set opfunc=v:lua.require'pairs'.opfunc<cr>g@", desc = "Surround operator.",              mode = "" }
+    { "<bs>", H.del,                                                desc = "Delete a pair.",                  mode = "i" },
+    { "<cr>", H.cr,                                                 desc = "Neatly split a pair over lines.", mode = "i" },
+    { "s",    "<cmd>set opfunc=v:lua.require'pairs'._opfunc<cr>g@", desc = "Surround operator.",              mode = "" }
   })
   keys.bind("pairs")
 end
