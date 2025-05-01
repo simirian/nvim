@@ -1,5 +1,5 @@
+-- simirian's NeoVim
 -- useful icons
--- by simirian
 
 local M = {}
 
@@ -35,6 +35,8 @@ M.files = {
   directory = "",
   file = "",
   link = "",
+  link_file = "",
+  link_directory = "",
 }
 
 M.diagnostic = {
