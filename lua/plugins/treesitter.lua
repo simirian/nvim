@@ -14,5 +14,8 @@ return {
       enable = true,
       disable = { "markdown" },
     },
-  }
+  },
+  config = function(_, opts)
+    require("nvim-treesitter.configs").setup(opts)
+  end
 }
