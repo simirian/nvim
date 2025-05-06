@@ -194,6 +194,8 @@ function H.dir_setup(bufnr)
   vim.bo[bufnr].swapfile = false
   vim.bo[bufnr].filetype = "fex"
   vim.bo[bufnr].tabstop = 8
+
+  H.dir_update(bufnr)
 end
 
 --- Sets the lines in a fex buffer according to the cached children.
@@ -429,7 +431,12 @@ function M.setup(opts)
           vim.notify("fex: cannot open malformed file entry: " .. line, vim.log.levels.ERROR, {})
         else
           local path = fs.path(vim.api.nvim_buf_get_name(0), name)
-          vim.cmd.edit(path)
+          local node = fs.get(path)
+          if node and node.type == "link" then
+            vim.cmd.edit(node--[[@as Fs.Link]]:get_target().path)
+          else
+            vim.cmd.edit(node and node.path or path)
+          end
         end
       else
         vim.cmd.edit(line)
