@@ -161,9 +161,11 @@ function M.bind(namespaces, buffers)
     --- only string[] here
     --- @diagnostic disable-next-line: param-type-mismatch
     for _, ns in ipairs(namespaces) do
-      H.ns[ns].buffers[bufnr or 0] = true
-      for _, map in ipairs(H.ns[ns].maps) do
-        H.map(map, bufnr)
+      if H.ns[ns] then
+        H.ns[ns].buffers[bufnr or 0] = true
+        for _, map in ipairs(H.ns[ns].maps) do
+          H.map(map, bufnr)
+        end
       end
     end
   end
@@ -193,9 +195,11 @@ function M.unbind(namespaces, buffers)
     --- always string[] here
     --- @diagnostic disable-next-line: param-type-mismatch
     for _, ns in ipairs(namespaces) do
-      H.ns[ns].buffers[bufnr or 0] = nil
-      for _, map in ipairs(H.ns[ns].maps) do
-        vim.keymap.del(map.mode or "n", map[1], { buffer = bufnr })
+      if H.ns[ns] then
+        H.ns[ns].buffers[bufnr or 0] = nil
+        for _, map in ipairs(H.ns[ns].maps) do
+          vim.keymap.del(map.mode or "n", map[1], { buffer = bufnr })
+        end
       end
     end
   end
