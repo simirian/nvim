@@ -51,12 +51,12 @@ Language servers:
 
 ## Commands
 
-| command     | action                                     |
-| ----------- | ------------------------------------------ |
-| `:Update`   | Updates treesitter and lazy.               |
-| `:BufInfo`  | Prints basic buffer info.                  |
-| `:Toc`      | Opens a markdown file's table of contents. |
-| `:Today`    | Open today's daily note.                   |
+| command      | action                                  |
+| ------------ | --------------------------------------- |
+| `:Toc`       | Table of contents support for markdown. |
+| `:Today`     | Open today's daily note.                |
+| `:Yesterday` | Open yesterday's daily note.            |
+| `:Scratch`   | Open a scratch buffer.                  |
 
 ## Plugins
 

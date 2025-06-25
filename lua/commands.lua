@@ -3,73 +3,56 @@
 --                                ~ commands ~                                --
 --------------------------------------------------------------------------------
 
-local api = vim.api
-local newcmd = api.nvim_create_user_command
-
-newcmd("Update", function()
-  require("lazy").sync { show = false }
-  vim.cmd("TSUpdate")
-end, { desc = "Updates Lazy and Treesitter." })
-
-newcmd("BufInfo", function()
-  vim.print(vim.fn.getbufinfo("%")[1])
-end, { desc = "Get basic buffer information for the current buffer." })
-
-local tocns = api.nvim_create_namespace("TOC")
-
-newcmd("Toc", function()
+vim.api.nvim_create_user_command("Toc", function()
   if vim.bo[vim.fn.bufnr()].filetype ~= "markdown" then return end
-  local oldbuf = vim.fn.bufname()
-  vim.cmd("silent lvimgrep /^#\\+ .*/ %")
-  vim.cmd("lopen")
-  vim.wo.number = false
-  vim.wo.relativenumber = false
-  vim.wo.cursorcolumn = false
-  vim.wo.spell = false
-  vim.wo.signcolumn = "no"
-  vim.wo.colorcolumn = ""
-  vim.wo.statuscolumn = ""
-  vim.wo.conceallevel = 2
+  vim.cmd("silent lvimgrep /^#\\+ .*/ % | lope")
+  vim.wo.conceallevel = 3
   vim.wo.concealcursor = "nvic"
-  vim.wo.statusline = "%2* TOC (" .. vim.fs.basename(oldbuf) .. ") %* %= %2* %c "
-  local bufnr = vim.fn.bufnr()
-  for _, mark in ipairs(api.nvim_buf_get_extmarks(bufnr, tocns, 0, -1, {})) do
-    api.nvim_buf_del_extmark(bufnr, tocns, mark[1])
+  local items = vim.fn.getloclist(0)
+  for i, item in ipairs(items) do
+    local level, text = item.text:match("^(#+)%s(.*)$")
+    items[i] = {
+      bufnr = item.bufnr,
+      lnum = item.lnum,
+      text = ("\u{a0}"):rep(level:len() * 2 - 2) .. text,
+    }
   end
-  for lnum, line in ipairs(api.nvim_buf_get_lines(0, 0, -1, false)) do
-    local s, e = line:find("#+")
-    api.nvim_buf_set_extmark(bufnr, tocns, lnum - 1, 0, {
-      end_col = e + 1,
-      conceal = "",
-      virt_text = { { ("  "):rep(e - s), "Normal" } },
-      virt_text_pos = "inline",
-    })
-  end
+  vim.fn.setloclist(0, {}, "r", { items = items, title = "TOC" })
 end, { desc = "Open file table of contents." })
 
-newcmd("Today", function()
-  local vaultpath = vim.fs.normalize(vim.fn.expand("~/Documents/vault/"))
-  -- ensure the folder for the note exists
-  local path = vaultpath .. os.date("/daily/%Y/%m")
-  vim.fn.mkdir(path, "p")
-  -- edit the note
-  path = path .. os.date("/%d.md")
-  vim.cmd.edit(path)
-  -- if there's anything in the note then don't load the template
-  local lines = vim.api.nvim_buf_get_lines(vim.fn.bufnr(), 0, -1, false)
-  if #lines > 1 or lines[1] ~= "" then return end
-  -- load the template and use the current date
-  local template = io.open(vaultpath .. "/templates/template-daily.md", "r")
-  if template then
-    local lines = {}
-    local date = os.date("%Y-%m-%d")
-    for line in template:lines() do
-      lines[#lines + 1] = line:gsub("{{date:YYYY%-MM%-DD}}", date)
-    end
-    vim.api.nvim_buf_set_lines(vim.fn.bufnr(), 0, -1, false, lines)
-    template:close()
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "markdown",
+  callback = function(event)
+    vim.keymap.set("n", "gO", ":Toc<cr>", { buffer = event.buf })
+  end,
+  desc = "Open this buffer's table of contents."
+})
+
+local function opendaily(time)
+  local calendir = vim.fs.normalize(vim.env.HOME .. "/Documents/vault/daily")
+  vim.fn.mkdir(calendir .. os.date("/%Y/%m", time), "p")
+  vim.cmd.edit(calendir .. os.date("/%Y/%m/%d.md", time))
+  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  if #lines == 1 and lines[1] == "" then
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { os.date("# Daily %Y-%m-%d", time) --[[@as string]] })
   end
+end
+
+vim.api.nvim_create_user_command("Today", function()
+  opendaily(os.time())
 end, { desc = "Open today's daily note." })
+
+vim.api.nvim_create_user_command("Yesterday", function()
+  local date = os.date("*t")
+  date.day = date.day == 1 and -1 or date.day - 1
+  if date.day < 0 then
+    date.month = date.month == 1 and -1 or date.month - 1
+    if date.month < 0 then
+      date.year = date.year - 1
+    end
+  end
+  opendaily(os.time(date --[[@as osdateparam]]))
+end, { desc = "Open yesterday's daily note." })
 
 vim.api.nvim_create_user_command("Scratch", function(args)
   local bufname = "scratch"
@@ -84,15 +67,3 @@ vim.api.nvim_create_user_command("Scratch", function(args)
   end
   vim.cmd("buffer" .. (args.bang and "! " or " ") .. bufname)
 end, { desc = "Open a scratch buffer.", count = 0, bang = true, bar = true, nargs = "?" })
-
--- links should look for [[...]] in this file
--- backlinks should look for [[file[#h]]] | [[dir/file[#h]]] etc. in the vault
--- tags list is " fg#[^\s#]\S*"
-
-api.nvim_create_autocmd("FileType", {
-  pattern = "markdown",
-  callback = function(event)
-    vim.keymap.set("n", "gO", ":Toc<cr>", { buffer = event.buf })
-  end,
-  desc = "Open this buffer's table of contents."
-})
