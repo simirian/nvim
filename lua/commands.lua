@@ -5,9 +5,9 @@
 
 vim.api.nvim_create_user_command("Toc", function()
   if vim.bo[vim.fn.bufnr()].filetype ~= "markdown" then return end
-  vim.cmd("silent lvimgrep /^#\\+ .*/ % | lope")
-  vim.wo.conceallevel = 3
-  vim.wo.concealcursor = "nvic"
+  local curpos = vim.api.nvim_win_get_cursor(0)
+  vim.cmd("silent lvimgrep /^#\\+ .*/ %")
+  vim.api.nvim_win_set_cursor(0, curpos)
   local items = vim.fn.getloclist(0)
   for i, item in ipairs(items) do
     local level, text = item.text:match("^(#+)%s(.*)$")
@@ -18,6 +18,9 @@ vim.api.nvim_create_user_command("Toc", function()
     }
   end
   vim.fn.setloclist(0, {}, "r", { items = items, title = "TOC" })
+  vim.cmd.lopen()
+  vim.wo.conceallevel = 3
+  vim.wo.concealcursor = "nvic"
 end, { desc = "Open file table of contents." })
 
 vim.api.nvim_create_autocmd("FileType", {
@@ -44,13 +47,7 @@ end, { desc = "Open today's daily note." })
 
 vim.api.nvim_create_user_command("Yesterday", function()
   local date = os.date("*t")
-  date.day = date.day == 1 and -1 or date.day - 1
-  if date.day < 0 then
-    date.month = date.month == 1 and -1 or date.month - 1
-    if date.month < 0 then
-      date.year = date.year - 1
-    end
-  end
+  date.day = date.day - 1
   opendaily(os.time(date --[[@as osdateparam]]))
 end, { desc = "Open yesterday's daily note." })
 
