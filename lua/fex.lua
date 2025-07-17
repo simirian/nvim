@@ -140,7 +140,7 @@ end
 --- BufReadCmd autocommand callback.
 --- @param bufnr integer The buffer to read into.
 function H.dir_update(bufnr)
-  local children = fs.get(vim.api.nvim_buf_get_name(bufnr))--[[@as Fs.Directory]]:get_children()
+  local children = fs.get(vim.api.nvim_buf_get_name(bufnr)) --[[@as Fs.Directory]]:get_children()
   for _, child in ipairs(children) do
     if child.type == "link" then
       child --[[@as Fs.Link]]:get_target()
@@ -315,11 +315,15 @@ function H.get_changes()
   H.targets = {}
   local ok = true
   for bufnr in pairs(H.buffers) do
-    ok = ok and H.dir_changes_buf(bufnr)
+    if vim.b[bufnr].fex_visible then
+      ok = ok and H.dir_changes_buf(bufnr)
+    end
   end
   if not ok then return false end
   for bufnr in pairs(H.buffers) do
-    H.dir_changes_fs(bufnr)
+    if vim.b[bufnr].fex_visible then
+      H.dir_changes_fs(bufnr)
+    end
   end
   return true
 end
