@@ -1,8 +1,6 @@
 --- simirian's NeoVim
 --- autopairs
 
-local keys = require("keymaps")
-
 local M = {}
 local H = {}
 
@@ -300,12 +298,10 @@ function M.setup(opts)
     end
   })
 
-  keys.add("pairs", {
-    { "<bs>", H.del,                                                desc = "Delete a pair.",                  mode = "i" },
-    { "<cr>", H.cr,                                                 desc = "Neatly split a pair over lines.", mode = "i" },
-    { "s",    "<cmd>set opfunc=v:lua.require'pairs'._opfunc<cr>g@", desc = "Surround operator.",              mode = "" }
-  })
-  keys.bind("pairs")
+  vim.keymap.set("i", "<bs>", H.del, { desc = "Delete a pair." })
+  vim.keymap.set("i", "<cr>", H.cr, { desc = "Neatly split a pair over lines." })
+  vim.keymap.set("", "s", "<cmd>set opfunc=v:lua.require'pairs'._opfunc<cr>g@",
+    { desc = "Surround operator." })
 end
 
 return M

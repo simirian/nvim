@@ -12,7 +12,7 @@
 
 vim.cmd.colorscheme("yicks")
 require("opts")
-require("keymaps").bind("default")
+require("keymaps")
 require("commands")
 require("lines")
 require("lsp").setup()

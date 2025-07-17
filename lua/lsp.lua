@@ -2,7 +2,6 @@
 -- LSP config loader
 
 local icons = require("icons")
-local keys = require("keymaps")
 
 local M = {}
 local H = {}
@@ -44,18 +43,6 @@ function H.cmp_prev()
     H.feed("<C-x><C-o>")
   end
 end
-
-H.keys = {
-  { "<tab>",      H.cmp_next,                 desc = "Next completion item.",     mode = "i" },
-  { "<S-tab>",    H.cmp_prev,                 desc = "Previous completion item.", mode = "i" },
-  { "<leader>cd", vim.lsp.buf.definition,     desc = "Go to word definition." },
-  { "<leader>cr", vim.lsp.buf.references,     desc = "Find word references." },
-  { "<leader>cs", vim.lsp.buf.signature_help, desc = "Show function signature." },
-  { "<C-s>",      vim.lsp.buf.signature_help, desc = "Show function signature.",  mode = "i" },
-  { "<leader>cn", vim.lsp.buf.rename,         desc = "Reame word." },
-  { "<leader>ca", vim.lsp.buf.code_action,    desc = "Code actions." },
-  { "<leader>cf", vim.lsp.buf.format,         desc = "Code format." },
-}
 
 H.diagnostic = {
   underline = true,
@@ -147,7 +134,6 @@ end
 
 function M.setup(opts)
   opts = opts or {}
-  keys.add("lsp", opts.keys or H.keys)
   vim.diagnostic.config(opts.diagnostic or H.diagnostic)
 
   local files = vim.api.nvim_get_runtime_file("lua/lsp/*.lua", true)
@@ -159,7 +145,15 @@ function M.setup(opts)
   H.augroup = vim.api.nvim_create_augroup("lsp", { clear = true })
   vim.api.nvim_create_autocmd("LspAttach", {
     callback = function(e)
-      keys.bind("lsp", e.buf)
+      vim.keymap.set("i", "<tab>", H.cmp_next, { desc = "Next completion item.", buffer = e.buf })
+      vim.keymap.set("i", "<S-tab>", H.cmp_prev, { desc = "Previous completion item.", buffer = e.buf })
+      vim.keymap.set("", "<leader>cd", vim.lsp.buf.definition, { desc = "Go to word definition.", buffer = e.buf })
+      vim.keymap.set("", "<leader>cr", vim.lsp.buf.references, { desc = "Find word references.", buffer = e.buf })
+      vim.keymap.set("", "<leader>cs", vim.lsp.buf.signature_help, { desc = "Show function signature.", buffer = e.buf })
+      vim.keymap.set("i", "<C-s>", vim.lsp.buf.signature_help, { desc = "Show function signature.", buffer = e.buf })
+      vim.keymap.set("", "<leader>cn", vim.lsp.buf.rename, { desc = "Reame word.", buffer = e.buf })
+      vim.keymap.set("", "<leader>ca", vim.lsp.buf.code_action, { desc = "Code actions.", buffer = e.buf })
+      vim.keymap.set("", "<leader>cf", vim.lsp.buf.format, { desc = "Code format.", buffer = e.buf })
     end
   })
   vim.api.nvim_create_autocmd("FileType", {

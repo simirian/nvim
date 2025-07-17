@@ -2,7 +2,6 @@
 -- file explorer
 
 local icons = require("icons")
-local keys = require("keymaps")
 local fs = require("fcache")
 
 vim.g.loaded_netrw = 1
@@ -187,7 +186,30 @@ function H.dir_setup(bufnr)
     end),
   })
 
-  keys.bind("fex", bufnr)
+  vim.keymap.set("", "<CR>", function()
+    local line = vim.api.nvim_get_current_line()
+    if line:sub(1, 1) == "/" then
+      local name = line:match("^/[%da-f]+\t(.+)$")
+      if not name then
+        vim.notify("fex: cannot open malformed file entry: " .. line, vim.log.levels.ERROR, {})
+      else
+        local path = fs.path(vim.api.nvim_buf_get_name(0), name)
+        local node = fs.get(path)
+        if node and node.type == "link" then
+          vim.cmd.edit(node --[[@as Fs.Link]]:get_target().path)
+        else
+          vim.cmd.edit(node and node.path or path)
+        end
+      end
+    else
+      vim.cmd.edit(line)
+    end
+  end, { desc = "Open the item under the cursor.", buffer = bufnr })
+  vim.keymap.set("", "gh", function()
+    vim.b.fex_hide = not vim.b.fex_hide
+    H.dir_set_lines(bufnr)
+    H.dir_set_marks(bufnr)
+  end, { desc = "Toggle hidden files in fex buffer.", buffer = bufnr })
 
   H.buffers[bufnr] = true
   vim.bo[bufnr].bufhidden = "hide"
@@ -424,39 +446,6 @@ end
 --- @param opts? Fex.Opts User options.
 function M.setup(opts)
   opts = opts or {}
-
-  keys.add("fex", { {
-    "<CR>",
-    function()
-      local line = vim.api.nvim_get_current_line()
-      if line:sub(1, 1) == "/" then
-        local name = line:match("^/[%da-f]+\t(.+)$")
-        if not name then
-          vim.notify("fex: cannot open malformed file entry: " .. line, vim.log.levels.ERROR, {})
-        else
-          local path = fs.path(vim.api.nvim_buf_get_name(0), name)
-          local node = fs.get(path)
-          if node and node.type == "link" then
-            vim.cmd.edit(node--[[@as Fs.Link]]:get_target().path)
-          else
-            vim.cmd.edit(node and node.path or path)
-          end
-        end
-      else
-        vim.cmd.edit(line)
-      end
-    end,
-    desc = "Open the item under the cursor."
-  }, {
-    "gh",
-    function()
-      vim.b.fex_hide = not vim.b.fex_hide
-      local bufnr = vim.api.nvim_get_current_buf()
-      H.dir_set_lines(bufnr)
-      H.dir_set_marks(bufnr)
-    end,
-    desc = "Toggle hidden files in fex buffer."
-  } })
 
   vim.api.nvim_create_autocmd("BufNew", {
     desc = "Set up fex buffers when they are opened.",
