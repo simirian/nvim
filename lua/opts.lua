@@ -26,11 +26,11 @@ vim.o.smartcase = true
 vim.o.hlsearch = false
 vim.o.wrapscan = true
 
+vim.o.path = ".,,**"
 vim.opt.isfname:remove { "[", "]" }
 vim.opt.suffixesadd = { ".md" }
 
 vim.o.termguicolors = true
-vim.opt.switchbuf = { "useopen", "uselast" }
 
 --- @diagnostic disable-next-line: undefined-field
 if vim.loop.os_uname().sysname == "Windows_NT" then
