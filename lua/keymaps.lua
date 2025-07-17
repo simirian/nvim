@@ -48,17 +48,7 @@ H.ns["default"] = {
     { "<C-h>",      "<C-\\><C-o>gT",     desc = "Go to previous tab page.",      mode = "t", },
     { "<C-j>",      "<C-\\><C-o><C-w>w", desc = "Go to previous window.",        mode = "t", },
     { "<C-k>",      "<C-\\><C-o><C-w>W", desc = "Go to next window.",            mode = "t", },
-    { "<C-l>",      "<C-\\><C-o>gt",     desc = "go to next tab page.",          mode = "t", },
-    -- resizing windows
-    { "<C-up>",     "1<C-w>+",           desc = "Increase window height." },
-    { "<C-down>",   "1<C-w>-",           desc = "Decrease window height." },
-    { "<C-left>",   "2<C-w><",           desc = "Decrease window width." },
-    { "<C-right>",  "2<C-w>>",           desc = "Increase window width." },
-    -- move lines
-    { "<A-j>",      ":move +1<cr>",      desc = "Move line down." },
-    { "<A-k>",      ":move -2<cr>",      desc = "Move line up" },
-    { "<A-j>",      ":move '>+1<cr>gv",  desc = "Move lines down.",              mode = "x" },
-    { "<A-k>",      ":move '<-2<cr>gv",  desc = "Move lines up.",                mode = "x" },
+    { "<C-l>",      "<C-\\><C-o>gt",     desc = "Go to next tab page.",          mode = "t", },
     -- quick escape
     { "jj",         "<esc>",             desc = "Escape insert mode.",           mode = "i" },
     { "<esc><esc>", "<C-\\><C-n>",       desc = "leave terminal mode",           mode = "t" },
@@ -71,8 +61,6 @@ H.ns["default"] = {
     { "<S-tab>",    "<gv",               desc = "Unindent selected lines",       mode = "v" },
     -- misc mappings
     { "U",          "<C-r>",             desc = "Redo." },
-    { "<C-f>",      "<esc>m`gqap``a",    desc = "Format in insert mode.",        mode = "i" },
-    { "cw",         "caw",               desc = "Change to next word." },
     -- funky character found with <C-v><C-BS> in insert mode with 'display' uhex
     { "\x08",       "<C-w>",             desc = "Delete back a word.",           mode = "i" },
     { "-",          ":e %:h<cr>",        desc = "Open current buffer's parent." },
