@@ -3,19 +3,18 @@
 
 return {
   "nvim-treesitter/nvim-treesitter",
-  opts = {
-    sync_install = false,
-    auto_install = false,
-    highlight = {
-      enable = true,
-      additional_vim_regex_highlighting = false,
-    },
-    indent = {
-      enable = true,
-      disable = { "markdown" },
-    },
-  },
-  config = function(_, opts)
-    require("nvim-treesitter.configs").setup(opts)
+  branch = "main",
+  build = ":TSUpdate",
+  config = function()
+    require("nvim-treesitter").setup()
+    vim.api.nvim_create_autocmd("FileType", {
+      desc = "Enable treesitter in supported buffers.",
+      callback = function()
+        local language = vim.treesitter.language.get_lang(vim.bo.ft)
+        if vim.api.nvim_get_runtime_file("parser/" .. language .. "*", false)[1] then
+          vim.treesitter.start()
+        end
+      end,
+    })
   end
 }

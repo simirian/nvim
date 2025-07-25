@@ -1,8 +1,6 @@
 -- simirian's NeoVim
 -- telescope config
 
-local icons = require("icons")
-
 return {
   "nvim-telescope/telescope.nvim",
   dependencies = {
@@ -15,7 +13,7 @@ return {
     local actions = require("telescope.actions")
     telescope.setup {
       defaults = {
-        prompt_prefix = " " .. icons.shapes.telescope .. "  ",
+        prompt_prefix = "   ",
         mappings = {
           i = {
             ["<C-j>"] = actions.move_selection_next,
