@@ -93,13 +93,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
   callback = function(e)
     vim.keymap.set("i", "<tab>", cmp_next, { desc = "Next completion item.", buffer = e.buf })
     vim.keymap.set("i", "<S-tab>", cmp_prev, { desc = "Previous completion item.", buffer = e.buf })
-    vim.keymap.set("", "<leader>cd", vim.lsp.buf.definition, { desc = "Go to word definition.", buffer = e.buf })
-    vim.keymap.set("", "<leader>cr", vim.lsp.buf.references, { desc = "Find word references.", buffer = e.buf })
-    vim.keymap.set("", "<leader>cs", vim.lsp.buf.signature_help, { desc = "Show function signature.", buffer = e.buf })
-    vim.keymap.set("i", "<C-s>", vim.lsp.buf.signature_help, { desc = "Show function signature.", buffer = e.buf })
-    vim.keymap.set("", "<leader>cn", vim.lsp.buf.rename, { desc = "Reame word.", buffer = e.buf })
-    vim.keymap.set("", "<leader>ca", vim.lsp.buf.code_action, { desc = "Code actions.", buffer = e.buf })
-    vim.keymap.set("", "<leader>cf", vim.lsp.buf.format, { desc = "Code format.", buffer = e.buf })
   end
 })
 
