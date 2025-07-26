@@ -3,7 +3,7 @@
 
 local M = {}
 
--- autopairs -------------------------------------------------------------------
+-- ((autopairs)) ---------------------------------------------------------------
 
 --- Rule for pairing (and also deleting) items.
 --- @class Pairs.Rule
@@ -138,6 +138,7 @@ local function pair(char)
   end
 end
 
+--- Enables auto pairing with this module.
 function M.pairenable()
   local augroup = vim.api.nvim_create_augroup("pairs", { clear = true })
 
@@ -177,6 +178,135 @@ end
 
 M.pairenable()
 
+--- Disables further auto pairing with this module.
 function M.pairdisable()
   vim.api.nvim_create_augroup("pairs", {clear = true})
 end
+
+-- ((surround)) ----------------------------------------------------------------
+
+--- A tuple which contains the open and close string for a pair.
+--- @alias Pairs.OCTuple { open: string, close: string }
+
+--- A class which represents a surrounding pair.
+--- @class Pairs.Surround
+--- @field a Pairs.OCTuple|fun(): Pairs.OCTuple
+
+--- @type table<string, Pairs.Surround>
+local surrounds = {
+  -- tags (T for space)
+  ["t"] = {
+    a = function()
+      local tagname = vim.fn.input("tag: ")
+      return { open = "<" .. tagname .. ">", close = "</" .. tagname .. ">" }
+    end
+  },
+  ["T"] = {
+    a = function()
+      local tagname = vim.fn.input("tag: ")
+      return { open = "<" .. tagname .. "> ", close = " </" .. tagname .. ">" }
+    end
+  },
+  -- p prompt (P for space)
+  ["p"] = {
+    a = function()
+      local text = vim.fn.input("text: ")
+      return { open = text, close = text }
+    end
+  },
+  ["P"] = {
+    a = function()
+      local text = vim.fn.input("text: ")
+      return { open = text .. " ", close = " " .. text }
+    end
+  },
+}
+
+-- simple surrounds
+for _, set in ipairs({
+  { "(", ")" },
+  { "[", "]" },
+  { "{", "}" },
+  { "<", ">" },
+  { '"', '"' },
+  { "'", "'" },
+  { "`", "`" },
+}) do
+  surrounds[set[2]] = { a = { open = set[1], close = set[2] } }
+  if set[1] ~= set[2] then
+    surrounds[set[1]] = { a = { open = set[1] .. " ", close = " " .. set[2] } }
+  end
+end
+
+--- Surround operator function. Should never be called manually, only from
+--- 'opfunc' internally.
+--- TODO: update indentation/formatting over surround
+--- @param mode "char"|"line"|"block"
+function Surround(mode)
+  local char = vim.fn.getchar()
+  if type(char) == "number" then
+    char = string.char(char)
+  end
+  local add = surrounds[char] and surrounds[char].a
+  if not add then return end
+  --- @cast add Pairs.OCTuple
+  add = type(add) == "function" and add() or add
+  local selectstart = vim.api.nvim_buf_get_mark(0, "[")
+  local selectend = vim.api.nvim_buf_get_mark(0, "]")
+  if mode == "char" then
+    local lines = vim.api.nvim_buf_get_lines(0, selectstart[1] - 1, selectend[1], false)
+    if #lines == 1 then
+      lines[1] = table.concat {
+        lines[1]:sub(1, selectstart[2]),
+        add.open,
+        lines[1]:sub(selectstart[2] + 1, selectend[2] + 1),
+        add.close,
+        lines[1]:sub(selectend[2] + 2),
+      }
+    else
+      lines[1] = lines[1]:sub(1, selectstart[2]) .. add.open .. lines[1]:sub(selectstart[2] + 1)
+      lines[#lines] = lines[#lines]:sub(1, selectend[2] + 1) .. add.close .. lines[#lines]:sub(selectend[2] + 2)
+    end
+    vim.api.nvim_buf_set_lines(0, selectstart[1] - 1, selectend[1], false, lines)
+  elseif mode == "line" then
+    local lines = vim.api.nvim_buf_get_lines(0, selectstart[1] - 1, selectend[1], false)
+    table.insert(lines, 1, add.open)
+    table.insert(lines, add.close)
+    vim.api.nvim_buf_set_lines(0, selectstart[1] - 1, selectend[1], false, lines)
+  else -- "block"
+    local lines = vim.api.nvim_buf_get_lines(0, selectstart[1] - 1, selectend[1], false)
+    selectend[2] = selectend[2] == #lines[#lines] and -1 or selectend[2]
+    lines = vim.tbl_map(function(line)
+      return table.concat {
+        line:sub(1, selectstart[2]),
+        add.open,
+        line:sub(selectstart[2] + 1, selectend[2] >= 0 and selectend[2] + 2 or nil),
+        add.close,
+        line:sub(selectend[2] >= 0 and selectend[2] + 3 or #line + 1),
+      }
+    end, lines)
+    vim.api.nvim_buf_set_lines(0, selectstart[1] - 1, selectend[1], false, lines)
+  end
+end
+
+--- Callback to set up the surround operator.
+local function asurround()
+  vim.o.opfunc = "v:lua.Surround"
+  return "g@"
+end
+
+--- Enable surround keymaps in this module.
+function M.surroundenable()
+  vim.keymap.set("", "sa", asurround, { desc = "Surround operator.", expr = true })
+  vim.keymap.set("", "saa", function() return asurround() .. "_" end, { desc = "Surround current line.", expr = true })
+end
+
+M.surroundenable()
+
+--- Disable surround keymaps defined in this module.
+function M.surrounddisable()
+  vim.keymap.del("", "sa")
+  vim.keymap.del("", "saa")
+end
+
+return M

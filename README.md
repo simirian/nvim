@@ -12,51 +12,31 @@ directory. Run NeoVim like normal (`nvim`), and everything SHOULD be installed.
 
 | map                | action                                          |
 | ------------------ | ----------------------------------------------- |
-| `jj`               | Exit insert mode.                               |
-| `U`                | Redo.                                           |
-| `<C-f>`            | Format in insert mode.                          |
 | `<C-j>`, `<C-k>`   | Next and previous window in tabpage.            |
 | `<C-h>`, `<C-l>`   | Next and previous tabpage.                      |
-| `<C-arrow>`        | Resize the current window.                      |
-| `<A-j>`, `<A-k>`   | Moves the current line or selection up or down. |
+| `jj`               | Exit insert mode.                               |
+| `<esc><esc>`       | Exit terminal mode.                             |
 | `<leader>p`        | Paste from system clipboard.                    |
 | `<leader>y`        | Yank to system clipboard.                       |
 | `<tab>`, `<S-tab>` | Invoke completion or indentation in insert.     |
-| `<esc><esc>`       | Exit terminal mode.                             |
-| `_`                | Open vim's current directory in fex.            |
-| `-`                | Open the parent of the current file in fex.     |
-
-Telescope:
-
-| map          | action                 |
-| ------------ | ---------------------- |
-| `<leader>ff` | \[f\]ind \[f\]iles     |
-| `<leader>fg` | \[f\]ind with \[g\]rep |
-| `<leader>fb` | \[f\]ind \[b\]uffer    |
-| `<leader>fh` | \[f\]ind \[h\]elp      |
-
-Language servers:
-
-| map          | action                             |
-| ------------ | ---------------------------------- |
-| `<tab>`      | Next completion item.              |
-| `<S-tab>`    | Previous completion item.          |
-| `<leader>cd` | Go to word definition.             |
-| `<leader>cr` | Find word references.              |
-| `<leader>cs` | Show function signature.           |
-| `<C-s>`      | Show function signature in insert. |
-| `<leader>cn` | Rename word.                       |
-| `<leader>ca` | Execute code actions.              |
-| `<leader>cf` | Format code.                       |
+| `U`                | Redo.                                           |
+| `_`                | Open vim's current directory.                   |
+| `-`                | Open the parent directory of the current file.  |
+| `sa` motion key    | Surround operator, see below.                   |
+| `<leader>ff`       | Telescope find files.                           |
+| `<leader>fg`       | Telescope live grep.                            |
+| `<leader>fb`       | Telescope buffers.                              |
+| `<leader>fh`       | Telescope help.                                 |
 
 ## Commands
 
-| command      | action                                  |
-| ------------ | --------------------------------------- |
-| `:Toc`       | Table of contents support for markdown. |
-| `:Today`     | Open today's daily note.                |
-| `:Yesterday` | Open yesterday's daily note.            |
-| `:Scratch`   | Open a scratch buffer.                  |
+| command       | action                                  |
+| ------------- | --------------------------------------- |
+| `:Toc`        | Table of contents support for markdown. |
+| `:Today`      | Open today's daily note.                |
+| `:Yesterday`  | Open yesterday's daily note.            |
+| `:Scratch`    | Open a scratch buffer.                  |
+| `:AnnabelLee` | Open a scratch buffer with Annabel Lee. |
 
 ## Plugins
 
@@ -70,22 +50,24 @@ will be removed once this branch is merged into main.
 - [x] `mason.nvim` -> `lsp`
 - [x] `yicks` -> `colors`
     - [x] set internal terminal colors
-    - [ ] allow command line window (`q:`) highlighting
+    - [x] allow command line window (`q:`) highlighting (update fixed this?)
 - [o] `nvim-autopairs` (add surround functionality) -> `pairs`
     - [x] simple pairing of `()`, `[]`, `{}`, `""`, `''`, ` `` `
-    - [o] surround capability with operators for add, change, and remove on
-      those pairs
-        - [x] character-wise surrounds
-        - [ ] line-wise surrounds
-        - [ ] block-size surrounds
+    - [x] complex (manual with functions) pairing
+    - [x] surround operator
+        - [x] char mode
+        - [x] line mode
+        - [x] block mode
+    - [ ] delete surrounds
+    - [ ] change surrounds
     - I imagine this won't be too hard, and I'm looking forward to getting rid
       of it
-- [o] `nvim-tree` -> `fex`
+- [o] `nvim-tree` -> `fex`, `ft`
     - [x] view directories
     - [x] navigate directories
     - [x] basic manipulations (add, remove, move, copy)
     - [x] copy/move across buffers
-    - [ ] safe file system modification (as much error checking as possible)
+    - [x] safe file system modification (as much error checking as possible)
     - [ ] file tree view for current directory
 - [o] `nvim-manager` -> `lsp`, `projects`
     - [x] `projects` to save project directories
