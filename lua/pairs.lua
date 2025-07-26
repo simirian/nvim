@@ -1,307 +1,182 @@
 --- simirian's NeoVim
---- autopairs
+--- autopairs and surrounds
 
 local M = {}
-local H = {}
 
---- Public rule presets for useful rules.
+-- autopairs -------------------------------------------------------------------
+
+--- Rule for pairing (and also deleting) items.
+--- @class Pairs.Rule
+--- The single character starting pattern for the rule, used for invocation as
+--- the lhs of a keymap.
+--- @field open string
+--- The single character end of the pattern, or a function that closes the pair.
+--- @field close string|fun(): string?
+--- function that checks if the cursor is inside the pair.
+--- @field check? fun(before: string, after: string): boolean
+
+--- List of pairs.
 --- @type table<string, Pairs.Rule>
-M.rules = {
-  parens = { type = "simple", open = "(", close = ")" },
-  brackets = { type = "simple", open = "[", close = "]" },
-  braces = { type = "simple", open = "{", close = "}" },
-  quote = { type = "simple", open = '"', close = '"' },
-  triquote = { type = "regex", open = '"""$', close = '"""' },
-  apostrophe = { type = "simple", open = "'", close = "'" },
-  tripostrophe = { type = "regex", open = "'''$", close = "'''" },
-  grave = { type = "simple", open = "`", close = "`" },
-  trigrave = { type = "regex", open = "```$", close = "```" },
-  ccomment = { type = "regex", open = "/%*$", close = "*/" },
-  tag = { type = "regex", open = "<([^%s<>]+)[^<>]*>$", close = "</%1>" },
-  tagcomment = { type = "regex", open = "<!%-%-$", close = "-->" },
+local rules = {
+  parens = { open = "(", close = ")" },
+  brackets = { open = "[", close = "]" },
+  braces = { open = "{", close = "}" },
+  angles = { open = "<", close = ">" },
+  dquote = { open = '"', close = '"' },
+  quote = { open = "'", close = "'" },
+  grave = { open = "`", close = "`" },
+  aster = { open = "*", close = "*" },
+  -- html and xml tags
+  tag = {
+    open = ">",
+    close = function()
+      local line = vim.api.nvim_get_current_line()
+      local curpos = vim.api.nvim_win_get_cursor(0)
+      local tagname = line:sub(1, curpos[2]):match("<([^<>%s]+)[^<>]*$")
+      if tagname then
+        if line:sub(curpos[2] + 1):find("</" .. tagname .. ">", 1, true) then return ">" end
+        return ("></%s><esc>F>a"):format(tagname)
+      end
+    end,
+    check = function(before, after)
+      local tagname = before:match("<([^<>%s]+)[^<>]*>$")
+      return tagname and after:find("</" .. tagname .. ">", 1, true) == 1
+    end,
+  },
 }
 
---- Defualt pair rules.
---- @type table<string, Pairs.Rule[]>
-H.rules = {
-  default = {
-    M.rules.parens,
-    M.rules.brackets,
-    M.rules.braces,
-    M.rules.quote,
-    M.rules.apostrophe,
-    M.rules.grave,
-    M.rules.ccomment,
-  },
-  html = {
-    M.rules.tagcomment,
-    M.rules.tag,
-    M.rules.quote,
-  },
-  markdown = {
-    M.rules.parens,
-    M.rules.brackets,
-    M.rules.braces,
-    M.rules.quote,
-    M.rules.trigrave,
-  }
+--- Map of file types to their pair rules.
+--- @type table<string, string[]|boolean>
+local ft = {
+  default = { "parens", "brackets", "braces", "dquote", "quote" },
+  text = { "parens", "brackets", "braces", "dquote" },
+  markdown = { "parens", "brackets", "braces", "dquote", "grave", "aster" },
+  html = { "parens", "brackets", "braces", "dquote", "tag" },
+  TelescopePrompt = false,
 }
 
 --- Map of closing characters to the number of times they can be typed over this
 --- insert mode session.
 --- @type table<string, integer>
-H.paircounts = {}
+local paircounts = {}
 
---- @type { coord: integer[], type: "none"|"absolute"|"offset" }
-H.surroundstate = { coord = { 0, 0 }, type = "none" }
-
---- Rule for pairing (and also deleting) items.
---- @class Pairs.Rule
---- The type of rule it is.
---- @field type "simple"|"tag"|"regex"
---- The starting pattern for the rule.
---- @field open string
---- The ending pattern of the rule.
---- @field close string
-
---- The context needed to asses pair invocation.
---- @class Pairs.Context
---- The character causing invocation.
---- @field char string
---- The part of the line before the cursor.
---- @field before string
---- The part of the line after the cursor.
---- @field after string
-
---- Feeds keys to nvim like maps without having to repeat annoying escapes.
---- @param map string The map that should happen.
-function H.feed(map)
-  vim.api.nvim_feedkeys(vim.keycode(map), "n", false)
+--- Generates a callback for opening a pair.
+--- @param pair Pairs.Rule Pair to make a callback for.
+--- @return string?
+local function open(pair)
+  paircounts[pair.close] = paircounts[pair.close] and paircounts[pair.close] + 1 or 1
+  return pair.open .. pair.close .. "<left>"
 end
 
---- Checks if there is a simple rule in the list which char closes.
---- @param rules Pairs.Rule[] The pairs to check.
---- @param char string The character to check if it closes.
---- @return boolean closes
-function H.char_closes(rules, char)
-  for _, rule in ipairs(rules) do
-    if rule.type == "simple" and rule.close == char then return true end
+--- Generates a callback for closing a pair.
+--- @param pair Pairs.Rule Pair to make a callback for
+--- @return string?
+local function close(pair)
+  local line = vim.api.nvim_get_current_line()
+  local col = vim.api.nvim_win_get_cursor(0)[2]
+  if line:sub(col + 1, col + 1) == pair.close and paircounts[pair.close] then
+    paircounts[pair.close] = paircounts[pair.close] > 1 and paircounts[pair.close] - 1 or nil
+    return "<right>"
   end
-  return false
 end
 
---- Gets the current position that pairs should close from based on the current
---- surround state.
---- @return integer[] position
-function H.get_close_pos()
+--- Deletes a simple pair if the cursor is between two simple pair ends.
+--- @return string keymap
+local function bs()
+  local line = vim.api.nvim_get_current_line()
   local curpos = vim.api.nvim_win_get_cursor(0)
-  if H.surroundstate.type == "offset" then
-    return {
-      curpos[1] + H.surroundstate.coord[1],
-      curpos[2] + H.surroundstate.coord[2],
-    }
-  end
-  if H.surroundstate.type == "absolute" then
-    return H.surroundstate.coord
-  end
-  return curpos
-end
-
---- Gets the context around the cursor.
---- @return Pairs.Context
-function H.get_context()
-  local curpos = vim.api.nvim_win_get_cursor(0)
-  local closepos = H.get_close_pos()
-  return {
-    before = vim.api.nvim_get_current_line():sub(1, curpos[2]),
-    after = vim.api.nvim_buf_get_lines(0, closepos[1] - 1, closepos[1], false)[1]:sub(closepos[2] + 1),
-    char = vim.v.char,
-  }
-end
-
---- Inserts text acter the cursor.
---- @param char string The character which triggered autopairing.
---- @param text string The text to insert.
-function H.paircomplete(char, text)
-  vim.v.char = ""
-  vim.schedule(function()
-    local curpos = vim.api.nvim_win_get_cursor(0)
-    local curline = vim.api.nvim_get_current_line()
-    vim.api.nvim_buf_set_lines(0, curpos[1] - 1, curpos[1], false, {
-      curline:sub(1, curpos[2]) .. char .. curline:sub(curpos[2] + 1)
-    })
-    vim.api.nvim_win_set_cursor(0, { curpos[1], curpos[2] + 1 })
-    local closepos = H.get_close_pos()
-    local closeline = vim.api.nvim_buf_get_lines(0, closepos[1] - 1, closepos[1], false)[1]
-    vim.api.nvim_buf_set_lines(0, closepos[1] - 1, closepos[1], false, {
-      closeline:sub(1, closepos[2]) .. text .. closeline:sub(closepos[2] + 1)
-    })
-  end)
-end
-
---- Steps over the next character.
-function H.stepover()
-  H.feed("<right>")
-  vim.v.char = ""
-end
-
---- Attempts to perform a regex autopairing. Returns true if the auto-pairing
---- was actually performed.
---- @param rule Pairs.Rule The regex rule to check and apply.
---- @param context Pairs.Context The context in which to execute the rule.
---- @return boolean paired
-function H.regex(rule, context)
-  local matches = { (context.before .. context.char):match(rule.open) }
-  if #matches == 0 then return false end
-  local rep = rule.close:gsub("%%%%", "\n")
-  for i, match in ipairs(matches) do
-    match = match:gsub("%%", "\n")
-    rep = rep:gsub("%%" .. i, match)
-  end
-  H.paircomplete(context.char, rep:gsub("\n", "%%"))
-  return true
-end
-
---- Checks() if a simple rule should be applied, and if it should then it is
---- executed and this return true. If it should not be applied then this returns
---- false and does nothing else.
---- @param rule Pairs.Rule The regex rule to check and apply.
---- @param context Pairs.Context The context in which to execute the rule.
---- @return boolean paired
-function H.simple(rule, context)
-  local ac = context.after:sub(1, 1)
-  if H.surroundstate.type == "absolute" then print("absolute", vim.inspect(H.surroundstate.coord)) end
-  if H.surroundstate.type == "none"
-      and context.char == rule.close and ac == rule.close
-      and H.paircounts[rule.close] and H.paircounts[rule.close] > 0
-  then
-    H.stepover()
-    H.paircounts[rule.close] = H.paircounts[rule.close] - 1
-    return true
-  end
-  if context.char == rule.open
-      and (ac == ""
-        or ac:match("[%s%.]")
-        or H.char_closes(vim.b.pairs_rules or {}, ac))
-  then
-    H.paircomplete(context.char, rule.close)
-    H.paircounts[rule.close] = H.paircounts[rule.close] and H.paircounts[rule.close] + 1 or 1
-    return true
-  end
-  return false
-end
-
---- Callback for InsertCharPre which delegates pairing to one of the pairing
---- functions, supplying them with the rule and context. Accepts the first pair
---- which matches in b:pairs_rules.
-function H.autopair()
-  local context = H.get_context()
-  for _, rule in ipairs(vim.b.pairs_rules or {}) do
-    if H[rule.type](rule, context) then
-      return
+  local before = line:sub(curpos[2], curpos[2])
+  local after = line:sub(curpos[2] + 1, curpos[2] + 1)
+  for _, pair in ipairs(vim.b.pairs_rules --[[@as Pairs.Rule[] ]]) do
+    if pair.open == before and pair.close == after then
+      paircounts[pair.close] = paircounts[pair.close] and paircounts[pair.close] > 1 and paircounts[pair.close] - 1 or nil
+      return "<bs><del>"
     end
   end
-end
-
---- Deletes a simple pair if the cursor is between two simple pair characters.
-function H.del()
-  local context = H.get_context()
-  for _, rule in ipairs(vim.b.pairs_rules or {}) do
-    if rule.type == "simple"
-        and rule.open == context.before:sub(#context.before)
-        and rule.close == context.after:sub(1, 1)
-    then
-      if H.paircounts[rule.close] and H.paircounts[rule.close] > 0 then
-        H.paircounts[rule.close] = H.paircounts[rule.close] - 1
-      end
-      local closepos = H.get_close_pos()
-      local line = vim.api.nvim_buf_get_lines(0, closepos[1] - 1, closepos[1], false)[1]
-      vim.api.nvim_buf_set_lines(0, closepos[1] - 1, closepos[1], false, {
-        line:sub(1, closepos[2]) .. line:sub(closepos[2] + 2)
-      })
-    end
-  end
-  H.feed("<bs>")
+  return "<bs>"
 end
 
 --- Splits a pair over new lines if the cursor is betwen simple pair ends.
-function H.cr()
-  local function docr()
-    H.feed("<cr><up><end><cr>")
-  end
-  local context = H.get_context()
-  for _, rule in ipairs(vim.b.pairs_rules or {}) do
-    if rule.type == "simple"
-        and rule.open == context.before:sub(#context.before)
-        and rule.close == context.after:sub(1, 1)
+--- @return string keymap
+local function cr()
+  local line = vim.api.nvim_get_current_line()
+  local curpos = vim.api.nvim_win_get_cursor(0)
+  local before = line:sub(1, curpos[2])
+  local after = line:sub(curpos[2] + 1)
+  for _, pair in ipairs(vim.b.pairs_rules --[[@as Pairs.Rule[] ]]) do
+    if pair.check and pair.check(before, after)
+        or pair.open == before:sub(#before) and pair.close == after:sub(1, 1)
     then
-      docr()
-      return
-    elseif rule.type == "regex" then
-      local matches = { context.before:match(rule.open) }
-      if #matches > 0 then
-        local rep = context.after:gsub("%%%%", "\n")
-        for i, match in ipairs(matches) do
-          rep = rep:gsub("%%" .. i, match:gsub("%%", "\n"))
-        end
-        rep = rep:gsub("\n", "%%")
-        if context.after:sub(1, #rep) == rep then
-          docr()
-          return
+      return "<cr><up><end><cr>"
+    end
+  end
+  return "<cr>"
+end
+
+--- Generates a function for pairing after a character input. The function finds
+--- the first pair rule which ends or starts with the typed character and
+--- actually returns a successful keymap rhs.
+--- @param char string The character to pair from.
+--- @return fun(): string?
+local function pair(char)
+  return function()
+    for _, rule in ipairs(vim.b.pairs_rules --[[@as Pairs.Rule[] ]]) do
+      if rule.close == char then
+        local rhs = close(rule)
+        if rhs then return rhs end
+      elseif rule.open == char then
+        if type(rule.close) == "function" then
+          local rhs = rule.close()
+          if rhs then return rhs end
+        else
+          local rhs = open(rule)
+          if rhs then return rhs end
         end
       end
     end
+    return char
   end
-  H.feed("<cr>")
 end
 
---- Operator function for surrounding text.
---- @param mode "line"|"char"|"block" The selection mode.
-function M._opfunc(mode)
-  -- TODO line and block surround
-  if mode ~= "char" then return end
-  local start = vim.api.nvim_buf_get_mark(0, "[")
-  local stop = vim.api.nvim_buf_get_mark(0, "]")
-  stop[2] = stop[2] + 1
-  if start[1] == stop[1] then
-    H.surroundstate = { coord = { stop[1] - start[1], stop[2] - start[2] }, type = "offset" }
-  else
-    H.surroundstate = { coord = stop, type = "absolute" }
-  end
-  vim.cmd.startinsert()
-end
+function M.pairenable()
+  local augroup = vim.api.nvim_create_augroup("pairs", { clear = true })
 
---- Sets the defeult and override rules, as well as activating the autocommands
---- and setting keymaps.
-function M.setup(opts)
-  opts = opts or {}
-  vim.api.nvim_create_augroup("pairs", { clear = true })
-  vim.api.nvim_create_autocmd("FileType", {
-    desc = "Attach pairs to buffer.",
-    group = H.augroup,
-    callback = function()
-      local ft = vim.bo.filetype
-      vim.b.pairs_rules = opts[ft] or opts.default or H.rules[ft] or H.rules.default
-    end
-  })
-  vim.api.nvim_create_autocmd("InsertCharPre", {
-    desc = "Autopair completion.",
-    group = H.augroup,
-    callback = H.autopair,
-  })
   vim.api.nvim_create_autocmd("InsertLeave", {
     desc = "Reset pair typeover counts and surround state.",
-    group = H.augroup,
-    callback = function()
-      H.paircounts = {}
-      H.surroundstate = { coord = { 0, 0 }, type = "none" }
-    end
+    group = augroup,
+    callback = function() paircounts = {} end,
   })
 
-  vim.keymap.set("i", "<bs>", H.del, { desc = "Delete a pair." })
-  vim.keymap.set("i", "<cr>", H.cr, { desc = "Neatly split a pair over lines." })
-  vim.keymap.set("", "s", "<cmd>set opfunc=v:lua.require'pairs'._opfunc<cr>g@",
-    { desc = "Surround operator." })
+  vim.api.nvim_create_autocmd("FileType", {
+    desc = "Bind pairs to buffer.",
+    group = augroup,
+    callback = function()
+      local bufrules = ft[vim.bo.ft]
+      if bufrules == false then return end
+      vim.b.pairs_rules = vim.tbl_map(function(e) return rules[e] end, bufrules or ft.default --[[@as string[] ]])
+
+      local maps = {}
+      for _, rule in ipairs(vim.b.pairs_rules --[[@as Pairs.Rule[] ]]) do
+        if not maps[rule.open] then
+          vim.keymap.set("i", rule.open, pair(rule.open),
+            { desc = "Complete automatic pairing.", expr = true, buffer = 0 })
+          maps[rule.open] = true
+        end
+        if type(rule.close) == "string" and not maps[rule.close] then
+          vim.keymap.set("i", rule.close --[[@as string]], pair(rule.close --[[@as string]]),
+            { desc = "Complete automatic pairing.", expr = true, buffer = 0 })
+          maps[rule.close] = true
+        end
+      end
+
+      vim.keymap.set("i", "<cr>", cr, { desc = "Neatly split a pair over lines.", expr = true, buffer = 0 })
+      vim.keymap.set("i", "<bs>", bs, { desc = "Delete a pair.", expr = true, buffer = 0 })
+    end,
+  })
 end
 
-return M
+M.pairenable()
+
+function M.pairdisable()
+  vim.api.nvim_create_augroup("pairs", {clear = true})
+end
