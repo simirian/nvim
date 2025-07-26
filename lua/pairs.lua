@@ -85,11 +85,11 @@ end
 local function bs()
   local line = vim.api.nvim_get_current_line()
   local curpos = vim.api.nvim_win_get_cursor(0)
-  local before = line:sub(curpos[2], curpos[2])
-  local after = line:sub(curpos[2] + 1, curpos[2] + 1)
+  local before, after = line:sub(curpos[2], curpos[2]), line:sub(curpos[2] + 1, curpos[2] + 1)
   for _, pair in ipairs(vim.b.pairs_rules --[[@as Pairs.Rule[] ]]) do
     if pair.open == before and pair.close == after then
-      paircounts[pair.close] = paircounts[pair.close] and paircounts[pair.close] > 1 and paircounts[pair.close] - 1 or nil
+      paircounts[pair.close] = paircounts[pair.close] and paircounts[pair.close] > 1 and paircounts[pair.close] - 1
+          or nil
       return "<bs><del>"
     end
   end
@@ -101,8 +101,7 @@ end
 local function cr()
   local line = vim.api.nvim_get_current_line()
   local curpos = vim.api.nvim_win_get_cursor(0)
-  local before = line:sub(1, curpos[2])
-  local after = line:sub(curpos[2] + 1)
+  local before, after = line:sub(1, curpos[2]), line:sub(curpos[2] + 1)
   for _, pair in ipairs(vim.b.pairs_rules --[[@as Pairs.Rule[] ]]) do
     if pair.check and pair.check(before, after)
         or pair.open == before:sub(#before) and pair.close == after:sub(1, 1)
@@ -180,7 +179,7 @@ M.pairenable()
 
 --- Disables further auto pairing with this module.
 function M.pairdisable()
-  vim.api.nvim_create_augroup("pairs", {clear = true})
+  vim.api.nvim_create_augroup("pairs", { clear = true })
 end
 
 -- ((surround)) ----------------------------------------------------------------
@@ -190,66 +189,81 @@ end
 
 --- A class which represents a surrounding pair.
 --- @class Pairs.Surround
+--- The sides to surround text with, or a function to generate them.
 --- @field a Pairs.OCTuple|fun(): Pairs.OCTuple
+--- The sides to be searched for when deleting surroundings, or a function to
+--- generate them. Uses `a` as a fallback.
+--- @field d? Pairs.OCTuple|fun(): Pairs.OCTuple
 
 --- @type table<string, Pairs.Surround>
 local surrounds = {
+  ["("] = { a = { open = "(", close = ")" }, d = { open = "%(", close = "%)" } },
+  [")"] = { a = { open = "( ", close = " )" }, d = { open = "%(%s*", close = "%s*%)" } },
+  ["["] = { a = { open = "[", close = "]" }, d = { open = "%[", close = "%]" } },
+  ["]"] = { a = { open = "[ ", close = " ]" }, d = { open = "%[%s*", close = "%s*%]" } },
+  ["{"] = { a = { open = "{", close = "}" } },
+  ["}"] = { a = { open = "{ ", close = " }" }, d = { open = "{%s*", close = "%s*}" } },
+  ["<"] = { a = { open = "<", close = ">" } },
+  [">"] = { a = { open = "< ", close = " >" }, d = { open = "<%s*", close = "%s*>" } },
+  ['"'] = { a = { open = '"', close = '"' } },
+  ["'"] = { a = { open = "'", close = "'" } },
+  ["`"] = { a = { open = "`", close = "`" } },
   -- tags (T for space)
   ["t"] = {
     a = function()
-      local tagname = vim.fn.input("tag: ")
+      local tagname = vim.fn.input("t ")
       return { open = "<" .. tagname .. ">", close = "</" .. tagname .. ">" }
-    end
+    end,
+    d = function()
+      local tagname = vim.fn.input("t "):gsub("%%", "%%%%")
+      return { open = "<" .. tagname .. "[^<>]*>", close = "</" .. tagname .. ">" }
+    end,
   },
   ["T"] = {
     a = function()
-      local tagname = vim.fn.input("tag: ")
+      local tagname = vim.fn.input("T ")
       return { open = "<" .. tagname .. "> ", close = " </" .. tagname .. ">" }
-    end
+    end,
+    d = function()
+      local tagname = vim.fn.input("T "):gsub("%%", "%%%%")
+      return { open = "<" .. tagname .. "[^<>]*>%s*", "%s*</" .. tagname .. ">" }
+    end,
   },
   -- p prompt (P for space)
   ["p"] = {
     a = function()
-      local text = vim.fn.input("text: ")
+      local text = vim.fn.input("p ")
       return { open = text, close = text }
-    end
+    end,
+    d = function()
+      local text = vim.fn.input("p "):gsub("%%", "%%%%")
+      return { open = text, close = text }
+    end,
   },
   ["P"] = {
     a = function()
-      local text = vim.fn.input("text: ")
+      local text = vim.fn.input("P ")
       return { open = text .. " ", close = " " .. text }
-    end
+    end,
+    d = function()
+      local text = vim.fn.input("P "):gsub("%%", "%%%%")
+      return { open = text .. "%s*", close = "%s*" .. text }
+    end,
   },
 }
-
--- simple surrounds
-for _, set in ipairs({
-  { "(", ")" },
-  { "[", "]" },
-  { "{", "}" },
-  { "<", ">" },
-  { '"', '"' },
-  { "'", "'" },
-  { "`", "`" },
-}) do
-  surrounds[set[2]] = { a = { open = set[1], close = set[2] } }
-  if set[1] ~= set[2] then
-    surrounds[set[1]] = { a = { open = set[1] .. " ", close = " " .. set[2] } }
-  end
-end
 
 --- Surround operator function. Should never be called manually, only from
 --- 'opfunc' internally.
 --- TODO: update indentation/formatting over surround
 --- @param mode "char"|"line"|"block"
 function Surround(mode)
+  print("sa")
   local char = vim.fn.getchar()
   if type(char) == "number" then
     char = string.char(char)
   end
   local add = surrounds[char] and surrounds[char].a
   if not add then return end
-  --- @cast add Pairs.OCTuple
   add = type(add) == "function" and add() or add
   local selectstart = vim.api.nvim_buf_get_mark(0, "[")
   local selectend = vim.api.nvim_buf_get_mark(0, "]")
@@ -295,10 +309,40 @@ local function asurround()
   return "g@"
 end
 
+--- Callabck that deletes surroundings.
+local function dsurround()
+  print("sd")
+  local char = vim.fn.getchar()
+  if type(char) == "number" then
+    char = string.char(char)
+  end
+  local delete = surrounds[char] and (surrounds[char].d or surrounds[char].a)
+  if not delete then return end
+  delete = type(delete) == "function" and delete() or delete
+  local line = vim.api.nvim_get_current_line()
+  local curpos = vim.api.nvim_win_get_cursor(0)
+  local before, after = line:sub(1, curpos[2]), line:sub(curpos[2] + 1)
+  local closepos = { after:find(delete.close) }
+  if not closepos then return end
+  local find, openpos = { before:find(delete.open) }, nil
+  while #find > 0 do
+    openpos = find
+    find = { before:find(delete.open, find[1] + 1) }
+  end
+  if not openpos then return end
+  vim.api.nvim_buf_set_lines(0, curpos[1] - 1, curpos[1], false, { table.concat {
+    line:sub(1, openpos[1] - 1),
+    line:sub(openpos[2] + 1, closepos[1] + curpos[2] - 1),
+    line:sub(closepos[2] + curpos[2] + 1),
+  } })
+end
+
 --- Enable surround keymaps in this module.
 function M.surroundenable()
   vim.keymap.set("", "sa", asurround, { desc = "Surround operator.", expr = true })
   vim.keymap.set("", "saa", function() return asurround() .. "_" end, { desc = "Surround current line.", expr = true })
+  vim.keymap.set("n", "sd", dsurround, { desc = "Delete surroundings." })
+  vim.keymap.set("n", "ds", dsurround, { desc = "Delete surroundings." })
 end
 
 M.surroundenable()
@@ -307,6 +351,8 @@ M.surroundenable()
 function M.surrounddisable()
   vim.keymap.del("", "sa")
   vim.keymap.del("", "saa")
+  vim.keymap.del("n", "sd")
+  vim.keymap.del("n", "ds")
 end
 
 return M
