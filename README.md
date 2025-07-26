@@ -10,24 +10,25 @@ directory. Run NeoVim like normal (`nvim`), and everything SHOULD be installed.
 
 ## Keymaps
 
-| map                | action                                          |
-| ------------------ | ----------------------------------------------- |
-| `<C-j>`, `<C-k>`   | Next and previous window in tabpage.            |
-| `<C-h>`, `<C-l>`   | Next and previous tabpage.                      |
-| `jj`               | Exit insert mode.                               |
-| `<esc><esc>`       | Exit terminal mode.                             |
-| `<leader>p`        | Paste from system clipboard.                    |
-| `<leader>y`        | Yank to system clipboard.                       |
-| `<tab>`, `<S-tab>` | Invoke completion or indentation in insert.     |
-| `U`                | Redo.                                           |
-| `_`                | Open vim's current directory.                   |
-| `-`                | Open the parent directory of the current file.  |
-| `sa`               | Surround operator, see below.                   |
-| `sd`, `ds`         | delete surroundings, see below.                 |
-| `<leader>ff`       | Telescope find files.                           |
-| `<leader>fg`       | Telescope live grep.                            |
-| `<leader>fb`       | Telescope buffers.                              |
-| `<leader>fh`       | Telescope help.                                 |
+| map                | action                                      |
+| ------------------ | ------------------------------------------- |
+| `<C-j>`, `<C-k>`   | Next and previous window in tabpage.        |
+| `<C-h>`, `<C-l>`   | Next and previous tabpage.                  |
+| `jj`               | Exit insert mode.                           |
+| `<esc><esc>`       | Exit terminal mode.                         |
+| `<leader>p`        | Paste from system clipboard.                |
+| `<leader>y`        | Yank to system clipboard.                   |
+| `<tab>`, `<S-tab>` | Invoke completion or indentation in insert. |
+| `U`                | Redo.                                       |
+| `_`                | Open vim's current directory.               |
+| `-`                | Open buffer's parent directory.             |
+| `s`, `ss`          | Surround operator, see below.               |
+| `ds`               | Delete surroundings, see below.             |
+| `cs`               | Change surroundings, see below.             |
+| `<leader>ff`       | Telescope find files.                       |
+| `<leader>fg`       | Telescope live grep.                        |
+| `<leader>fb`       | Telescope buffers.                          |
+| `<leader>fh`       | Telescope help.                             |
 
 ## Commands
 
@@ -54,8 +55,8 @@ marker.
 
 The second feature of the pairs module is the surround functionality.
 Surrounding relies on three operations, adding, changing, and deleting. To add
-surroundings, you use the `sa` operator or `saa` to apply the operator to the
-current line. Once triggered, "sa" will be printed to the command line and the
+surroundings, you use the `s` operator or `ss` to apply the operator to the
+current line. Once triggered, "s" will be printed to the command line and the
 operator will expect you to select a marker set by typing a character (see table
 below). If the character is not associated with any markers, then the operator
 will finish without doing anything.
@@ -79,13 +80,18 @@ command line with that character. Type any text and it will be inserted in HTML
 which will be literally inserted as the opening and closing marker.
 
 To delete surroundings of the cursor, place the cursor within (not on) the
-surroundings that you want to delete. Use one of the `sd` or `ds` keymaps (they
-do the same thing). The keymap will print "sd" to the command line and expect
-you to type a marker set name like with `sa`. If the opening marker does not
-appear before the cursor or the closing marker does not appear after the cursor
-then the keymap will do nothing. The markers will be deleted if they are found.
-Using a marker set with internal spaces will trim all spacing between the
-markers and the internal text.
+surroundings that you want to delete. Use the `ds` keymap. The keymap will print
+"ds" to the command line and expect you to type a marker set name like with `s`.
+If the opening marker does not appear before the cursor or the closing marker
+does not appear after the cursor then the keymap will do nothing. The markers
+will be deleted if they are found. Using a marker set with internal spaces (eg.
+`]`) will trim all spacing between the markers and the internal text.
+
+Changing the cursor's surroundings is almost identical to deleting the cursor's
+surroundings. Use the keymap `cs`, it will print "cst" and expect you to choose
+a target marker set like usual. If those markers are found in the current line,
+it will print "scr", which means the keymap needs another marker set to use for
+replacement.
 
 ## Plugins
 
