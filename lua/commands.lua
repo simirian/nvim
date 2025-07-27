@@ -70,6 +70,8 @@ vim.api.nvim_create_user_command("AnnabellLee", function(args)
   if bufnr == -1 then
     bufnr = vim.api.nvim_create_buf(true, true)
     vim.api.nvim_buf_set_name(bufnr, "annabel-lee")
+    local oldul = vim.bo[bufnr].ul
+    vim.bo[bufnr].ul = -1
     vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, {
       "It was many and many a year ago,",
       "   In a kingdom by the sea,",
@@ -118,6 +120,7 @@ vim.api.nvim_create_user_command("AnnabellLee", function(args)
       "   In her sepulchre there by the sea---",
       "   In her tomb by the sounding sea.",
     })
+    vim.bo[bufnr].ul = oldul
   end
   vim.bo[bufnr].ft = "markdown"
   vim.cmd("buffer" .. (args.bang and "! " or " ") .. bufnr)
