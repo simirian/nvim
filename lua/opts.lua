@@ -3,19 +3,11 @@
 
 vim.o.cursorline = true
 vim.o.showmode = false
-vim.opt.guicursor = {
-  "n-v-sm:block",
-  "o-r-cr:hor20",
-  "i-c-ci:ver25",
-}
+vim.o.wrap = false
 
 vim.o.foldmethod = "expr"
 vim.o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 vim.o.foldlevelstart = 99
-
-vim.o.wrap = false
-vim.o.linebreak = true
-vim.o.smoothscroll = true
 
 vim.o.tabstop = 2
 vim.o.shiftwidth = 0
@@ -24,22 +16,18 @@ vim.o.expandtab = true
 vim.o.ignorecase = true
 vim.o.smartcase = true
 vim.o.hlsearch = false
-vim.o.wrapscan = true
 
 vim.o.path = ".,,**"
 vim.opt.isfname:remove { "[", "]" }
 vim.opt.suffixesadd = { ".md" }
 
-vim.o.termguicolors = true
-
 --- @diagnostic disable-next-line: undefined-field
 if vim.loop.os_uname().sysname == "Windows_NT" then
   vim.o.shell = vim.fn.executable("pwsh") == 1 and "pwsh" or "powershell"
-  vim.o.shellcmdflag = "-Command"
-  vim.o.shellredir = "2>&1 | %%{ \"$_\" } | Out-File %s; exit $LastExitCode"
-  vim.o.shellpipe = "2>&1 | %%{ \"$_\" } | tee.exe %s; exit $LastExitCode"
-  vim.o.shellquote = ""
-  vim.o.shellxquote = ""
+  vim.o.shellcmdflag = "-Command $PSDefaultParameterValues['Out-File:Encoding']='utf8';"
+  vim.o.shellredir = '2>&1 | %%{ "$_" } | Out-File %s; exit $LastExitCode'
+  vim.o.shellpipe = '2>&1 | %%{ "$_" } | tee %s; exit $LastExitCode'
+  vim.o.shellquote, vim.o.shellxquote = "", ""
 end
 
 -- disable unwanted providers
