@@ -123,7 +123,8 @@ local function pair(char)
       if rule.close == char then
         local rhs = close(rule)
         if rhs then return rhs end
-      elseif rule.open == char then
+      end
+      if rule.open == char then
         if type(rule.close) == "function" then
           local rhs = rule.close()
           if rhs then return rhs end
