@@ -2,23 +2,31 @@
 -- projects module
 
 local M = {}
-local H = {}
 
---- Map from project path to name.
+--- Map from project name to path.
 --- @type table<string, string>
-H.projects = {}
+local projects = {}
+
+--- Set of directories to include projects from.
+--- @type table<string, true>
+local includedirs = {}
 
 --- Automatically included projects.
 --- @type table<string, string>
-H.include = {}
+local include = {}
+
+--- The path to the projects store file.
+--- @type string
+local filepath = vim.fs.normalize(vim.fn.stdpath("data") .. "/projects.json")
 
 --- Saves the current project list to projects.json.
-function H.save()
+local function save()
   --- @diagnostic disable-next-line: undefined-field
-  vim.loop.fs_open(H.filepath, "w", 420, function(err, file)
+  vim.loop.fs_open(filepath, "w", 420, function(err, file)
     assert(not err, err)
     --- @diagnostic disable-next-line: undefined-field
-    vim.loop.fs_write(file, vim.json.encode(H.projects), function()
+    vim.loop.fs_write(file, vim.json.encode(projects), function()
+      assert(not err, err)
       --- @diagnostic disable-next-line: undefined-field
       vim.loop.fs_close(file)
     end)
@@ -26,17 +34,19 @@ function H.save()
 end
 
 --- Loads the saved project list from projects.json.
-function H.load()
+local function load()
   --- @diagnostic disable-next-line: undefined-field
-  vim.loop.fs_open(H.filepath, "r", 420, function(err, file)
+  vim.loop.fs_open(filepath, "r", 420, function(err, file)
     assert(not err, err)
     --- @diagnostic disable-next-line: undefined-field
     vim.loop.fs_fstat(file, function(_, stat)
+      assert(not err, err)
       --- @diagnostic disable-next-line: undefined-field
       vim.loop.fs_read(file, stat.size, 0, function(_, data)
+        assert(not err, err)
         --- @diagnostic disable-next-line: undefined-field
         vim.loop.fs_close(file)
-        H.projects = vim.json.decode(data)
+        projects = vim.json.decode(data)
       end)
     end)
   end)
@@ -47,106 +57,110 @@ end
 --- @param path? string The path to the project directory, default cwd.
 function M.add(name, path)
   --- @diagnostic disable-next-line: undefined-field
-  H.projects[name] = vim.fs.normalize(path or vim.loop.cwd())
-  H.save()
+  projects[name] = vim.fs.normalize(path or vim.loop.cwd())
+  save()
 end
 
---- Remove a project by its normalized path. This does not delete the project
+--- Remove a project by its name or path. This does not delete the project
 --- directory, it only causes this module to forget it exists.
---- @param name string The name of the project to remove, current is default.
-function M.remove(name)
-  H.projects[name] = nil
-  H.save()
+--- @param project? string The name of or path to of the project to remove.
+function M.remove(project)
+  --- @diagnostic disable-next-line: undefined-field
+  project = project or vim.fs.normalize(vim.loop.cwd())
+  if projects[project] then
+    projects[project] = nil
+  else
+    for name, path in ipairs(projects) do
+      if path == project then
+        projects[name] = nil
+      end
+    end
+  end
+  save()
+end
+
+--- Update the included projects.
+local function updateinclude()
+  include = {}
+  for path in pairs(includedirs) do
+    for name, type in vim.fs.dir(path) do
+      if type == "directory" and not projects[name] and not include[name] then
+        include[name] = vim.fs.normalize(path .. "/" .. name)
+      end
+    end
+  end
+end
+
+--- Add include directories in which to find projects.
+--- @param dirs string|string[] The directory or list of directories to include.
+function M.include(dirs)
+  dirs = type(dirs) == "string" and { dirs } or dirs
+  for _, dir in ipairs(dirs --[[@as string[] ]]) do
+    includedirs[dir] = true
+  end
+  updateinclude()
+end
+
+--- Remove include directories that projects could have been found in.
+--- @param dirs string|string[] The directory or list of directories to exclude.
+function M.exclude(dirs)
+  dirs = type(dirs) == "string" and { dirs } or dirs
+  for _, dir in ipairs(dirs --[[@as string[] ]]) do
+    includedirs[dir] = nil
+  end
+  updateinclude()
 end
 
 --- Opens a project by name.
 --- @param name string The name of the project to open.
 function M.open(name)
-  if H.projects[name] then
-    vim.api.nvim_set_current_dir(H.projects[name])
-  elseif H.include[name] then
-    vim.api.nvim_set_current_dir(H.include[name])
+  if projects[name] then
+    vim.api.nvim_set_current_dir(projects[name])
+  elseif include[name] then
+    vim.api.nvim_set_current_dir(include[name])
   else
     vim.notify("project " .. name .. " doesn't exist", vim.log.levels.ERROR, {})
   end
 end
 
---- Gets the project of a path or the current directory if no path is provided.
---- Returns nil if the path is not in a project.
---- @param path? string The path to test.
---- @return string? project
-function M.show(path)
-  --- @diagnostic disable-next-line: undefined-field
-  path = vim.fs.normalize(path or vim.loop.cwd())
-  for name, ppath in pairs(H.projects) do
-    ppath = vim.fs.normalize(ppath)
-    if path == ppath or path:match("^" .. ppath:gsub("%%", "%%%%") .. "[/\\]") then
-      return name
-    end
-  end
-end
-
---- Returs a list of all exisitng projects in no particular order.
+--- Returs a map of project names to their paths.
 --- @param mode? "all"|"saved"|"include" Which set of projects to show.
 --- @return { path: string, name: string }[]
 function M.list(mode)
-  local projects = {}
-  if mode ~= "include" then
-    for name, path in pairs(H.projects) do
-      table.insert(projects, { name = name, path = path })
-    end
-  end
-  if mode ~= "saved" then
-    for name, path in pairs(H.include) do
-      table.insert(projects, { name = name, path = path })
-    end
-  end
-  return projects
+  return vim.tbl_deep_extend("force",
+    mode ~= "saved" and include or {},
+    mode ~= "include" and projects or {})
 end
 
---- The options which can be passed to the projects module.
---- @class Projects.Opts
---- The path to the projects.json file which saves projects between sessions.
---- @field filepath string
---- Adds directories which implicitly include their child directories as
---- projects when there are no name conflicts.
---- @field include string|string[]
-
---- Sets up the projects module.
---- @param opts? Projects.Opts
-function M.setup(opts)
-  opts = opts or {}
-  H.filepath = opts.filepath or vim.fn.stdpath("data") .. "/projects.json"
-  H.load()
-
-  opts.include = opts.include or vim.fs.joinpath(vim.env.HOME, "Source")
-  if type(opts.include) == "string" then
-    opts.include = { opts.include --[[@as string]] }
-  end
-  for _, path in ipairs(opts.include --[[@as string[] ]]) do
-    for name, type in vim.fs.dir(path) do
-      if type == "directory" and not H.projects[name] and not H.include[name] then
-        H.include[name] = vim.fs.normalize(path .. "/" .. name)
-      end
-    end
-  end
+--- Loads projects and enables the :Project command.
+function M.enable()
+  load()
+  M.include { vim.fs.normalize(vim.env.HOME .. "/Source") }
 
   vim.api.nvim_create_user_command("Project", function(args)
     if args.fargs[1] == "add" then
+      if not args.fargs[2] then
+        vim.notify(":Project add requries a project name.", vim.log.levels.ERROR, {})
+        return
+      end
       --- @diagnostic disable-next-line: undefined-field
       M.add(args.fargs[2], vim.loop.cwd())
     elseif args.fargs[1] == "remove" then
       --- @diagnostic disable-next-line: undefined-field
-      M.remove(vim.loop.cwd())
+      M.remove(args.fargs[2])
+    elseif args.fargs[1] == "include" then
+      local dirs = vim.deepcopy(args.fargs)
+      table.remove(dirs, 1)
+      M.include(dirs)
+    elseif args.fargs[1] == "exclude" then
+      local dirs = vim.deepcopy(args.fargs)
+      table.remove(dirs, 1)
+      M.exclude(dirs)
     elseif args.fargs[1] == "open" then
-      M.open(args.fargs[2])
-    elseif args.fargs[1] == "show" then
-      --- @diagnostic disable-next-line: undefined-field
-      print(M.show(vim.loop.cwd()) or "none")
-    elseif args.fargs[1] == "list" then
-      for name, dir in pairs(vim.tbl_deep_extend("keep", H.projects, H.include)) do
-        print(name, (" "):rep(math.max(15 - #name, 1)), dir)
+      if not args.fargs[2] then
+        vim.notify(":Project open requires a project name.", vim.log.levels.ERROR, {})
       end
+      M.open(args.fargs[2])
     else
       vim.notify("invalid project subcommand " .. args.fargs[1], vim.log.levels.ERROR, {})
     end
@@ -154,24 +168,34 @@ function M.setup(opts)
     desc = "Projects command.",
     nargs = "+",
     complete = function(arglead, cmdline)
-      local spaces = 0
-      for _ in cmdline:gmatch("%s+") do
-        spaces = spaces + 1
-      end
+      local _, spaces = cmdline:gsub("%s+", "")
       if spaces == 1 then
         return vim.tbl_filter(function(e)
           return e:sub(1, #arglead) == arglead
-        end, { "add", "remove", "open", "show", "list" })
+        end, { "add", "remove", "include", "exclude", "open" })
       elseif spaces == 2 then
-        if cmdline:match("^%S+%s+(%S+)") == "open" then
-          return vim.iter(M.list())
-              :map(function(e) return e.name end)
-              :filter(function(e) return e:sub(1, #arglead) == arglead end)
-              :totable()
+        local subcommand = cmdline:match("^%S+%s+(%S+)")
+        if subcommand == "open" or subcommand == "remove" then
+          local names = {}
+          for name in pairs(vim.tbl_deep_extend("force", include, projects)) do
+            if name:sub(1, #arglead) == arglead then
+              table.insert(names, name)
+            end
+          end
+          return names
         end
       end
     end
   })
+end
+
+M.enable()
+
+--- Unloads the included projects and disables the :Project command.
+function M.disable()
+  includedirs = {}
+  include = {}
+  vim.api.nvim_del_user_command("Project")
 end
 
 return M
