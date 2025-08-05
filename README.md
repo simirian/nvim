@@ -1,40 +1,43 @@
-# NeoVim
-
-simirian's NeoVim configuration
+# simirian's Neovim
 
 ## Install
 
-Install the latest version of NeoVim. (Older versions are untested but may
-work.) Run `git clone https://github.com/simirian/nvim` in your configuration
-directory. Run NeoVim like normal (`nvim`), and everything SHOULD be installed.
+Install the latest version of Neovim. (Older versions are untested but may
+work.) Run `git clone https://github.com/simirian/nvim .` in your configuration
+directory. Install the language servers you will be using from you package
+manager / their downloads page, and ensure they're on `$PATH`. Run `nvim` and
+everything SHOULD work after some installs.
+
+If you want to use a language server which isn't configured, copy one of the
+simpler LSP configuration files in `lsp/` (eg. `clangd.lua`) and name it after
+your language server, then replace all the appropriate variables.
 
 ## Keymaps
 
-| map                | action                                      |
-| ------------------ | ------------------------------------------- |
-| `<C-j>`, `<C-k>`   | Next and previous window in tabpage.        |
-| `<C-h>`, `<C-l>`   | Next and previous tabpage.                  |
-| `jj`               | Exit insert mode.                           |
-| `<esc><esc>`       | Exit terminal mode.                         |
-| `<leader>p`        | Paste from system clipboard.                |
-| `<leader>y`        | Yank to system clipboard.                   |
-| `<tab>`, `<S-tab>` | Invoke completion or indentation in insert. |
-| `U`                | Redo.                                       |
-| `_`                | Open vim's current directory.               |
-| `-`                | Open buffer's parent directory.             |
-| `s`, `ss`          | Surround operator, see below.               |
-| `ds`               | Delete surroundings, see below.             |
-| `cs`               | Change surroundings, see below.             |
-| `<leader>ff`       | Telescope find files.                       |
-| `<leader>fg`       | Telescope live grep.                        |
-| `<leader>fb`       | Telescope buffers.                          |
-| `<leader>fh`       | Telescope help.                             |
+| map                | action                                    |
+| ------------------ | ----------------------------------------- |
+| `<C-j>`, `<C-k>`   | Next and previous window in tabpage.      |
+| `<C-h>`, `<C-l>`   | Next and previous tabpage.                |
+| `jj`               | Exit insert mode.                         |
+| `<esc><esc>`       | Exit terminal mode.                       |
+| `<leader>p`        | Paste from system clipboard.              |
+| `<leader>y`        | Yank to system clipboard.                 |
+| `<tab>`, `<S-tab>` | Select completion item, move in snippets. |
+| `U`                | Redo.                                     |
+| `_`                | Open vim's current directory.             |
+| `-`                | Open buffer's parent directory.           |
+| `s`, `ss`          | Surround operator, see below.             |
+| `ds`               | Delete surroundings, see below.           |
+| `cs`               | Change surroundings, see below.           |
+| `<leader>ff`       | Telescope find files.                     |
+| `<leader>fg`       | Telescope live grep.                      |
+| `<leader>fb`       | Telescope buffers.                        |
+| `<leader>fh`       | Telescope help.                           |
 
 ## Commands
 
 | command       | action                                  |
 | ------------- | --------------------------------------- |
-| `:Toc`        | Table of contents support for markdown. |
 | `:Today`      | Open today's daily note.                |
 | `:Yesterday`  | Open yesterday's daily note.            |
 | `:Scratch`    | Open a scratch buffer.                  |
@@ -93,12 +96,36 @@ a target marker set like usual. If those markers are found in the current line,
 it will print "scr", which means the keymap needs another marker set to use for
 replacement.
 
+### projects.lua
+
+The projects module lets you easily navigate to project directories. It exposes
+several useful commands all accessible through the `:Project` interface, which
+let you manipulate the saved and included projects as well as open them.
+
+Saved projects persist through restarts of vim are manually saved buy the user
+with the `Project add NAME` command. This command saves vim's current directory
+as a project with the given name. Saved projects can be forgotten with the
+`Project remove NAME` command, which can also remove the current project if
+`NAME` is not provided.
+
+Included projects are found as subdirectories of the include directory list. By
+default, only `~/Source/` is included. Every directory which is a subdirectory
+of an include directory will be added to the list of projects, with it's name as
+the project name. If conflicts arise, saved projects take precedence and include
+directories are used in random order. Include directories can be updated with
+the `Project include DIR` and `Project exclude DIR` commands.
+
+To open a project, it's as simple as running the `Project open NAME` command.
+This will only `:cd` to the directory associated with that project name, either
+the directory where you saved it from if it's a saved project or the directory
+where it was found if the project was included.
+
 ## Plugins
 
-This branch (`centralize`) aims to minimize dependencies at all costs. This
-means that as many plugins as possible will be gradually removed and replaces
-with top level `lua/*` modules. Current progress is tracked below, and this list
-will be removed once this branch is merged into main.
+This configuration(`centralize`) aims to minimize dependencies at all costs.
+This means that as many plugins as possible will be gradually removed and
+replaces with top level `lua/*` modules. Current progress is tracked below, and
+this list will be removed once this list is completed to a satisfactory degree.
 
 - [x] `nvim-contour` -> `lines`
     - [x] this dies on `:hi clear` because `nvim-web-devicons` gets cleared
@@ -106,7 +133,7 @@ will be removed once this branch is merged into main.
 - [x] `yicks` -> `colors`
     - [x] set internal terminal colors
     - [x] allow command line window (`q:`) highlighting (update fixed this?)
-- [o] `nvim-autopairs` (add surround functionality) -> `pairs`
+- [x] `nvim-autopairs` -> `pairs`
     - [x] simple pairing of `()`, `[]`, `{}`, `""`, `''`, ` `` `
     - [x] complex (manual with functions) pairing
     - [x] surround operator
@@ -114,7 +141,7 @@ will be removed once this branch is merged into main.
         - [x] line mode
         - [x] block mode
     - [x] delete surrounds
-    - [ ] change surrounds
+    - [x] change surrounds
     - I imagine this won't be too hard, and I'm looking forward to getting rid
       of it
 - [o] `nvim-tree` -> `fex`, `ft`
@@ -124,15 +151,14 @@ will be removed once this branch is merged into main.
     - [x] copy/move across buffers
     - [x] safe file system modification (as much error checking as possible)
     - [ ] file tree view for current directory
-- [o] `nvim-manager` -> `lsp`, `projects`
+- [x] `nvim-manager` -> `lsp`, `projects`
     - [x] `projects` to save project directories
     - [x] `lsp` to load language servers
-    - [ ] `workspaces` to detect and activate special configurations
+    - [-] `workspaces` to detect and activate special configurations
     - I don't know how easy this will be to remove, but it can't be that hard
-- [o] `nvim-cmp` -> `cmp`
-    - currently inactive, but still needs a proper replacement
-    - [ ] automatic live completion
-    - [ ] snippet completion
+- [x] `nvim-cmp` -> `lsp`
+    - [x] automatic live completion
+    - [x] snippet completion
 - [ ] `lazy.nvim` -> git sub-modules
     - this shouldn't be too hard with git sub-modules
 - [ ] `telescope.nvim`, `plenary.nvim` -> `select` (use `vim.ui.select`)
