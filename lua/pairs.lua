@@ -278,8 +278,8 @@ function Surround(mode)
   -- add markers based on operator mode and mark positions
   local selectstart = vim.api.nvim_buf_get_mark(0, "[")
   local selectend = vim.api.nvim_buf_get_mark(0, "]")
+  local lines = vim.api.nvim_buf_get_lines(0, selectstart[1] - 1, selectend[1], false)
   if mode == "char" then
-    local lines = vim.api.nvim_buf_get_lines(0, selectstart[1] - 1, selectend[1], false)
     if #lines == 1 then
       lines[1] = table.concat {
         lines[1]:sub(1, selectstart[2]),
@@ -294,20 +294,18 @@ function Surround(mode)
     end
     vim.api.nvim_buf_set_lines(0, selectstart[1] - 1, selectend[1], false, lines)
   elseif mode == "line" then
-    local lines = vim.api.nvim_buf_get_lines(0, selectstart[1] - 1, selectend[1], false)
     table.insert(lines, 1, add.open)
     table.insert(lines, add.close)
     vim.api.nvim_buf_set_lines(0, selectstart[1] - 1, selectend[1], false, lines)
   else -- "block"
-    local lines = vim.api.nvim_buf_get_lines(0, selectstart[1] - 1, selectend[1], false)
     selectend[2] = selectend[2] == #lines[#lines] and -1 or selectend[2]
     lines = vim.tbl_map(function(line)
       return table.concat {
         line:sub(1, selectstart[2]),
         add.open,
-        line:sub(selectstart[2] + 1, selectend[2] >= 0 and selectend[2] + 2 or nil),
+        line:sub(selectstart[2] + 1, selectend[2] >= 0 and selectend[2] + 1 or nil),
         add.close,
-        line:sub(selectend[2] >= 0 and selectend[2] + 3 or #line + 1),
+        line:sub(selectend[2] >= 0 and selectend[2] + 2 or #line + 1),
       }
     end, lines)
     vim.api.nvim_buf_set_lines(0, selectstart[1] - 1, selectend[1], false, lines)
@@ -331,7 +329,7 @@ local function findmarkers(mopen, mclose)
   local before, after = line:sub(1, curpos[2]), line:sub(curpos[2] + 1)
   local closepos = { after:find(mclose) }
   if #closepos ~= 2 then return end
-  local find, openpos = { before:find(mopen) }, nil
+  local find, openpos = { before:find(mopen) }, {}
   while #find > 0 do
     openpos = find
     find = { before:find(mopen, find[1] + 1) }
