@@ -3,34 +3,6 @@
 --                                ~ commands ~                                --
 --------------------------------------------------------------------------------
 
-vim.api.nvim_create_user_command("Toc", function()
-  if vim.bo[vim.fn.bufnr()].filetype ~= "markdown" then return end
-  local curpos = vim.api.nvim_win_get_cursor(0)
-  vim.cmd("silent lvimgrep /^#\\+ .*/ %")
-  vim.api.nvim_win_set_cursor(0, curpos)
-  local items = vim.fn.getloclist(0)
-  for i, item in ipairs(items) do
-    local level, text = item.text:match("^(#+)%s(.*)$")
-    items[i] = {
-      bufnr = item.bufnr,
-      lnum = item.lnum,
-      text = ("\u{a0}"):rep(level:len() * 2 - 2) .. text,
-    }
-  end
-  vim.fn.setloclist(0, {}, "r", { items = items, title = "TOC" })
-  vim.cmd.lopen()
-  vim.wo.conceallevel = 3
-  vim.wo.concealcursor = "nvic"
-end, { desc = "Open file table of contents." })
-
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = "markdown",
-  callback = function(event)
-    vim.keymap.set("n", "gO", ":Toc<cr>", { buffer = event.buf })
-  end,
-  desc = "Open this buffer's table of contents."
-})
-
 local function opendaily(time)
   local calendir = vim.fs.normalize(vim.env.HOME .. "/Documents/vault/daily")
   vim.fn.mkdir(calendir .. os.date("/%Y/%m", time), "p")
