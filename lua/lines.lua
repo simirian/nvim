@@ -4,7 +4,7 @@
 local function get_icon(fname)
   local has_devicons, devicons = pcall(require, "nvim-web-devicons")
   if has_devicons then
-    return devicons.get_icon(fname, fname:match("[^%./\\]+$"), { default = true })
+    return devicons.get_icon(fname, fname:match("[^./\\]+$"), { default = true })
   end
   return "?", "Normal"
 end
@@ -47,11 +47,7 @@ function Statusline()
 
   local fname = vim.fs.basename(vim.api.nvim_buf_get_name(bufnr))
   local ico, hl = get_icon(fname)
-  vim.api.nvim_set_hl(0, "LineIco" .. bufnr, {
-    fg = ("#%06x"):format(vim.api.nvim_get_hl(0, { name = hl }).fg or 0xffffff),
-    bg = ("#%06x"):format(vim.api.nvim_get_hl(0, { name = "StatusLine" }).bg or 0)
-  })
-  local center = " %#LineIco" .. bufnr .. "#" .. ico .. " %*%t %n " .. (vim.bo[bufnr].modified and " " or "") .. "%*"
+  local center = " %#" ..hl .. "#" .. ico .. " %*%t %n " .. (vim.bo[bufnr].modified and " " or "") .. "%*"
 
   local right = "%#User2# %l/%L %c "
 
