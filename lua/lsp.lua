@@ -14,6 +14,7 @@ vim.diagnostic.config {
 
 vim.o.completeopt = "menu,popup,fuzzy,menuone,noinsert"
 vim.o.completeitemalign = "kind,abbr,menu"
+vim.opt.shortmess:append("c")
 
 --- Selects the next item in the completion menu, or opens omnifunc if it isn't
 --- visible. I don't know why, but `vim.snippet.jump()` has to be wrapped in
@@ -57,8 +58,8 @@ local function s_tab()
   return "<C-x><C-o>"
 end
 
-vim.keymap.set({ "i", "s" }, "<tab>", tab, { desc = "Complete or snippet jump.", expr = true })
-vim.keymap.set({ "i", "s" }, "<S-tab>", s_tab, { desc = "Snippet return or cancel.", expr = true })
+vim.keymap.set({ "i", "s" }, "<tab>", tab, { desc = "Complete or snippet jump.", expr = true, silent = true })
+vim.keymap.set({ "i", "s" }, "<S-tab>", s_tab, { desc = "Snippet return or cancel.", expr = true, silent = true })
 
 -- found with the help of https://github.com/onsails/lspkind.nvim
 local kinds = {
@@ -96,7 +97,7 @@ local kinds = {
 local function lsptovim(item)
   return {
     kind = kinds[vim.lsp.protocol.CompletionItemKind[item.kind]],
-    kind_hlgroup = "CmpKind" .. vim.lsp.protocol.CompletionItemKind[item.kind],
+    kind_hlgroup = vim.lsp.protocol.CompletionItemKind[item.kind] .. "Kind",
     abbr = item.label,
     menu = "[LSP]",
   }
@@ -105,9 +106,12 @@ end
 --- Checks and starts insert mode completion if the correct conditions are met.
 local function autocomplete()
   if vim.fn.pumvisible() ~= 0 or vim.fn.state("m") == "M" then return end
-  if not vim.v.char:match("[%a.]$") then return end
+  local before = vim.api.nvim_get_current_line():sub(1, vim.api.nvim_win_get_cursor(0)[2])
+  if not before:match("[%a.]$") then return end
   vim.lsp.completion.get()
 end
+
+local augroup = vim.api.nvim_create_augroup("lsp", {clear = true})
 
 --- @type vim.lsp.Config
 local defaults = {
@@ -116,9 +120,9 @@ local defaults = {
     -- enable completion
     if client.capabilities.textDocument.completion then
       vim.lsp.completion.enable(true, client.id, bufnr, { convert = lsptovim })
-      vim.api.nvim_create_autocmd("InsertCharPre", {
+      vim.api.nvim_create_autocmd("TextChangedI", {
         desc = "Language server autocomplete when typing.",
-        augroup = "lsp",
+        group = augroup,
         buffer = bufnr,
         callback = autocomplete,
       })
