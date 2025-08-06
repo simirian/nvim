@@ -1,4 +1,4 @@
--- simirian's NeoVim
+-- simirian's Neovim
 -- projects module
 
 local M = {}
@@ -24,8 +24,8 @@ local function save()
   --- @diagnostic disable-next-line: undefined-field
   vim.loop.fs_open(filepath, "w", 420, function(err, file)
     assert(not err, err)
-    --- @diagnostic disable-next-line: undefined-field
-    vim.loop.fs_write(file, vim.json.encode(projects), function()
+    --- @diagnostic disable-next-line: undefined-field, redefined-local
+    vim.loop.fs_write(file, vim.json.encode(projects), function(err)
       assert(not err, err)
       --- @diagnostic disable-next-line: undefined-field
       vim.loop.fs_close(file)
@@ -38,11 +38,11 @@ local function load()
   --- @diagnostic disable-next-line: undefined-field
   vim.loop.fs_open(filepath, "r", 420, function(err, file)
     assert(not err, err)
-    --- @diagnostic disable-next-line: undefined-field
-    vim.loop.fs_fstat(file, function(_, stat)
+    --- @diagnostic disable-next-line: undefined-field, redefined-local
+    vim.loop.fs_fstat(file, function(err, stat)
       assert(not err, err)
-      --- @diagnostic disable-next-line: undefined-field
-      vim.loop.fs_read(file, stat.size, 0, function(_, data)
+      --- @diagnostic disable-next-line: undefined-field, redefined-local
+      vim.loop.fs_read(file, stat.size, 0, function(err, data)
         assert(not err, err)
         --- @diagnostic disable-next-line: undefined-field
         vim.loop.fs_close(file)
