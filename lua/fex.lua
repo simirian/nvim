@@ -1,497 +1,470 @@
--- simirian's NeoVim
+-- simirian's Neovim
 -- file explorer
-
-local icons = require("icons")
-local fs = require("fcache")
 
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 
-local M = {}
-local H = {}
-
-H.augroup = vim.api.nvim_create_augroup("fex", { clear = true })
-H.namespace = vim.api.nvim_create_namespace("fex")
-H.buffers = {}
-
---- Gets an icon for a file based on its file name.
---- @param fname string The file name to get an icon for.
---- @return string icon
---- @return string highlight
-function H.icon(fname)
-  local devicons_ok, devicons = pcall(require, "nvim-web-devicons")
-  if devicons_ok then
-    return devicons.get_icon(fname, fname:match("[^%.]*$"))
-  end
-  return icons.files.file, "Normal"
-end
-
---- The function used to filter children that get displayed in fex buffers.
---- Should return true if the child should be displayed.
---- @param bufnr integer The buffer to fileter the children of.
---- @param child Fs.Node The child that might need to be included.
---- @return boolean include
-function H.filter(bufnr, child)
-  return not vim.b[bufnr].fex_hide or child.path:match("[^/]*$"):sub(1, 1) ~= "."
-end
-
---- Filters the children of a fex buffer.
---- @param bufnr integer The buffer to filter the children of.
---- @param children Fs.Node[] The children to be filtered.
---- @return Fs.Node[] children
-function H.filter_children(bufnr, children)
-  local filter = vim.b[bufnr].fex_filter or H.filter
-  return vim.tbl_filter(function(child) return filter(bufnr, child) end, children)
-end
-
---- The function used to sort children that get displayed in fex buffers.
---- Return true if first should come before second.
---- @param bufnr integer The buffer whose children are being sorted.
---- @param first Fs.Node The candidate for first in the list.
---- @param second Fs.Node The candidate for second in the list.
---- @return boolean correct
-function H.sort(bufnr, first, second) --- @diagnostic disable-line: unused-local
+--- Creates a file or directory if the path ends in '/'. The path must not yet
+--- exist. Parent directories will be created as needed.
+--- @param path string The path to create.
+local function mk(path)
+  local parent = vim.fs.normalize(path):match(".*/")
   --- @diagnostic disable-next-line: undefined-field
-  first = first.target or first
-  --- @diagnostic disable-next-line: undefined-field
-  second = second.target or second
-  if first.type == "directory" and second.type ~= "directory" then
-    return true
-  elseif first.type ~= "directory" and second.type == "directory" then
-    return false
+  if not vim.loop.fs_stat(parent) then
+    local _, err = mk(parent .. "/")
+    assert(not err, err)
   end
-  return first.path:match("[^/]*$") < second.path:match("[^/]*$")
-end
-
---- Sorts the children of a fex buffer.
---- @param bufnr integer The buffer to sort the children of.
---- @param children Fs.Node[] The children to sort.
---- @return Fs.Node[] children
-function H.sort_children(bufnr, children)
-  local sort = vim.b[bufnr].fex_sort or H.sort
-  local copy = vim.deepcopy(children)
-  table.sort(copy, function(first, second) return sort(bufnr, first, second) end)
-  return copy
-end
-
---- Creates a line from a file system node.
---- @param node Fs.Node The node to convert to a single line.
---- @return string line
-function H.make_line(node)
-  local line = ("/%x\t%s"):format(node.id, node.path:match("[^/]*$"))
-  if node.type == "directory" then
-    line = line .. "/"
-  end
-  return line
-end
-
---- Makes a mark from a file system node.
---- @param node Fs.Node The node to make a mark for.
---- @return vim.api.keyset.set_extmark mark
-function H.make_mark(node)
-  local ico, hl
-  if node.type == "directory" then
-    ico, hl = icons.files.directory, "Directory"
-  elseif node.type == "link" then
-    local target = node --[[@as Fs.Link]].target
-    if target then
-      return H.make_mark(target)
-    end
-    ico, hl = icons.files.link, "Normal"
+  if path:sub(#path) == "/" then
+    --- @diagnostic disable-next-line: undefined-field
+    return vim.loop.fs_mkdir(path, 493) -- 755
   else
-    ico, hl = H.icon(node.path:match("[^/]*$"))
-  end
-  --- @type vim.api.keyset.set_extmark
-  return {
-    virt_text = { { (ico or icons.files.file) .. " ", hl or "Normal" } },
-    line_hl_group = node.type == "directory" and "Directory" or nil,
-    virt_text_pos = "inline",
-    conceal = "",
-  }
-end
-
---- Marks a line as an error.
---- @param bufnr integer The bufer in which to place the mark.
---- @param line integer The line the error is present on.
---- @param level? "Error"|"Warn"|"Info"|"Hint" The level of the error.
-function H.mark_diagnostic(bufnr, line, level)
-  vim.api.nvim_buf_set_extmark(bufnr, H.namespace, line, 0, {
-    line_hl_group = "DiagnosticUnderline" .. (level or "Error"),
-    invalidate = true,
-  })
-end
-
---- BufWinEnter autocommand callback.
---- @param bufnr integer The buffer enting a window.
-function H.winenter(bufnr)
-  for _, winid in ipairs(vim.fn.getbufinfo(bufnr)[1].windows) do
-    if vim.wo[winid].cole ~= 2 then
-      vim.w[winid].cole = vim.wo[winid].cole
-      vim.wo[winid].cole = 2
-    end
-    if vim.wo[winid].cocu ~= "nvic" then
-      vim.w[winid].cocu = vim.wo[winid].cocu
-      vim.wo[winid].cocu = "nvic"
-    end
+    --- @diagnostic disable-next-line: undefined-field
+    local f, err = vim.loop.fs_open(path, "a", 420) -- 644
+    assert(not err, err)
+    --- @diagnostic disable-next-line: undefined-field
+    _, err = vim.loop.fs_close(f)
+    assert(not err, err)
   end
 end
 
---- BufReadCmd autocommand callback.
---- @param bufnr integer The buffer to read into.
-function H.dir_update(bufnr)
-  local children = fs.get(vim.api.nvim_buf_get_name(bufnr)) --[[@as Fs.Directory]]:get_children()
-  for _, child in ipairs(children) do
-    if child.type == "link" then
-      child --[[@as Fs.Link]]:get_target()
-    end
+--- Copies a source file or directory to a destination. The destination must not
+--- yet exist. Parent directories will be created as needed.
+--- @param src string Location of the source to be copied.
+--- @param dst string Location to place  acopy of the source.
+local function cp(src, dst)
+  local parent = vim.fs.normalize(dst):match(".*/")
+  --- @diagnostic disable-next-line: undefined-field
+  if not vim.loop.fs_stat(parent) then
+    local _, err = mk(parent .. "/")
+    assert(not err, err)
   end
-  H.dir_set_lines(bufnr)
-  H.dir_set_marks(bufnr)
-end
-
---- Sets up a fex directory buffer.
---- @param bufnr integer The buffer to set up.
-function H.dir_setup(bufnr)
-  vim.api.nvim_create_autocmd("BufReadCmd", {
-    desc = "Update fex directory buffers on read.",
-    group = H.augroup,
-    buffer = bufnr,
-    callback = function() H.dir_update(bufnr) end
-  })
-  vim.api.nvim_create_autocmd("BufWriteCmd", {
-    desc = "Sync fex directory buffers on write.",
-    group = H.augroup,
-    buffer = bufnr,
-    callback = M.sync,
-  })
-  vim.api.nvim_create_autocmd("BufWipeout", {
-    desc = "Remove buffer from internal fex buffer list.",
-    group = H.augroup,
-    buffer = bufnr,
-    callback = function()
-      H.buffers[bufnr] = nil
-    end,
-  })
-  vim.api.nvim_create_autocmd({ "CursorMoved", "InsertEnter" }, {
-    desc = "Constrain cursor position.",
-    group = H.augroup,
-    buffer = bufnr,
-    callback = vim.schedule_wrap(function()
-      local curpos = vim.api.nvim_win_get_cursor(0)
-      local line = vim.api.nvim_get_current_line()
-      local isep = line:find("\t")
-      if line:sub(1, 1) == "/" and isep and curpos[2] < isep then
-        vim.api.nvim_win_set_cursor(0, { curpos[1], isep })
+  local function cp(src, dst, type) --- @diagnostic disable-line: redefined-local
+    if type == "file" then
+      --- @diagnostic disable-next-line: undefined-field
+      local _, err = vim.loop.fs_copyfile(src, dst)
+      assert(not err, err)
+    elseif type == "directory" then
+      --- @diagnostic disable-next-line: undefined-field
+      local _, err = vim.loop.fs_mkdir(dst, 493)
+      assert(not err, err)
+      for fname, ftype in vim.fs.dir(src) do
+        cp(src .. "/" .. fname, dst .. "/" .. fname, ftype)
       end
-    end),
-  })
+    elseif type == "link" then
+      --- @diagnostic disable-next-line: undefined-field
+      local target, err = vim.loop.fs_readlink(src)
+      assert(not err, err)
+      --- @diagnostic disable-next-line: undefined-field
+      _, err = vim.loop.fs_symlink(target, dst)
+      assert(not err, err)
+    end
+  end
+  --- @diagnostic disable-next-line: undefined-field
+  local stat, err = vim.loop.fs_lstat(src)
+  assert(not err, err)
+  cp(src, dst, stat.type)
+end
 
-  vim.keymap.set("", "<CR>", function()
-    local line = vim.api.nvim_get_current_line()
-    if line:sub(1, 1) == "/" then
-      local name = line:match("^/[%da-f]+\t(.+)$")
-      if not name then
-        vim.notify("fex: cannot open malformed file entry: " .. line, vim.log.levels.ERROR, {})
-      else
-        local path = fs.path(vim.api.nvim_buf_get_name(0), name)
-        local node = fs.get(path)
-        if node and node.type == "link" then
-          vim.cmd.edit(node --[[@as Fs.Link]]:get_target().path)
-        else
-          vim.cmd.edit(node and node.path or path)
-        end
+--- Moves a source file to the destination location. The destination must not
+--- yet exist. Parent directories will be created as needed.
+--- @param src string Location of the source to be moved.
+--- @param dst string Location to move the source to.
+local function mv(src, dst)
+  local parent = vim.fs.normalize(dst):match(".*/")
+  --- @diagnostic disable-next-line: undefined-field
+  if not vim.loop.fs_stat(parent) then
+    local _, err = mk(parent .. "/")
+    assert(not err, err)
+  end
+  --- @diagnostic disable-next-line: undefined-field
+  local _, err = vim.loop.fs_rename(src, dst)
+  assert(not err, err)
+end
+
+--- Removes a file at the given path from the file ssytem.
+--- @param path string The path to be removed.
+local function rm(path)
+  local function rm(path, type) --- @diagnostic disable-line: redefined-local
+    if type == "directory" then
+      for fname, ftype in vim.fs.dir(path) do
+        rm(path .. "/" .. fname, ftype)
       end
+      --- @diagnostic disable-next-line: undefined-field
+      local _, err = vim.loop.fs_rmdir(path)
+      assert(not err, err)
     else
-      vim.cmd.edit(line)
+      --- @diagnostic disable-next-line: undefined-field
+      local _, err = vim.loop.fs_unlink(path)
+      assert(not err, err)
     end
-  end, { desc = "Open the item under the cursor.", buffer = bufnr })
-  vim.keymap.set("", "gh", function()
-    vim.b.fex_hide = not vim.b.fex_hide
-    H.dir_set_lines(bufnr)
-    H.dir_set_marks(bufnr)
-  end, { desc = "Toggle hidden files in fex buffer.", buffer = bufnr })
-
-  H.buffers[bufnr] = true
-  vim.bo[bufnr].bufhidden = "hide"
-  vim.bo[bufnr].swapfile = false
-  vim.bo[bufnr].filetype = "fex"
-  vim.bo[bufnr].tabstop = 8
-
-  H.dir_update(bufnr)
+  end
+  --- @diagnostic disable-next-line: undefined-field
+  local stat, err = vim.loop.fs_stat(path)
+  assert(not err, err)
+  rm(path, stat.type)
 end
 
---- Sets the lines in a fex buffer according to the cached children.
---- @param bufnr integer The fex buffer to update the content of.
-function H.dir_set_lines(bufnr)
-  local node = fs.get(vim.api.nvim_buf_get_name(bufnr)) --[[@as Fs.Directory]]
-  local visible = H.sort_children(bufnr, H.filter_children(bufnr, node.children))
-  vim.b[bufnr].fex_visible = vim.tbl_map(function(e) return e.id end, visible)
-  local lines = vim.tbl_map(H.make_line, visible)
-  local oldul = vim.bo[bufnr].undolevels
-  vim.bo[bufnr].undolevels = -1
-  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
-  vim.bo[bufnr].undolevels = oldul
-  vim.bo[bufnr].modified = false
-end
+--- Map from ids to names.
+--- @type table<integer, string>
+local names = {}
 
---- Sets the extmarks to show file type icons in the fex buffer.
---- @param bufnr integer The buffer to set marks in.
-function H.dir_set_marks(bufnr)
-  vim.api.nvim_buf_clear_namespace(bufnr, H.namespace, 0, -1)
-  for lnum, line in ipairs(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)) do
-    if line:sub(1, 1) == "/" then
-      local isep = line:find("\t")
-      local id = isep and tonumber(line:sub(2, isep - 1), 16)
-      local mark = {
-        line_hl_group = "DiagnosticUnderlineError",
-        invalidate = true,
-      }
-      if id then
-        local node = fs.get(id) --[[@as Fs.Node]]
-        mark = H.make_mark(node)
-        mark.invalidate = true
-        mark.end_col = isep
-      end
-      vim.api.nvim_buf_set_extmark(bufnr, H.namespace, lnum - 1, 0, mark)
-    end
+--- Map from names to ids.
+--- @type table<string, integer>
+local ids = {}
+
+--- Keeps track of the next free id.
+--- @type integer
+local nextid = 1
+
+--- Swaps betwen a file's name and id.
+--- @param item string|integer The item to swap.
+--- @return string|integer
+local function swapnameid(item)
+  if type(item) == "number" then
+    return names[item]
+  elseif ids[item] then
+    return ids[item]
+  else
+    names[nextid] = item --[[@as string]]
+    ids[item] = nextid
+    nextid = nextid + 1
+    return nextid - 1
   end
 end
 
---- Map from source ids to a set of paths. An id of 0 indicates a new file, and
---- an id of -1 indicates deleted files
+local M = {}
+
+local augroup = vim.api.nvim_create_augroup("fex", { clear = true })
+local ns = vim.api.nvim_create_namespace("fex")
+
+--- Updates a fex directory buffer.
+--- @param bufnr integer The buffer to update.
+local function dir_update(bufnr)
+  local children = {}
+  -- get and filter children
+  for name, type in vim.fs.dir(vim.api.nvim_buf_get_name(bufnr)) do
+    if vim.b[bufnr].fex_showhidden or not name:match("^%.") then
+      table.insert(children, { name = name, type = type })
+    end
+  end
+  -- sort children
+  table.sort(children, function(first, second)
+    if first.type == "directory" and second.type ~= "directory" then
+      return true
+    elseif first.type ~= "directory" and second.type == "directory" then
+      return false
+    end
+    return first.name < second.name
+  end)
+  vim.b[bufnr].fex_visible = children
+  -- make lines
+  local bufname = vim.api.nvim_buf_get_name(bufnr)
+  local lines = vim.tbl_map(function(child)
+    local path = vim.fs.normalize(bufname .. "/" .. child.name)
+    return ("/%x\t%s"):format(swapnameid(path), child.name)
+  end, children)
+  -- set lines
+  local ul = vim.bo[bufnr].ul
+  vim.bo[bufnr].ul = -1
+  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+  vim.bo[bufnr].ul = ul
+  vim.bo[bufnr].modified = false
+  -- set marks
+  for i, line in ipairs(lines) do
+    local ico, hl
+    if children[i].type == "directory" then
+      ico, hl = "", "Directory"
+    else
+      local name = line:match("\t(.*)")
+      ico, hl = require("nvim-web-devicons").get_icon(name, name:match("[^.]+$"))
+    end
+    vim.api.nvim_buf_set_extmark(bufnr, ns, i - 1, 0, {
+      virt_text = { { (ico or "") .. " ", hl or "Normal" } },
+      virt_text_pos = "inline",
+      end_col = line:find("\t") - 1,
+      line_hl_group = children[i].type == "directory" and "Directory" or nil,
+      conceal = "",
+    })
+  end
+end
+
+--- Map from source ids to a set of destinations. An id of 0 indicates that a
+--- file is completely new.
 --- @type table<integer, table<string, true>>
-H.changes = {}
+local changes = {}
 
---- Map from targets to their status.
---- @type table<string, true|{ bufnr: integer, line: integer }>
-H.targets = {}
+--- Map from target names to the number of times that target has been specified.
+--- @type table<string, integer>
+local targets = {}
 
---- Gets the changes in a fex buffer. Returns false if there are parse errors
---- @param bufnr integer The fex buffer to get changes from.
---- @return boolean success
-function H.dir_changes_buf(bufnr)
+--- Adds all files in a fex buffer to the changes listing.
+--- @param bufnr integer The buffer to get the changes of.
+--- @return boolean ok
+local function dir_addchanges(bufnr)
   local bufname = vim.api.nvim_buf_get_name(bufnr)
   local ok = true
-  local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-  for lnum, line in ipairs(lines) do
-    line = vim.trim(line)
-    local id, target
-    if line == "" then
-      H.mark_diagnostic(bufnr, lnum - 1, "Warn")
-    elseif line:sub(1, 1) ~= "/" then
-      id, target = 0, line
-    else
-      id, target = line:match("^/([%da-f]+)\t(.*%S.*)$")
-      if not id or not target then
-        H.mark_diagnostic(bufnr, lnum - 1)
-        ok = false
+  for _, line in ipairs(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)) do
+    if not line:match("^%s*$") then
+      local id, name = 0, line
+      if line:sub(1, 1) == "/" then
+        id, name = line:match("^/([%da-f]*)\t(.*)$")
+        id = tonumber(id or "", 16)
       end
-    end
-    id = tonumber(id or "", 16)
-    if id and target then
-      target = fs.path(bufname, target) .. (target:match("[/\\]$") and "/" or "")
-      if H.targets[target] then
-        H.mark_diagnostic(bufnr, lnum - 1)
-        if type(H.targets[target]) == "table" then
-          H.mark_diagnostic(H.targets[target].bufnr, H.targets[target].line)
-          H.targets[target] = true
-        end
-        ok = false
+      if id and name then
+        changes[id] = changes[id] or {}
+        name = vim.fs.normalize(bufname .. "/" .. name)
+        changes[id][name] = true
+        targets[name] = targets[name] and targets[name] + 1 or 1
       else
-        -- TODO: check for and mark invalid ids
-        if not H.changes[id] then
-          H.changes[id] = {}
-        end
-        H.changes[id][target] = true
-        H.targets[target] = { bufnr = bufnr, line = lnum }
+        vim.notify("fex: malformed line '" .. line .. "'", vim.log.levels.ERROR, {})
+        ok = false
       end
     end
+  end
+  for _, child in ipairs(vim.b[bufnr].fex_visible) do
+    local id = swapnameid(vim.fs.normalize(bufname .. "/" .. child.name))
+    changes[id] = changes[id] or {}
   end
   return ok
 end
 
---- File system pass for obtaining changes.
---- @param bufnr integer The buffer to check for changes.
-function H.dir_changes_fs(bufnr)
-  for _, id in ipairs(vim.b[bufnr].fex_visible) do
-    local node = fs.get(id) --[[@as Fs.Node]]
-    local path = node.path .. (node.type == "directory" and "/" or "")
-    if not H.changes[id] or not H.changes[id][path] then
-      if not H.changes[-1] then
-        H.changes[-1] = {}
-      end
-      H.changes[-1][path] = true
-    elseif H.changes[id][path] then
-      H.changes[id][path] = nil
-      if next(H.changes[id]) == nil then
-        H.changes[id] = nil
+--- Checks if the changes the user has made to fex buffers are all valid.
+--- @return boolean valid
+local function validate()
+  local valid = true
+  local msg = "Invalid changes in fex directory buffers:\n"
+  -- ensure no sources are within another source
+  local srcnames = {}
+  for srcid, dstset in pairs(changes) do
+    if srcid ~= 0 then
+      local src = swapnameid(srcid)
+      local t1 = next(dstset) -- if this isn't the name then there was a move/delete
+      local t2 = next(dstset, t1) -- if this exists then there there was a copy
+      if t2 or t1 ~= src then
+        table.insert(srcnames, src)
       end
     end
   end
+  for i, src in ipairs(srcnames) do
+    for j, subsrc in ipairs(srcnames) do
+      if i ~= j and subsrc:find(src .. "/", 1, true) then
+        msg = msg .. "Modified child of modified directory (consider modifying children first):\n"
+            .. ("     %s\n  in %s\n"):format(subsrc, src)
+        valid = false
+      end
+    end
+  end
+  -- ensure no target is specified twice
+  for target, count in pairs(targets) do
+    if count > 1 then
+      msg = ("%sMultiply defined target:\n  %s\n"):format(msg, target)
+      valid = false
+    end
+  end
+  if not valid then
+    vim.notify(msg, vim.log.levels.ERROR, {})
+  end
+  return valid
 end
 
---- Gets all changes in all fex buffers. Returns false when there are errors.
---- @return boolean success
-function H.get_changes()
-  H.changes = {}
-  H.targets = {}
-  local ok = true
-  for bufnr in pairs(H.buffers) do
-    if vim.b[bufnr].fex_visible then
-      ok = ok and H.dir_changes_buf(bufnr)
-    end
-  end
-  if not ok then return false end
-  for bufnr in pairs(H.buffers) do
-    if vim.b[bufnr].fex_visible then
-      H.dir_changes_fs(bufnr)
-    end
-  end
-  return true
-end
-
---- Asks the user to confirm the changes that are noted in a fex buffer before
---- committing those changes.
+--- Confirms the changes to be made with the user.
 --- @return boolean confirmed
-function H.confirm_changes()
-  local msg = "Commit changes to file system?\n"
-  for id, paths in pairs(H.changes) do
-    local str = ""
-    for path in pairs(paths) do
-      str = str .. "\n" .. vim.fn.fnamemodify(path, ":~:.")
-    end
-    if id == -1 then
-      str = str:gsub("\n", "\nrm ")
-    elseif id == 0 then
-      str = str:gsub("\n", "\ntouch ")
+local function confirm()
+  local msg = "Commit these changes to the file system?\n"
+  for srcid, dstset in pairs(changes) do
+    if srcid == 0 then
+      for dst in pairs(dstset) do
+        msg = ("%smk %s\n"):format(msg, dst)
+      end
     else
-      local path = fs.get(id).path:gsub("%%", "%%%%")
-      str = str:gsub("\n", "\ncp " .. vim.fn.fnamemodify(path, ":~:.") .. " ")
+      local src = swapnameid(srcid)
+      local copy = vim.deepcopy(dstset)
+      local keep = copy[src] or false
+      copy[src] = nil
+      local strs = {}
+      for dst in pairs(copy) do
+        if keep or next(copy, dst) then
+          table.insert(strs, ("cp %s %s\n"):format(src, dst))
+        else
+          table.insert(strs, ("mv %s %s\n"):format(src, dst))
+        end
+      end
+      if not next(strs) and not keep then
+        table.insert(strs,("rm %s\n"):format(src))
+      end
+      msg = msg .. table.concat(strs)
     end
-    msg = msg .. str
   end
-  return vim.fn.confirm(msg, "&yes\n&no", 2) == 1
+  return vim.fn.confirm(msg, "Yes\nNo", 2) == 1
 end
 
---- Commits changes in fex buffers to the file system, notifies the user of any
---- errors, and then updates buffers to reflect the actual file system.
-function H.commit_changes()
-  local copy = vim.deepcopy(H.changes)
-  local tmp = {}
-  if copy[-1] then
-    for fname in pairs(copy[-1]) do
-      local node = fs.get(fname) --[[@as Fs.Node]]
-      if copy[node.id] then
-        tmp[node.id] = node:mv(vim.fn.tempname())
-      else
-        node:rm()
+--- Commits changes to the file system.
+local function commit()
+  for srcid, dstset in pairs(changes) do
+    if srcid == 0 then
+      for dst in pairs(dstset) do
+        mk(dst)
       end
-    end
-    copy[-1] = nil
-  end
-  if copy[0] then
-    for fname in pairs(copy[0]) do
-      if fname:match("[/\\]$") then
-        fs.Directory.newp(fname)
-      else
-        fs.Directory.newp(fname:match("^(.*)/") or "/")
-        fs.File.new(fname)
+    else
+      local src = swapnameid(srcid) --[[@as string]]
+      local keep = dstset[src] or false
+      dstset[src] = nil
+      for dst in pairs(dstset) do
+        if keep or next(dstset, dst) then
+          cp(src, dst)
+        else
+          mv(src, dst)
+        end
       end
-    end
-    copy[0] = nil
-  end
-  for id, paths in pairs(copy) do
-    local src = tmp[id] or fs.get(id) --[[@as Fs.Node]]
-    for path in pairs(paths) do
-      paths[path] = nil
-      if next(paths) == nil and tmp[src.id] then
-        src:mv(path)
-        tmp[src.id] = nil
-      else
-        src:cp(path)
+      if not next(dstset) and not keep then
+        rm(src)
       end
     end
   end
-  for _, node in pairs(tmp) do
-    node:rm()
-  end
 end
 
---- Update the contents of all fex buffers.
---- @param force? boolean Force update of modified fex buffers as well.
-function M.update(force)
-  for bufnr in pairs(H.buffers) do
-    if force or not vim.bo[bufnr].modified then
-      H.dir_update(bufnr)
+--- Tries to update the file system based on the contents of fex buffers.
+local function sync()
+  changes = {}
+  targets = {}
+  local fexbufs = {}
+  local ok = true
+  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.b[bufnr].fex_visible then
+      if not dir_addchanges(bufnr) then
+        ok = false
+      end
+      fexbufs[bufnr] = true
+    end
+  end
+  if not ok then return end
+  if validate() and confirm() then
+    commit()
+    for bufnr in pairs(fexbufs) do
+      dir_update(bufnr)
     end
   end
 end
 
---- Synchronizes all fex directory buffers with the file system.
-function M.sync()
-  if H.get_changes() and H.confirm_changes() then
-    H.commit_changes()
-    M.update(true)
-  end
+--- Tests if a buffer is a directory.
+--- @param bufnr integer The buffer to test.
+--- @return boolean
+local function test(bufnr)
+  --- @diagnostic disable-next-line: undefined-field
+  local stat = vim.loop.fs_stat(vim.api.nvim_buf_get_name(bufnr))
+  return stat and stat.type == "directory"
 end
 
---- Options which can be used when setting up fex.
---- @class Fex.Opts
---- The default filter predicate.
---- @field filter fun(bufnr: integer, child: Fs.Node)
---- The default sort predicate.
---- @field sort fun(bufnr: integer, first: Fs.Node, second: Fs.Node)
-
---- Sets up the fex module.
---- @param opts? Fex.Opts User options.
-function M.setup(opts)
-  opts = opts or {}
-
-  vim.api.nvim_create_autocmd("BufNew", {
-    desc = "Set up fex buffers when they are opened.",
-    group = H.augroup,
-    callback = function(e)
-      --- @diagnostic disable-next-line: undefined-field
-      local stat = vim.loop.fs_stat(e.file)
-      if not stat or stat.type ~= "directory" then return end
-      H.dir_setup(e.buf)
-    end,
+--- Sets up a fex buffer.
+local function dir_setup(bufnr)
+  vim.api.nvim_create_autocmd("BufReadCmd", {
+    desc = "Update fex directory buffers on read.",
+    group = augroup,
+    buffer = bufnr,
+    callback = function() dir_update(bufnr) end,
   })
-  vim.api.nvim_create_autocmd("VimEnter", {
-    desc = "Bind fex buffers after vim startup.",
-    group = H.augroup,
-    once = true,
-    callback = function()
-      local buffers = vim.api.nvim_list_bufs()
-      for _, bufnr in ipairs(buffers) do
-        local bufname = vim.api.nvim_buf_get_name(bufnr)
+  vim.api.nvim_create_autocmd("BufWriteCmd", {
+    desc = "Sync fex directories on write.",
+    group = augroup,
+    buffer = bufnr,
+    callback = sync,
+  })
+  vim.keymap.set("", "<cr>", function()
+    local line = vim.api.nvim_get_current_line()
+    local name = line:sub(1, 1) == "/" and line:match("\t(.*)") or line
+    if not name or name:match("^%s*$") then
+      vim.notify("fex: cannot open file", vim.log.levels.ERROR, {})
+      return
+    end
+    local path = vim.fs.normalize(vim.api.nvim_buf_get_name(0) .. "/" .. name)
+    --- @diagnostic disable-next-line: undefined-field
+    vim.loop.fs_lstat(path, function(_, stat)
+      if stat and stat.type == "link" then
         --- @diagnostic disable-next-line: undefined-field
-        local stat = vim.loop.fs_stat(bufname)
-        if not stat or stat.type ~= "directory" then return end
-        H.dir_setup(bufnr)
-        H.dir_update(bufnr)
-        H.winenter(bufnr)
-      end
-    end,
-  })
-  vim.api.nvim_create_autocmd("BufWinEnter", {
-    desc = "Reset window options when leaving a fex buffer.",
-    group = H.augroup,
-    callback = function(e)
-      if vim.bo.filetype == "fex" then
-        H.winenter(e.buf)
+        vim.loop.fs_realpath(path, function(err, realpath)
+          assert(not err, err)
+          vim.schedule(function() vim.cmd.edit(realpath) end)
+        end)
       else
-        if vim.w.cole then
-          vim.wo.cole = vim.w.cole
-          vim.w.cole = nil
-        end
-        if vim.w.cocu then
-          vim.wo.cocu = vim.w.cocu
-          vim.w.concu = nil
-        end
+        vim.schedule(function() vim.cmd.edit(path) end)
       end
-    end,
-  })
+    end)
+  end, { desc = "Open the item under the cursor.", buffer = bufnr })
+  vim.keymap.set("", "gh", function()
+    vim.b[bufnr].fex_showhidden = not vim.b[bufnr].fex_showhidden
+    dir_update(bufnr)
+  end, { desc = "Toggle hidden files in fex buffer.", buffer = bufnr })
+  vim.bo[bufnr].bufhidden = "hide"
+  vim.bo[bufnr].swapfile = false
+  vim.bo[bufnr].tabstop = 8
+  vim.bo[bufnr].filetype = "fex"
+  dir_update(bufnr)
 end
 
-return M
+--- Updates the cursor position in a fex buffer to the start of the file name.
+--- @param winnr integer The window to update the cursor of.
+local function fixcurpos(winnr)
+  local bufnr = vim.api.nvim_win_get_buf(winnr)
+  local curpos = vim.api.nvim_win_get_cursor(winnr)
+  local line = vim.api.nvim_buf_get_lines(bufnr, curpos[1] - 1, curpos[1], false)[1]
+  local _, col = line:find("\t", 1, true)
+  vim.api.nvim_win_set_cursor(winnr, { curpos[1], col })
+end
+
+--- Sets the conceal properties for a window with a fex buffer.
+--- @param winnr integer The window to apply settings to.
+local function setconceal(winnr)
+  vim.w[winnr].cole = vim.wo[winnr].cole
+  vim.w[winnr].cocu = vim.wo[winnr].cocu
+  vim.wo[winnr].cole = 3
+  vim.wo[winnr].cocu = "nvic"
+end
+
+--- Unsets the conceal properties for a window with a fex buffer.
+--- @param winnr integer The window to apply settings to.
+local function unsetconceal(winnr)
+  vim.wo[winnr].cole = vim.w[winnr].cole
+  vim.wo[winnr].cocu = vim.w[winnr].cocu
+  vim.w[winnr].cole = nil
+  vim.w[winnr].cocu = nil
+end
+
+vim.api.nvim_create_autocmd("BufNew", {
+  desc = "Set up fex buffers when they are opened.",
+  group = augroup,
+  callback = function(e)
+    if test(e.buf) then
+      dir_setup(e.buf)
+    end
+  end,
+})
+vim.api.nvim_create_autocmd("VimEnter", {
+  desc = "Bind fex buffers after vim startup.",
+  group = augroup,
+  once = true,
+  callback = function()
+    for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+      if test(bufnr) then
+        dir_setup(bufnr)
+      end
+    end
+    for _, winnr in ipairs(vim.api.nvim_list_wins()) do
+      if vim.bo[vim.api.nvim_win_get_buf(winnr)].ft == "fex" then
+        setconceal(winnr)
+        fixcurpos(winnr)
+      end
+    end
+  end,
+})
+vim.api.nvim_create_autocmd("BufWinEnter", {
+  desc = "Conceal in fex buffers.",
+  group = augroup,
+  callback = function()
+    if vim.bo.ft == "fex" then
+      setconceal(0)
+      fixcurpos(0)
+    else
+      unsetconceal(0)
+    end
+  end,
+})

@@ -120,6 +120,43 @@ This will only `:cd` to the directory associated with that project name, either
 the directory where you saved it from if it's a saved project or the directory
 where it was found if the project was included.
 
+### fex.lua
+
+This module allows you to easily edit directories like normal buffers. When you
+edit a directory, the contents of that directory will be replaced with a single
+line for each visible file. The keymap `gh` can be used to toggle visibility of
+dot-files. Pressing `<cr>` on any line in a fex buffer which contains an
+existing file will open that file in a buffer, and even dereference symlinks.
+File manipulation is as simple as editing the lines in the buffer, except
+changes are only made to the file system after you `:w` write the buffer, so
+long as it's in a valid state and you confirm the changes.
+
+Each line in the buffer which was placed automatically starts with the pattern
+`/#\t` where `#` is a hexadecimal number. This is the global ID of that line,
+which is needed so the module can keep track of which files come from where.
+When writing, lines without the starting patten are treated like new files, so
+new files can be easily created with the default `o` keymap. Files can be copied
+by yanking whole lines with `yy` or `V` and then pasting them elsewhere. To
+rename a file, just change any of the text after the starting pattern. Removing
+a file is as simple as deleting its line.
+
+Fex tries to ensure you don't do anything which could cause confusing or
+erroneous results. For this reason, a validation step takes place before it even
+asks you to confirm your changes. If you've edited fex buffers so that a single
+path gets written to multiple times, then fex will notify you there's a
+"Miultiply defined target". This might happen if you have the line "dir/file" in
+`./` and "file" in `./dir`. Both lines refer to the same target file, but they
+each might have a different source, which would make the result of a write
+ambiguous.
+
+Fex also refuses to do anything with a directory when its children are modified.
+With some complicated logic, this would probably not be a problem, but fex aims
+to be simple. The main concern in this case is that if you copy a directory
+*and* change its contents, it's unclear if the copy should have the changes or
+not. Rather than implement advanced logic and come up with arbitrary defaults to
+exceptional cases, fex just demands that the user manually solve these problems
+with an error that says "Modified child of modified directory".
+
 ## Plugins
 
 This configuration(`centralize`) aims to minimize dependencies at all costs.

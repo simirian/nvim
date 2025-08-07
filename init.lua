@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
---                          simirian's NeoVim                                 --
+--                          simirian's Neovim                                 --
 --                                                          .O.       T.      --
 --    .o888o. 8^88^8 8.   .8 8^88^8 888880. 8^88^8   .8.   | \OO.     TTT     --
 --    88   ``   88   888o888   88   88   88   88   .8' '8. |  \OOO.   TTT     --
@@ -17,6 +17,6 @@ require("commands")
 require("lines")
 require("lsp")
 require("pairs")
-require("fex").setup()
+require("fex")
 require("projects")
 require("lazy-init")
