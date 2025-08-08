@@ -103,12 +103,23 @@ local function lsptovim(item)
   }
 end
 
---- Checks and starts insert mode completion if the correct conditions are met.
+--- @type boolean
+local cancomplete = false
+
+--- Checks if the inserted char can trigger completion, and if so allows
+--- completion after the character is inserted.
+local function testcomplete()
+  if vim.fn.pumvisible() == 0 and vim.fn.state("m") ~= "m" and vim.v.char:find("[%a.]") then
+    cancomplete = true
+  end
+end
+
+--- If the completion test passed, then invoke completion.
 local function autocomplete()
-  if vim.fn.pumvisible() ~= 0 or vim.fn.state("m") == "M" then return end
-  local before = vim.api.nvim_get_current_line():sub(1, vim.api.nvim_win_get_cursor(0)[2])
-  if not before:match("[%a.]$") then return end
-  vim.lsp.completion.get()
+  if cancomplete then
+    vim.lsp.completion.get()
+    cancomplete = false
+  end
 end
 
 local augroup = vim.api.nvim_create_augroup("lsp", {clear = true})
@@ -120,6 +131,12 @@ local defaults = {
     -- enable completion
     if client.capabilities.textDocument.completion then
       vim.lsp.completion.enable(true, client.id, bufnr, { convert = lsptovim })
+      vim.api.nvim_create_autocmd("InsertCharPre", {
+        desc = "Test for language server autocompletion.",
+        group = augroup,
+        buffer = bufnr,
+        callback = testcomplete,
+      })
       vim.api.nvim_create_autocmd("TextChangedI", {
         desc = "Language server autocomplete when typing.",
         group = augroup,
