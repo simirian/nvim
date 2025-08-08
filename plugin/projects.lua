@@ -132,70 +132,58 @@ function M.list(mode)
     mode ~= "include" and projects or {})
 end
 
---- Loads projects and enables the :Project command.
-function M.enable()
-  load()
-  M.include { vim.fs.normalize(vim.env.HOME .. "/Source") }
+load()
+M.include { vim.fs.normalize(vim.env.HOME .. "/Source") }
 
-  vim.api.nvim_create_user_command("Project", function(args)
-    if args.fargs[1] == "add" then
-      if not args.fargs[2] then
-        vim.notify(":Project add requries a project name.", vim.log.levels.ERROR, {})
-        return
-      end
-      --- @diagnostic disable-next-line: undefined-field
-      M.add(args.fargs[2], vim.loop.cwd())
-    elseif args.fargs[1] == "remove" then
-      --- @diagnostic disable-next-line: undefined-field
-      M.remove(args.fargs[2])
-    elseif args.fargs[1] == "include" then
-      local dirs = vim.deepcopy(args.fargs)
-      table.remove(dirs, 1)
-      M.include(dirs)
-    elseif args.fargs[1] == "exclude" then
-      local dirs = vim.deepcopy(args.fargs)
-      table.remove(dirs, 1)
-      M.exclude(dirs)
-    elseif args.fargs[1] == "open" then
-      if not args.fargs[2] then
-        vim.notify(":Project open requires a project name.", vim.log.levels.ERROR, {})
-      end
-      M.open(args.fargs[2])
-    else
-      vim.notify("invalid project subcommand " .. args.fargs[1], vim.log.levels.ERROR, {})
+vim.api.nvim_create_user_command("Project", function(args)
+  if args.fargs[1] == "add" then
+    if not args.fargs[2] then
+      vim.notify(":Project add requries a project name.", vim.log.levels.ERROR, {})
+      return
     end
-  end, {
-    desc = "Projects command.",
-    nargs = "+",
-    complete = function(arglead, cmdline)
-      local _, spaces = cmdline:gsub("%s+", "")
-      if spaces == 1 then
-        return vim.tbl_filter(function(e)
-          return e:sub(1, #arglead) == arglead
-        end, { "add", "remove", "include", "exclude", "open" })
-      elseif spaces == 2 then
-        local subcommand = cmdline:match("^%S+%s+(%S+)")
-        if subcommand == "open" or subcommand == "remove" then
-          local names = {}
-          for name in pairs(vim.tbl_deep_extend("force", include, projects)) do
-            if name:sub(1, #arglead) == arglead then
-              table.insert(names, name)
-            end
+    --- @diagnostic disable-next-line: undefined-field
+    M.add(args.fargs[2], vim.loop.cwd())
+  elseif args.fargs[1] == "remove" then
+    --- @diagnostic disable-next-line: undefined-field
+    M.remove(args.fargs[2])
+  elseif args.fargs[1] == "include" then
+    local dirs = vim.deepcopy(args.fargs)
+    table.remove(dirs, 1)
+    M.include(dirs)
+  elseif args.fargs[1] == "exclude" then
+    local dirs = vim.deepcopy(args.fargs)
+    table.remove(dirs, 1)
+    M.exclude(dirs)
+  elseif args.fargs[1] == "open" then
+    if not args.fargs[2] then
+      vim.notify(":Project open requires a project name.", vim.log.levels.ERROR, {})
+    end
+    M.open(args.fargs[2])
+  else
+    vim.notify("invalid project subcommand " .. args.fargs[1], vim.log.levels.ERROR, {})
+  end
+end, {
+  desc = "Projects command.",
+  nargs = "+",
+  complete = function(arglead, cmdline)
+    local _, spaces = cmdline:gsub("%s+", "")
+    if spaces == 1 then
+      return vim.tbl_filter(function(e)
+        return e:sub(1, #arglead) == arglead
+      end, { "add", "remove", "include", "exclude", "open" })
+    elseif spaces == 2 then
+      local subcommand = cmdline:match("^%S+%s+(%S+)")
+      if subcommand == "open" or subcommand == "remove" then
+        local names = {}
+        for name in pairs(vim.tbl_deep_extend("force", include, projects)) do
+          if name:sub(1, #arglead) == arglead then
+            table.insert(names, name)
           end
-          return names
         end
+        return names
       end
     end
-  })
-end
-
-M.enable()
-
---- Unloads the included projects and disables the :Project command.
-function M.disable()
-  includedirs = {}
-  include = {}
-  vim.api.nvim_del_user_command("Project")
-end
+  end
+})
 
 return M

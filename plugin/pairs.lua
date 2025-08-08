@@ -1,8 +1,6 @@
 --- simirian's NeoVim
 --- autopairs and surrounds
 
-local M = {}
-
 -- ((autopairs)) ---------------------------------------------------------------
 
 --- Rule for pairing (and also deleting) items.
@@ -138,50 +136,40 @@ local function pair(char)
   end
 end
 
---- Enables auto pairing with this module.
-function M.pairenable()
-  local augroup = vim.api.nvim_create_augroup("pairs", { clear = true })
+local augroup = vim.api.nvim_create_augroup("pairs", { clear = true })
 
-  vim.api.nvim_create_autocmd("InsertLeave", {
-    desc = "Reset pair typeover counts and surround state.",
-    group = augroup,
-    callback = function() paircounts = {} end,
-  })
+vim.api.nvim_create_autocmd("InsertLeave", {
+  desc = "Reset pair typeover counts and surround state.",
+  group = augroup,
+  callback = function() paircounts = {} end,
+})
 
-  vim.api.nvim_create_autocmd("FileType", {
-    desc = "Bind pairs to buffer.",
-    group = augroup,
-    callback = function()
-      local bufrules = ft[vim.bo.ft]
-      if bufrules == false then return end
-      vim.b.pairs_rules = vim.tbl_map(function(e) return rules[e] end, bufrules or ft.default --[[@as string[] ]])
+vim.api.nvim_create_autocmd("FileType", {
+  desc = "Bind pairs to buffer.",
+  group = augroup,
+  callback = function()
+    local bufrules = ft[vim.bo.ft]
+    if bufrules == false then return end
+    vim.b.pairs_rules = vim.tbl_map(function(e) return rules[e] end, bufrules or ft.default --[[@as string[] ]])
 
-      local maps = {}
-      for _, rule in ipairs(vim.b.pairs_rules --[[@as Pairs.Rule[] ]]) do
-        if not maps[rule.open] then
-          vim.keymap.set("i", rule.open, pair(rule.open),
-            { desc = "Complete automatic pairing.", expr = true, buffer = 0 })
-          maps[rule.open] = true
-        end
-        if type(rule.close) == "string" and not maps[rule.close] then
-          vim.keymap.set("i", rule.close --[[@as string]], pair(rule.close --[[@as string]]),
-            { desc = "Complete automatic pairing.", expr = true, buffer = 0 })
-          maps[rule.close] = true
-        end
+    local maps = {}
+    for _, rule in ipairs(vim.b.pairs_rules --[[@as Pairs.Rule[] ]]) do
+      if not maps[rule.open] then
+        vim.keymap.set("i", rule.open, pair(rule.open),
+          { desc = "Complete automatic pairing.", expr = true, buffer = 0 })
+        maps[rule.open] = true
       end
+      if type(rule.close) == "string" and not maps[rule.close] then
+        vim.keymap.set("i", rule.close --[[@as string]], pair(rule.close --[[@as string]]),
+          { desc = "Complete automatic pairing.", expr = true, buffer = 0 })
+        maps[rule.close] = true
+      end
+    end
 
-      vim.keymap.set("i", "<cr>", cr, { desc = "Neatly split a pair over lines.", expr = true, buffer = 0 })
-      vim.keymap.set("i", "<bs>", bs, { desc = "Delete a pair.", expr = true, buffer = 0 })
-    end,
-  })
-end
-
-M.pairenable()
-
---- Disables further auto pairing with this module.
-function M.pairdisable()
-  vim.api.nvim_create_augroup("pairs", { clear = true })
-end
+    vim.keymap.set("i", "<cr>", cr, { desc = "Neatly split a pair over lines.", expr = true, buffer = 0 })
+    vim.keymap.set("i", "<bs>", bs, { desc = "Delete a pair.", expr = true, buffer = 0 })
+  end,
+})
 
 -- ((surround)) ----------------------------------------------------------------
 
@@ -386,22 +374,7 @@ local function csurround()
   } })
 end
 
---- Enable surround keymaps in this module.
-function M.surroundenable()
-  vim.keymap.set("", "s", asurround, { desc = "Surround operator.", expr = true })
-  vim.keymap.set("", "ss", function() return asurround() .. "_" end, { desc = "Surround current line.", expr = true })
-  vim.keymap.set("n", "ds", dsurround, { desc = "Delete surroundings." })
-  vim.keymap.set("n", "cs", csurround, { desc = "Change surroundings." })
-end
-
-M.surroundenable()
-
---- Disable surround keymaps defined in this module.
-function M.surrounddisable()
-  vim.keymap.del("", "s")
-  vim.keymap.del("", "ss")
-  vim.keymap.del("n", "ds")
-  vim.keymap.del("n", "cs")
-end
-
-return M
+vim.keymap.set("", "s", asurround, { desc = "Surround operator.", expr = true })
+vim.keymap.set("", "ss", function() return asurround() .. "_" end, { desc = "Surround current line.", expr = true })
+vim.keymap.set("n", "ds", dsurround, { desc = "Delete surroundings." })
+vim.keymap.set("n", "cs", csurround, { desc = "Change surroundings." })

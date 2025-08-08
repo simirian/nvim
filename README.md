@@ -6,7 +6,7 @@ Install the latest version of Neovim. (Older versions are untested but may
 work.) Run `git clone https://github.com/simirian/nvim .` in your configuration
 directory. Install the language servers you will be using from you package
 manager / their downloads page, and ensure they're on `$PATH`. Run `nvim` and
-everything SHOULD work after some installs.
+everything SHOULD work after lazy does its magic.
 
 If you want to use a language server which isn't configured, copy one of the
 simpler LSP configuration files in `lsp/` (eg. `clangd.lua`) and name it after
@@ -43,7 +43,7 @@ your language server, then replace all the appropriate variables.
 | `:Scratch`    | Open a scratch buffer.                  |
 | `:AnnabelLee` | Open a scratch buffer with Annabel Lee. |
 
-## Modules
+## Native Plugins
 
 ### pairs.lua
 
@@ -157,19 +157,19 @@ not. Rather than implement advanced logic and come up with arbitrary defaults to
 exceptional cases, fex just demands that the user manually solve these problems
 with an error that says "Modified child of modified directory".
 
-## Plugins
+## External Plugins
 
 This configuration(`centralize`) aims to minimize dependencies at all costs.
 This means that as many plugins as possible will be gradually removed and
-replaces with top level `lua/*` modules. Current progress is tracked below, and
+replaces with vim-style `plugin/` files. Current progress is tracked below, and
 this list will be removed once this list is completed to a satisfactory degree.
 
 - [x] `nvim-contour` -> `lines`
     - [x] this dies on `:hi clear` because `nvim-web-devicons` gets cleared
 - [x] `mason.nvim` -> `lsp`
-- [x] `yicks` -> `colors`
-    - [x] set internal terminal colors
-    - [x] allow command line window (`q:`) highlighting (update fixed this?)
+- [x] `yicks`
+    - [-] set internal terminal colors
+    - [-] allow command line window (`q:`) highlighting (update fixed this?)
 - [x] `nvim-autopairs` -> `pairs`
     - [x] simple pairing of `()`, `[]`, `{}`, `""`, `''`, ` `` `
     - [x] complex (manual with functions) pairing
