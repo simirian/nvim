@@ -216,7 +216,7 @@ local function dir_addchanges(bufnr)
         changes[id][name] = true
         targets[name] = targets[name] and targets[name] + 1 or 1
       else
-        vim.notify("Malformed line in fex buffer " .. bufname .. ":\n" .. line .. "'", vim.log.levels.ERROR, {})
+        vim.notify("FEXE1: Malformed line in fex buffer " .. bufname .. ":\n  " .. line .. "'", vim.log.levels.ERROR, {})
         ok = false
       end
     end
@@ -232,7 +232,7 @@ end
 --- @return boolean valid
 local function validate()
   local valid = true
-  local msg = "Invalid changes in fex directory buffers:\n"
+  local msg = ""
   -- ensure no sources are within another source
   local srcnames = {}
   for srcid, dstset in pairs(changes) do
@@ -248,16 +248,25 @@ local function validate()
   for i, src in ipairs(srcnames) do
     for j, subsrc in ipairs(srcnames) do
       if i ~= j and subsrc:find(src .. "/", 1, true) then
-        msg = msg .. "Modified child of modified directory:\n"
+        msg = msg .. "FEXE2: Modified child of modified directory:\n"
             .. ("     %s\n  in %s\n"):format(subsrc, src)
         valid = false
       end
     end
   end
+  -- ensure all sources actually exist
+  for _, src in ipairs(srcnames) do
+    --- @diagnostic disable-next-line: undefined-field
+    local _, err = vim.loop.fs_stat(src)
+    if err then
+      msg = ("%sFEXE3: Error accessing file %s:\n  %s\n"):format(msg, src, err)
+      valid = false
+    end
+  end
   -- ensure no target is specified twice
   for target, count in pairs(targets) do
     if count > 1 then
-      msg = ("%sMultiply defined target:\n  %s\n"):format(msg, target)
+      msg = ("%sFEXE4: Multiply defined target:\n  %s\n"):format(msg, target)
       valid = false
     end
   end
