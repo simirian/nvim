@@ -12,7 +12,7 @@
 
 vim.cmd.colorscheme("yicks")
 
--- options ---------------------------------------------------------------------
+-- ((options)) -----------------------------------------------------------------
 
 vim.o.cursorline = true
 vim.o.showmode = false
@@ -75,7 +75,7 @@ vim.api.nvim_create_autocmd("TermLeave", {
   command = "stopinsert"
 })
 
--- keymaps ---------------------------------------------------------------------
+-- ((keymaps)) -----------------------------------------------------------------
 
 vim.keymap.set("", " ", "<Nop>")
 vim.g.mapleader = " "
@@ -103,7 +103,7 @@ vim.keymap.set("", "U", "<C-r>", { desc = "Redo." })
 vim.keymap.set("", "-", ":e %:h<cr>", { desc = "Open current buffer's parent." })
 vim.keymap.set("", "_", ":e .<cr>", { desc = "Open nvim's current directory." })
 
--- commands --------------------------------------------------------------------
+-- ((commands)) ----------------------------------------------------------------
 
 local function opendaily(time)
   local calendir = vim.fs.normalize(vim.env.HOME .. "/Documents/vault/daily")
@@ -202,7 +202,7 @@ vim.api.nvim_create_user_command("AnnabellLee", function(args)
   vim.cmd("buffer" .. (args.bang and "! " or " ") .. bufnr)
 end, { desc = "Open a scratch bufer with the text of Annabel Lee.", bang = true, bar = true })
 
--- lazy.nvim -------------------------------------------------------------------
+-- ((lazy.nvim)) ---------------------------------------------------------------
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 --- @diagnostic disable-next-line: undefined-field
