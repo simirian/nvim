@@ -1,6 +1,9 @@
 -- simirian's Neovim
 -- file explorer
 
+-- Credit where it's due, this plugin was heavily inspired by peer plugins like
+-- dirbuf and oil. It just aims to be smaller and perhaps a little simpler.
+
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 
@@ -132,8 +135,6 @@ local function swapnameid(item)
   end
 end
 
-local M = {}
-
 local augroup = vim.api.nvim_create_augroup("fex", { clear = true })
 local ns = vim.api.nvim_create_namespace("fex")
 
@@ -178,12 +179,11 @@ local function dir_update(bufnr)
       local name = line:match("\t(.*)")
       ico, hl = require("nvim-web-devicons").get_icon(name, name:match("[^.]+$"))
     end
+    vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
     vim.api.nvim_buf_set_extmark(bufnr, ns, i - 1, 0, {
       virt_text = { { (ico or "") .. " ", hl or "Normal" } },
       virt_text_pos = "inline",
-      end_col = line:find("\t") - 1,
       line_hl_group = children[i].type == "directory" and "Directory" or nil,
-      conceal = "",
     })
   end
 end
@@ -216,7 +216,7 @@ local function dir_addchanges(bufnr)
         changes[id][name] = true
         targets[name] = targets[name] and targets[name] + 1 or 1
       else
-        vim.notify("fex: malformed line '" .. line .. "'", vim.log.levels.ERROR, {})
+        vim.notify("Malformed line in fex buffer " .. bufname .. ":\n" .. line .. "'", vim.log.levels.ERROR, {})
         ok = false
       end
     end
@@ -248,7 +248,7 @@ local function validate()
   for i, src in ipairs(srcnames) do
     for j, subsrc in ipairs(srcnames) do
       if i ~= j and subsrc:find(src .. "/", 1, true) then
-        msg = msg .. "Modified child of modified directory (consider modifying children first):\n"
+        msg = msg .. "Modified child of modified directory:\n"
             .. ("     %s\n  in %s\n"):format(subsrc, src)
         valid = false
       end
@@ -300,13 +300,30 @@ end
 
 --- Commits changes to the file system.
 local function commit()
+  local fnames = {}
+  for srcid, dstset in pairs(changes) do
+    if srcid ~= 0 then
+      local src = swapnameid(srcid) --[[@as string]]
+      if next(dstset) then
+        if targets[src] and not dstset[src] then
+          fnames[srcid] = os.tmpname()
+          mv(src, fnames[srcid])
+        else
+          fnames[srcid] = src
+        end
+      else
+        rm(src)
+        changes[srcid] = nil
+      end
+    end
+  end
   for srcid, dstset in pairs(changes) do
     if srcid == 0 then
       for dst in pairs(dstset) do
         mk(dst)
       end
     else
-      local src = swapnameid(srcid) --[[@as string]]
+      local src = fnames[srcid]
       local keep = dstset[src] or false
       dstset[src] = nil
       for dst in pairs(dstset) do
@@ -315,9 +332,6 @@ local function commit()
         else
           mv(src, dst)
         end
-      end
-      if not next(dstset) and not keep then
-        rm(src)
       end
     end
   end
@@ -408,7 +422,7 @@ local function fixcurpos(winnr)
   local curpos = vim.api.nvim_win_get_cursor(winnr)
   local line = vim.api.nvim_buf_get_lines(bufnr, curpos[1] - 1, curpos[1], false)[1]
   local _, col = line:find("\t", 1, true)
-  vim.api.nvim_win_set_cursor(winnr, { curpos[1], col })
+  vim.api.nvim_win_set_cursor(winnr, { curpos[1], col or 0 })
 end
 
 --- Sets the conceal properties for a window with a fex buffer.
