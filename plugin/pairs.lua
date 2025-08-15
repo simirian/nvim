@@ -1,56 +1,43 @@
---- simirian's NeoVim
+--- simirian's Neovim
 --- autopairs and surrounds
 
 -- ((autopairs)) ---------------------------------------------------------------
 
 --- Rule for pairing (and also deleting) items.
 --- @class Pairs.Rule
---- The single character starting pattern for the rule, used for invocation as
---- the lhs of a keymap.
+--- The character which is the start of the pair.
 --- @field open string
---- The single character end of the pattern, or a function that closes the pair.
---- @field close string|fun(): string?
---- function that checks if the cursor is inside the pair.
---- @field check? fun(before: string, after: string): boolean
+--- The character which is the end of the pair.
+--- @field close string
+--- A lua pattern which matches characters after which the pair will not be
+--- completed when the opneing character is typed.
+--- @field notafter string
 
 --- List of pairs.
 --- @type table<string, Pairs.Rule>
 local rules = {
-  parens = { open = "(", close = ")" },
-  brackets = { open = "[", close = "]" },
-  braces = { open = "{", close = "}" },
-  angles = { open = "<", close = ">" },
-  dquote = { open = '"', close = '"' },
-  quote = { open = "'", close = "'" },
-  grave = { open = "`", close = "`" },
-  aster = { open = "*", close = "*" },
-  -- html and xml tags
-  tag = {
-    open = ">",
-    close = function()
-      local line = vim.api.nvim_get_current_line()
-      local curpos = vim.api.nvim_win_get_cursor(0)
-      local tagname = line:sub(1, curpos[2]):match("<([^<>%s]+)[^<>]*$")
-      if tagname then
-        if line:sub(curpos[2] + 1):find("</" .. tagname .. ">", 1, true) then return ">" end
-        return ("></%s><esc>F>a"):format(tagname)
-      end
-    end,
-    check = function(before, after)
-      local tagname = before:match("<([^<>%s]+)[^<>]*>$")
-      return tagname and after:find("</" .. tagname .. ">", 1, true) == 1
-    end,
-  },
+  parens = { open = "(", close = ")", notafter = "\\" },
+  brackets = { open = "[", close = "]", notafter = "\\" },
+  braces = { open = "{", close = "}", notafter = "\\" },
+  angles = { open = "<", close = ">", notafter = "\\" },
+  dquote = { open = '"', close = '"', notafter = "\\", },
+  quote = { open = "'", close = "'", notafter = "[\\%a]" },
+  grave = { open = "`", close = "`", notafter = "\\" },
+  aster = { open = "*", close = "*", notafter = "[\\%d]" },
+  equal = { open = "=", close = "=", notafter = "[\\%d]" },
+  under = { open = "_", close = "_", notafter = "[\\%a]" },
+  caret = { open = "^", close = "^", notafter = "[\\%d]" },
+  bar = { open = "|", close = "|", notafter = "\\" },
+  tilde = { open = "~", close = "~", notafter = "\\" },
 }
 
 --- Map of file types to their pair rules.
 --- @type table<string, string[]|boolean>
 local ft = {
   default = { "parens", "brackets", "braces", "dquote", "quote" },
-  text = { "parens", "brackets", "braces", "dquote" },
-  markdown = { "parens", "brackets", "braces", "dquote", "grave", "aster" },
-  html = { "parens", "brackets", "braces", "dquote", "tag" },
+  markdown = { "parens", "brackets", "braces", "dquote", "quote", "grave", "aster", "under" },
   TelescopePrompt = false,
+  PAIRTEST = { "parens", "brackets", "braces", "angles", "dquote", "quote", "grave", "aster", "equal", "under", "caret", "bar", "tilde" },
 }
 
 --- Map of closing characters to the number of times they can be typed over this
@@ -58,36 +45,68 @@ local ft = {
 --- @type table<string, integer>
 local paircounts = {}
 
---- Generates a callback for opening a pair.
---- @param pair Pairs.Rule Pair to make a callback for.
---- @return string?
-local function open(pair)
-  paircounts[pair.close] = paircounts[pair.close] and paircounts[pair.close] + 1 or 1
-  return pair.open .. pair.close .. "<left>"
+--- Generates an expr keymap function to open or close a symmetrical pair.
+--- @param rule Pairs.Rule The rule to generate the keymap function for.
+--- @return fun(): string
+local function openclose(rule)
+  return function()
+    if vim.b.pairs_rules and vim.b.pairs_rules[rule.open] then
+      local line = vim.api.nvim_get_current_line()
+      local col = vim.api.nvim_win_get_cursor(0)[2]
+      if paircounts[rule.open] and line:sub(col + 1, col + 1) == rule.close then
+        paircounts[rule.open] = paircounts[rule.open] > 1 and paircounts[rule.open] - 1 or nil
+        return "<right>"
+      elseif not line:sub(col, col):find(rule.notafter) then
+        paircounts[rule.open] = paircounts[rule.open] and paircounts[rule.open] + 1 or 1
+        return rule.open .. rule.close .. "<left>"
+      end
+    end
+    return rule.open
+  end
 end
 
---- Generates a callback for closing a pair.
---- @param pair Pairs.Rule Pair to make a callback for
---- @return string?
-local function close(pair)
-  local line = vim.api.nvim_get_current_line()
-  local col = vim.api.nvim_win_get_cursor(0)[2]
-  if line:sub(col + 1, col + 1) == pair.close and paircounts[pair.close] then
-    paircounts[pair.close] = paircounts[pair.close] > 1 and paircounts[pair.close] - 1 or nil
-    return "<right>"
+--- Generates an expr keymap function to open a asymmetrical pair.
+--- @param rule Pairs.Rule The rule to generate the keymap function for.
+--- @return fun(): string
+local function open(rule)
+  return function()
+    if vim.b.pairs_rules and vim.b.pairs_rules[rule.open] then
+      local col = vim.api.nvim_win_get_cursor(0)[2]
+      if not vim.api.nvim_get_current_line():sub(col, col):find(rule.notafter) then
+        paircounts[rule.open] = paircounts[rule.open] and paircounts[rule.open] + 1 or 1
+        return rule.open .. rule.close .. "<left>"
+      end
+    end
+    return rule.open
+  end
+end
+
+--- Generates an expr keymap function to close a asymmetrical pair.
+--- @param rule Pairs.Rule The rule to generate the keymap function for.
+--- @return fun(): string
+local function close(rule)
+  return function()
+    if vim.b.pairs_rules and vim.b.pairs_rules[rule.open] then
+      local col = vim.api.nvim_win_get_cursor(0)[2]
+      if paircounts[rule.open] and vim.api.nvim_get_current_line():sub(col + 1, col + 1) == rule.close then
+        paircounts[rule.open] = paircounts[rule.open] > 1 and paircounts[rule.open] - 1 or nil
+        return "<right>"
+      end
+    end
+    return rule.close
   end
 end
 
 --- Deletes a simple pair if the cursor is between two simple pair ends.
 --- @return string keymap
 local function bs()
-  local line = vim.api.nvim_get_current_line()
-  local curpos = vim.api.nvim_win_get_cursor(0)
-  local before, after = line:sub(curpos[2], curpos[2]), line:sub(curpos[2] + 1, curpos[2] + 1)
-  for _, pair in ipairs(vim.b.pairs_rules --[[@as Pairs.Rule[] ]]) do
-    if pair.open == before and pair.close == after then
-      paircounts[pair.close] = paircounts[pair.close] and paircounts[pair.close] > 1 and paircounts[pair.close] - 1
-          or nil
+  local line, col = vim.api.nvim_get_current_line(), vim.api.nvim_win_get_cursor(0)[2]
+  local before, after = line:sub(col, col), line:sub(col + 1, col + 1)
+  for _, rule in pairs(vim.b.pairs_rules --[[@as Pairs.Rule[] ]] or {}) do
+    if rule.open == before and rule.close == after then
+      if paircounts[rule.open] then
+        paircounts[rule.open] = paircounts[rule.open] > 1 and paircounts[rule.open] - 1 or nil
+      end
       return "<bs><del>"
     end
   end
@@ -97,44 +116,29 @@ end
 --- Splits a pair over new lines if the cursor is betwen simple pair ends.
 --- @return string keymap
 local function cr()
-  local line = vim.api.nvim_get_current_line()
-  local curpos = vim.api.nvim_win_get_cursor(0)
-  local before, after = line:sub(1, curpos[2]), line:sub(curpos[2] + 1)
-  for _, pair in ipairs(vim.b.pairs_rules --[[@as Pairs.Rule[] ]]) do
-    if pair.check and pair.check(before, after)
-        or pair.open == before:sub(#before) and pair.close == after:sub(1, 1)
-    then
+  local line, col = vim.api.nvim_get_current_line(), vim.api.nvim_win_get_cursor(0)[2]
+  local before, after = line:sub(col, col), line:sub(col + 1, col + 1)
+  print(before, after)
+  for _, rule in pairs(vim.b.pairs_rules --[[@as Pairs.Rule[] ]] or {}) do
+    if rule.open == before and rule.close == after then
       return "<cr><up><end><cr>"
     end
   end
   return "<cr>"
 end
 
---- Generates a function for pairing after a character input. The function finds
---- the first pair rule which ends or starts with the typed character and
---- actually returns a successful keymap rhs.
---- @param char string The character to pair from.
---- @return fun(): string?
-local function pair(char)
-  return function()
-    for _, rule in ipairs(vim.b.pairs_rules --[[@as Pairs.Rule[] ]]) do
-      if rule.close == char then
-        local rhs = close(rule)
-        if rhs then return rhs end
-      end
-      if rule.open == char then
-        if type(rule.close) == "function" then
-          local rhs = rule.close()
-          if rhs then return rhs end
-        else
-          local rhs = open(rule)
-          if rhs then return rhs end
-        end
-      end
-    end
-    return char
+for _, rule in pairs(rules) do
+  local opts = { desc = "Autopair " .. rule.open .. rule.close, expr = true }
+  if rule.open == rule.close then
+    vim.keymap.set("i", rule.open, openclose(rule), opts)
+  else
+    vim.keymap.set("i", rule.open, open(rule), opts)
+    vim.keymap.set("i", rule.close, close(rule), opts)
   end
 end
+
+vim.keymap.set("i", "<cr>", cr, { desc = "Neatly split a pair over lines.", expr = true })
+vim.keymap.set("i", "<bs>", bs, { desc = "Delete a pair.", expr = true })
 
 local augroup = vim.api.nvim_create_augroup("pairs", { clear = true })
 
@@ -148,26 +152,15 @@ vim.api.nvim_create_autocmd("FileType", {
   desc = "Bind pairs to buffer.",
   group = augroup,
   callback = function()
-    local bufrules = ft[vim.bo.ft]
-    if bufrules == false then return end
-    vim.b.pairs_rules = vim.tbl_map(function(e) return rules[e] end, bufrules or ft.default --[[@as string[] ]])
-
-    local maps = {}
-    for _, rule in ipairs(vim.b.pairs_rules --[[@as Pairs.Rule[] ]]) do
-      if not maps[rule.open] then
-        vim.keymap.set("i", rule.open, pair(rule.open),
-          { desc = "Complete automatic pairing.", expr = true, buffer = 0 })
-        maps[rule.open] = true
-      end
-      if type(rule.close) == "string" and not maps[rule.close] then
-        vim.keymap.set("i", rule.close --[[@as string]], pair(rule.close --[[@as string]]),
-          { desc = "Complete automatic pairing.", expr = true, buffer = 0 })
-        maps[rule.close] = true
-      end
+    local ftrules = ft[vim.bo.ft]
+    if ftrules == false then return end
+    ftrules = ftrules --[[@as string[] ]] or ft.default
+    local bufrules = {}
+    for _, rulename in pairs(ftrules) do
+      local rule = rules[rulename]
+      bufrules[rule.open] = rule
     end
-
-    vim.keymap.set("i", "<cr>", cr, { desc = "Neatly split a pair over lines.", expr = true, buffer = 0 })
-    vim.keymap.set("i", "<bs>", bs, { desc = "Delete a pair.", expr = true, buffer = 0 })
+    vim.b.pairs_rules = bufrules
   end,
 })
 
