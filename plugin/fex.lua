@@ -171,19 +171,24 @@ local function dir_update(bufnr)
   vim.bo[bufnr].ul = ul
   vim.bo[bufnr].modified = false
   -- set marks
+  vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
   for i, line in ipairs(lines) do
     local ico, hl
     if children[i].type == "directory" then
       ico, hl = "", "Directory"
     else
-      local name = line:match("\t(.*)")
-      ico, hl = require("nvim-web-devicons").get_icon(name, name:match("[^.]+$"))
+      local ok, devicons = pcall(require, "nvim-web-devicons")
+      if ok then
+        local name = line:match("\t(.*)")
+        ico, hl = devicons.get_icon(name, name:match("[^.]+$"))
+      end
     end
-    vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
     vim.api.nvim_buf_set_extmark(bufnr, ns, i - 1, 0, {
-      virt_text = { { (ico or "") .. " ", hl or "Normal" } },
+      virt_text = { { (ico or "") .. " ", hl or "FileKind" } }, -- TODO: fix highlight, icons module?
       virt_text_pos = "inline",
       line_hl_group = children[i].type == "directory" and "Directory" or nil,
+      end_col = line:find("\t", 1, false) - 1,
+      conceal = "",
     })
   end
 end
@@ -437,19 +442,27 @@ end
 --- Sets the conceal properties for a window with a fex buffer.
 --- @param winnr integer The window to apply settings to.
 local function setconceal(winnr)
-  vim.w[winnr].cole = vim.wo[winnr].cole
-  vim.w[winnr].cocu = vim.wo[winnr].cocu
-  vim.wo[winnr].cole = 3
-  vim.wo[winnr].cocu = "nvic"
+  if vim.wo[winnr].cole ~= 3 then
+    vim.w[winnr].cole = vim.wo[winnr].cole
+    vim.wo[winnr].cole = 3
+  end
+  if vim.wo[winnr].cocu ~= "nvic" then
+    vim.w[winnr].cocu = vim.wo[winnr].cocu
+    vim.wo[winnr].cocu = "nvic"
+  end
 end
 
 --- Unsets the conceal properties for a window with a fex buffer.
 --- @param winnr integer The window to apply settings to.
 local function unsetconceal(winnr)
-  vim.wo[winnr].cole = vim.w[winnr].cole
-  vim.wo[winnr].cocu = vim.w[winnr].cocu
-  vim.w[winnr].cole = nil
-  vim.w[winnr].cocu = nil
+  if vim.w[winnr].cole then
+    vim.wo[winnr].cole = vim.w[winnr].cole
+    vim.w[winnr].cole = nil
+  end
+  if vim.w[winnr].cocu then
+    vim.wo[winnr].cocu = vim.w[winnr].cocu
+    vim.w[winnr].cocu = nil
+  end
 end
 
 vim.api.nvim_create_autocmd("BufNew", {
