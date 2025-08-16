@@ -48,6 +48,8 @@ vim.g.loaded_ruby_provider = 0
 vim.g.loaded_perl_provider = 0
 vim.g.loaded_node_provider = 0
 
+vim.g.calendir = vim.fs.normalize(vim.env.HOME .. "/Documents/vault/calendir")
+
 vim.api.nvim_create_autocmd("FileType", {
   desc = "Set textwidth for text and markdown files.",
   pattern = { "text", "markdown" },
@@ -104,26 +106,6 @@ vim.keymap.set("", "-", ":e %:h<cr>", { desc = "Open current buffer's parent." }
 vim.keymap.set("", "_", ":e .<cr>", { desc = "Open nvim's current directory." })
 
 -- ((commands)) ----------------------------------------------------------------
-
-local function opendaily(time)
-  local calendir = vim.fs.normalize(vim.env.HOME .. "/Documents/vault/daily")
-  vim.fn.mkdir(calendir .. os.date("/%Y/%m", time), "p")
-  vim.cmd.edit(calendir .. os.date("/%Y/%m/%d.md", time))
-  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-  if #lines == 1 and lines[1] == "" then
-    vim.api.nvim_buf_set_lines(0, 0, -1, false, { os.date("# Daily %Y-%m-%d", time) --[[@as string]] })
-  end
-end
-
-vim.api.nvim_create_user_command("Today", function()
-  opendaily(os.time())
-end, { desc = "Open today's daily note." })
-
-vim.api.nvim_create_user_command("Yesterday", function()
-  local date = os.date("*t")
-  date.day = date.day - 1
-  opendaily(os.time(date --[[@as osdateparam]]))
-end, { desc = "Open yesterday's daily note." })
 
 vim.api.nvim_create_user_command("Scratch", function(args)
   local bufname = "scratch"
