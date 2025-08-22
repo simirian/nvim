@@ -368,6 +368,37 @@ local function csurround()
 end
 
 vim.keymap.set("", "s", asurround, { desc = "Surround operator.", expr = true })
-vim.keymap.set("", "ss", function() return asurround() .. "_" end, { desc = "Surround current line.", expr = true })
+vim.keymap.set("", "ss", function()
+  local curpos = vim.api.nvim_win_get_cursor(0)
+  vim.api.nvim_buf_set_mark(0, "[", curpos[1], curpos[2], {})
+  vim.api.nvim_buf_set_mark(0, "]", curpos[1], curpos[2], {})
+  Surround("line")
+end, { desc = "Surround current line." })
+vim.keymap.set("n", "S", function()
+  local curpos = vim.api.nvim_win_get_cursor(0)
+  local line = vim.api.nvim_get_current_line()
+  vim.api.nvim_buf_set_mark(0, "[", curpos[1], curpos[2], {})
+  vim.api.nvim_buf_set_mark(0, "]", curpos[1], #line, {})
+  Surround("char")
+end, { desc = "Surround to end of line." })
+vim.keymap.set("v", "S", function()
+  local opstart = vim.fn.getpos("v")
+  local opend = vim.fn.getpos(".")
+  if opstart[2] > opend[2] then
+    local tmp = opstart
+    opstart = opend
+    opend = tmp
+  end
+  vim.api.nvim_buf_set_mark(0, "[", opstart[2], opstart[3], {})
+  if vim.api.nvim_get_mode().mode:sub(1, 1) == "" then
+    local line = vim.api.nvim_buf_get_lines(0, opend[2] - 1, opend[2], false)[1]
+    vim.api.nvim_buf_set_mark(0, "]", opend[2], #line, {})
+    Surround("block")
+  else
+    vim.api.nvim_buf_set_mark(0, "]", opend[2], opend[3], {})
+    Surround("line")
+  end
+  vim.cmd.normal("<esc>")
+end, { desc = "Suround visual lines." })
 vim.keymap.set("n", "ds", dsurround, { desc = "Delete surroundings." })
 vim.keymap.set("n", "cs", csurround, { desc = "Change surroundings." })

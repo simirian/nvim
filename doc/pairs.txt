@@ -34,14 +34,16 @@ allows you to add a variety of different forms of text on each side of a
 selection. The delete and change operators allow manipulation of existing
 surroundings in a line.
 
-SURROUND OPERATOR		     *pairs-surround-add* *pairs-s* *pairs-ss*
+SURROUND OPERATOR					  *pairs-surround-add*
+						*pairs-s* *pairs-ss* *pairs-S*
 
 The remapped s operator (surround) allows you to surround any text with
 predefined pairs. After activating the operator with s, ss, or S (which all
-target text the same way as |d|, |dd|, and |D|) the operator will prompt you
-for a single key which will deciede what the selection is surrounded with.
-Some surroundings will require an additional prompt to help decide what
-exactly to surround with. The optins are as follows:
+target text the same way as built-in operators like |d|, |dd|, and |D|) the
+operator will prompt you for a single key which will deciede what the
+selection is surrounded with. Some surroundings will require an additional
+prompt to help decide what exactly to surround with. The optins are as
+follows:
 
 	key	surrounds with				additional prompt ~
 	(	parentheses
