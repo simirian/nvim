@@ -1,9 +1,9 @@
 -- simirian's Neovim
 -- yicks color scheme inspired by
--- - sainnhe/gruvbox-material
--- - savq/melange-nvim,
--- - nanotech/jellybeans.vim
--- - xero/miasma.nvim
+-- - github.com/sainnhe/gruvbox-material
+-- - github.com/savq/melange-nvim,
+-- - github.com/nanotech/jellybeans.vim
+-- - github.com/xero/miasma.nvim
 
 local red = "#bf4840" -- keywords, types, preprocessor
 local orange = "#c17a44" -- literals
@@ -26,7 +26,7 @@ local textlight = "#d0c8c0" -- standout text
 vim.cmd("hi clear")
 vim.o.background = "dark"
 
---- Sets a highlight group. Thin wrapper for `vim.api.nvim_set_hl()` that can ..........
+--- Sets a highlight group. Thin wrapper for `vim.api.nvim_set_hl()` that can
 --- take a single string argument to create a link.
 --- @param group string The highlight group to set.
 --- @param highlight string|vim.api.keyset.highlight The highlight options.
@@ -361,3 +361,10 @@ hi("FieldKind", { fg = text })
 hi("StructKind", { fg = red })
 hi("ReferenceKind", { fg = blue })
 hi("SnippetKind", { fg = blue })
+
+-- calendir groups
+hi("CalDay", { fg = text, bg = backlight })
+hi("CalToday", { fg = back, bg = yellow })
+hi("CalNoToday", { fg = back, bg = text })
+hi("CalOther", { fg = textdark, bg = backlight })
+hi("CalNoOther", { fg = textdark})
