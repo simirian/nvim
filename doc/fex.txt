@@ -1,0 +1,126 @@
+*fex.txt*	Edit the file system like a normal buffer.
+
+                                  by simirian
+
+This plugin allws directories to be edited as if they were normal vim buffers.
+No special commands are needed to edit the file system and most operations are
+intuitive. The files associated with this plugin are `plugin/fex.lua` and
+`syntax/fex.vim`.
+
+==============================================================================
+Editing Files							 *fex-editing*
+
+To open a fex buffer, simply `:edit` a directory as if it was a normal file.
+Each line in a fex buffer represents a single file on the file system. The
+actual contents of the line include a file id and the name of the file. The id
+is used internally to keep track of where files actually are, but the name is
+free for users to edit. Because the id is used internally and should not be
+edited, it is concealed at the front of the each line. Any number of changes
+can be made at once, and so long as certain ambiguous cases don't appear, fex
+will be able to perform all of the changes to the file system at once. Changes
+to fex buffers will only be applies to the file system once you `:write` in
+any fex buffer. Note that this will apply changes in ALL fex buffers.
+
+Adding files can be done by creating lines which don't contain an id. This is
+easiest to do with the |o| keybind, which will create a new blank line and put
+you into insert mode in that line, where you can then type a file name then
+write the fex buffer to create that file.
+
+The best way to delete a file is to completely delete its line. This can be
+done with |V| selections or with |dd| to delete the current line. In the
+simplest case, this will result in there being no line which contains the id
+for the file which was deleted. When fex tries to commit the changes, it will
+find that the file is missing and will delete it from the file system.
+
+Renaming a file is as simple as changing the name of the file, but not the
+id. Fex will recognize the familiar id and new file name, and it will move the
+file so that it's name matches the new file name. The easiest way to rename a
+file is to make sure the cursor is at the start of the file name, then to
+press |C| to change to the end of the line.
+
+Files are copied when fex finds that a file id appears in multiple locations.
+A copy of the file will be placed at every location where the file isn't
+already. Copying is best performed with full-line yanks with |V| or |yy|.
+Copying can also be combined with renaming, which is particularly useful when
+you want to copy a file to another name within the same directory.
+
+Files are automatically moved when their original location is gone, but a new
+location exists. This means you can easily move a file by deleting it with |V|
+or |dd|, then pasitng it in another location with |p|. Just like with copying
+and other actions, the pasted files can be further manipulated.
+
+==============================================================================
+Errors								  *fex-errors*
+
+You file system has important data on it which fex does not want to mess up.
+For this reason, fex will check before committing changes to the file system
+to ensure that certain special cases do not cause problems. If any problem is
+encountered, fex will stop and inform the user, then cancel the write.
+
+MALFORMED LINE							       *FEXE1*
+
+This problem occurs when fex is parsing the lines in all fax buffers for
+changes. Fex expects the lines to be in a certain form, and if they are not
+this error will be thrown.
+
+If a line starts with a `/`, then the line is expected to be of the form
+`/ID\tNAME`, where `ID` is a hexadecimal number which represents a file in the
+internal fex index, and `NAME` is any text which represents the name of the
+file. If fex is unable to match this pattern with a line that starts with `/`,
+it will notify the user of the malformed line, the buffer it is in, and the
+contents of the line itself. The error will also occur if the id that fex
+finds does not actually refer to a file in the global fex index, which can
+happen if you manually edit the id.
+
+The simplest way to fix a malformed line error is to simply undo whatever it
+was that caused the error. You can revert the contents of a fex buffer to the
+state of the file system by editing the buffer with |:edit`.
+
+MODIFIED CHILD OF MODIFIED DIRECTORY				       *FEXE2*
+
+When a directory is modified and its children are also modified, it creates a
+complex situation where it is difficult to robustly perform file operations.
+When the parent is copied, it is also impossible for fex to determine if the
+user intended the children to be modified before or after the parent is
+copied. Rather than attempt complex logic to manage the situation, fex simply
+refuses to perform the changes when a directory's child directories are
+modified.
+
+Solving this issue is very simple: separate the changes into two passes. In
+one pass, you commit the changes that will affect the children, and in the
+other pass you apply modifications to the parent. The ordering of which to do
+first should be intuitive, this error is moreso a notice that you've
+accidentally caused unsafe behavior rather than a demand that you do difficult
+work instead of the plugin.
+
+ERROR ACCESSING FILE						       *FEXE3*
+
+This error occurs when fex is validating that the current change to fex
+buffers are valid. If fex detects that a file which it expects to exist does
+not exist, then fex will make not of it and will not proceed further than
+validation.
+
+Fixing this error is almost never something that can be done within nvim,
+because it is most often caused when a file in a fex buffer is externally
+deleted.
+
+MULTIPLY DEFINED TARGET						       *FEXE4*
+
+Multiply defined target errors happen when you rename or copy multiple files
+to the same location at the same time. Fex will notify you of the file which
+is being written to multiple times so you can try to fix the error. This check
+will be performed on all changes in all fex buffers, so the conflicting
+changes may be in different locations. To solve this problem, you need to
+remove all but one reference to the name in conflict, so that only one file
+will be moved / copied / created at that location.
+
+==============================================================================
+Fex Keymaps							 *fex-keymaps*
+
+Fex adds two keymaps to make it easier to edit files.
+
+keymap	description					tag ~
+_	Open vim's current directory.			*fex-_*
+-	Open the parent directory of the current file.	*fex--*
+
+ vim:tw=78:ts=8:noet:ft=help:norl:

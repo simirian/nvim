@@ -1,0 +1,47 @@
+*projects.txt*	Save and load projects quickly.
+
+                                  by simirian
+
+This plugin makes it extremely easy to open project directories without having
+to type out extensive paths. Includes both automatically populating with
+children of a projects directory or manually saving directories. All
+functionality is exposed through a single `:Project` command with intelligent
+completion.
+
+==============================================================================
+Project Command						    *projects-command*
+
+Everything this plugin has to offer can be accessed thorugh the `:Project`
+command and its various sub-commands. Altogether, they allow you to add and
+remove saved projects, include and exclude project directories, and load
+projects quickly and easily.
+
+ADDING AND REMOVING PROJECTS		      *projects-add* *projects-remove*
+
+Adding and removing projects manually requires the `:Project add NAME` and
+`:Project remove NAME` commands. In both cases, `NAME` refers to the alias
+which the project will use in `:Project` commands. When adding a project,
+vim's current directory is automatically used as the project directory. Adding
+and removing projects manually this way will persist changes through restarts
+of vim in a file called `projects.json` in vim's data directory.
+
+INCLUDING AND EXCLUDING DIRECTORIES	 *projects-include* *projects-exclude*
+
+The contents of entire directories can be added to the projects list quickly
+by including directories with the `:Project include DIR` command. Directories
+can then be removed from the include list with `:Project exclude DIR` if you
+don't want to include them anymore. In both cases, `DIR` should be the path to
+any directory. All subdirectories of this directory will be added as projects,
+where the name of each subdirectory will be the project name. Included
+projects will have lower priority than saved projects if there are name
+conflicts. If there are name conflicts between multiple included projects,
+then priority is granted randomly.
+
+OPENING PROJECTS					       *projects-open*
+
+Projects can be opened with the `:Project open NAME` command, so long as
+`NAME` is the name of a saved or included project. This will run `:cd` on the
+directory where the project is located. Custom command line completion makes
+this command very quick to use if you correctly set 'wildchar'.
+
+ vim:tw=78:ts=8:noet:ft=help:norl:
