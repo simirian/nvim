@@ -14,8 +14,7 @@ layout of files in this directory is very simple: journal entries are sorted
 into directories by year, and each year is sorted by month. This means that to
 access the entry for a partifular date, you must simply edit the file
 `CALENDIR/year/month/day.md`, though note that the month and day will always
-be two characters. All entries are created as markdown files, and will be
-created with the header "# Daily year-month-day".
+be two characters. All entries are created as markdown files.
 
 ==============================================================================
 Calendir Command				*calendir-command* *:Calendir*
@@ -26,25 +25,33 @@ features of the plugin.
 
 CALENDIR JOURNAL			   *calendir-journal* *calendir-today*
 				      *calendir-yesterday* *calendir-tomorrow*
-					   *calendir-previous* *calendir-next*
 
 The calendir plugin's primary goal is to make it simple to keep a daily
 journal. The journal stored in the |calendir-directory| can be accessed and
 updated from anywhere. The command `:Calendir today` will open the note for
 the current day, as defined by your operating system. The commands
 `:Calendir yesterday` and `:Calendir tomorrow` can be used to edit the journal
-entries of their respective days. While in a journal entry, the commands
-`:Calendir next` and `:Calendir previous` can be used to go to the entry
-before or after the entry in the current buffer.
+entries of their respective days. If a journal entry does not yet exist, then
+a new buffer is created at its location and it will be given the header "#
+Daily year-month-day".
 
-CALENDIR CALENDAR			   *calendir-calendar* *calendir-year*
+CALENDIR DATES				   *calendir-calendar* *calendir-date*
 
-This plugin allows you to quickly look at a calendar overview of all of your
-journal entries. Using the command `:Calendir YEAR` with "YEAR" replaced with
-any year (1970 or later)  to open an overview of that year. The current day
-and days with journal entries will be given special highlighting to indicate
-those details. The |gf| keymap will work in the calendar directory when
-hovering over any date, and will even create journal entries which don't yet
-exist.
+The default argument to the `:Calendir` command is a date. The date can
+specify a year, month, and day each as a list of digits separated by slashes
+with no spaces. Supplying a full year, month, and day will open the journal
+entry for that date or create it if it does not exist. Omitting the day from
+the date will only target a month, and will open a monthly calendar in the
+current window. Omitting the day and month will open a yearly calendar
+instead. Calendars will have special highlight for the current day,
+unimportant days, and days which have a journal entry file.
+
+CALENDIR NAVIGATION			   *calendir-previous* *calendir-next*
+
+While in any calendir buffer, you can navigate to nearby calendir buffers with
+the `:Calendir next` and `:Calendir previous` commands. When in a journal
+entry, this will navigate to the previous or next journal entry. While in a
+month calendar, this will navigate to adjacent months, and while in a year
+calendar to adjacent years.
 
  vim:tw=78:ts=8:noet:ft=help:norl:

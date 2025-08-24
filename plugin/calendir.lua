@@ -15,15 +15,25 @@ local function open(date)
   end
 end
 
---- Attempts to get the date of the currently open calendir file. If the current
---- buffer isn't a calendir file, then returns nil.
---- @return osdateparam?
+--- Attempts to get the date of the currently open calendir buffer. The first
+--- return specifies the type of buffer is open, with nil for if one isn't open.
+--- If the first return isn't nil, then the second will be a date to open/update
+--- that buffer.
+--- @return "year"|"month"|"journal"? type
+--- @return osdate? date
 local function getcurrent()
-  local path = vim.fs.normalize(vim.api.nvim_buf_get_name(0))
-  local calendirpath = vim.fs.normalize(vim.g.calendir)
-  if path:find(calendirpath) ~= 1 then return end
-  local year, month, day = path:match("(%d%d%d%d)/(%d%d)/(%d%d)%.md$")
-  return { day = tonumber(day), month = tonumber(month), year = tonumber(year) }
+  local bufname = vim.api.nvim_buf_get_name(0)
+  if bufname:find("^calendir:///") == 1 then
+    local year = tonumber(bufname:match("^calendir:///(%d+)"))
+    local month = tonumber(bufname:match("^calendir:///%d+/(%d+)"))
+    return month and "month" or "year", { year = year, month = month or 1, day = 1, }
+  else
+    local path = vim.fs.normalize(bufname)
+    local calendirpath = vim.fs.normalize(vim.g.calendir)
+    if path:find(calendirpath, 1, true) ~= 1 then return end
+    local year, month, day = path:match("(%d%d%d%d)/(%d%d)/(%d%d)%.md$")
+    return "journal", { day = tonumber(day), month = tonumber(month), year = tonumber(year) }
+  end
 end
 
 --- Checks if a journal entry exists for the given day.
@@ -35,32 +45,55 @@ local function exists(date)
   return vim.loop.fs_stat(path) ~= nil
 end
 
+--- Offsets each component of a date by an offset and return a real date.
+--- @param date osdate The date to apply the offset to.
+--- @param off { year: integer, month: integer, day: integer } The offset.
+--- @return osdate date
+local function offset(date, off)
+  return os.date("*t", os.time {
+    year = date.year + (off.year or 0),
+    month = date.month + (off.month or 0),
+    day = date.day + (off.day or 0),
+  }) --[[@as osdate]]
+end
+
 --- The namepsace used by this plugin.
 --- @type integer
 local namespace = vim.api.nvim_create_namespace("calendir")
 
---- Map from years to buffer numbers.
---- @type table<integer, integer>
-local yearbuffers = {}
+--- Map from years or months to buffer numbers.
+--- @type table<string, integer>
+local calendars = {}
 
---- Opens a calendar year buffer.
---- @param year integer The year to open the calendar for.
-local function yearcalendar(year)
-  local bufnr = yearbuffers[year]
+--- Creates a buffer for a calendar collection.
+--- @param path string The path within the calendir.
+--- @return integer bufnr
+local function makecalbuf(path)
+  local bufnr = calendars[path]
   if not bufnr then
     bufnr = vim.api.nvim_create_buf(true, true)
-    vim.api.nvim_buf_set_name(bufnr, "calendir:/" .. year)
-    yearbuffers[year] = bufnr
+    vim.api.nvim_buf_set_name(bufnr, "calendir:///" .. path)
+    calendars[path] = bufnr
   end
-  vim.bo[bufnr].swapfile = false
-  vim.bo[bufnr].buftype = 'nofile'
-  vim.bo[bufnr].bufhidden = "hide"
+  return bufnr
+end
+
+--- Names of months of the year, to be used in yearly calendars.
+local monthnames = ""
+for month = 1, 12 do
+  monthnames = monthnames .. os.date(" %b ", os.time { year = 1970, month = month, day = 1 })
+end
+
+--- Opens a calendar year buffer.
+--- @param year integer The year to display.
+local function yearcalendar(year)
+  local bufnr = makecalbuf(tostring(year))
   vim.bo[bufnr].modifiable = true
-  local lines = { "" }
-  for month = 1, 12 do
-    lines[1] = lines[1] .. os.date(" %b ", os.time { year = year, month = month, day = 1 })
+  local lines = { monthnames }
+  for day = 1, 28 do
+    table.insert(lines, ("%4d "):format(day):rep(12))
   end
-  for day = 1, 31 do
+  for day = 9, 31 do
     local line = ""
     for month = 1, 12 do
       if os.date("*t", os.time { year = year, month = month, day = day }).month == month then
@@ -78,17 +111,13 @@ local function yearcalendar(year)
   for day = 1, 31 do
     for month = 1, 12 do
       if os.date("*t", os.time { year = year, month = month, day = day }).month == month then
-        local today = os.date("*t")
-        local hl
+        local today, hasentry, hl = os.date("*t"), exists { year = year, month = month, day = day }
         if year == today.year and month == today.month and day == today.day then
-          hl = exists{year = year, month = month, day = day} and "CalToday" or "CalNoToday"
-        else
-          hl = exists { year = year, month = month, day = day } and "CalDay" or nil
+          hl = hasentry and "CalToday" or "CalNoToday"
+        elseif hasentry then
+          hl = "CalDay"
         end
-        vim.api.nvim_buf_set_extmark(bufnr, namespace, day, month * 5 - 5, {
-          end_col = month * 5,
-          hl_group = hl
-        })
+        vim.api.nvim_buf_set_extmark(bufnr, namespace, day, month * 5 - 5, { end_col = month * 5, hl_group = hl })
       end
     end
   end
@@ -96,9 +125,60 @@ local function yearcalendar(year)
     local curpos = vim.api.nvim_win_get_cursor(0)
     local month = math.floor(curpos[2] / 5) + 1
     local day = curpos[1] - 1
-    open({year = year, month = month, day = day})
-  end, {buffer = bufnr, desc = "Open journal entry."})
-  vim.cmd("buffer! " .. bufnr)
+    open { year = year, month = month, day = day }
+  end, { buffer = bufnr, desc = "Open journal entry." })
+  vim.cmd(bufnr .. "b!")
+end
+
+--- Names of days of the week, to be used in monthly calendars.
+local daynames = ""
+for wday = 1, 7 do
+  daynames = daynames .. os.date(" %a ", os.time{year = 1970, month = 1, day = 3 + wday})
+end
+
+--- Opens a month calendar buffer.
+--- @param year integer The year.
+--- @param month integer The month.
+local function monthcalendar(year, month)
+  local bufnr = makecalbuf(("%d/%02d"):format(year, month))
+  vim.bo[bufnr].modifiable = true
+  local first = os.date("*t", os.time { year = year, month = month, day = 1 }) --[[@as osdate]]
+  while first.wday ~= 1 do
+    first = offset(first, { day = -1 })
+  end
+  local lines = { daynames }
+  local date = vim.deepcopy(first)
+  while date.month <= month or date.wday ~= 1 do
+    local lead = date.wday == 1 and "" or table.remove(lines)
+    table.insert(lines, ("%s%4d "):format(lead, date.day))
+    date = offset(date, { day = 1 })
+  end
+  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+  vim.bo[bufnr].modifiable = false
+  vim.bo[bufnr].modified = false
+  local lnum = 0
+  vim.api.nvim_buf_clear_namespace(bufnr, namespace, 0, -1)
+  while first.month <= month or first.wday ~= 1 do
+    lnum = first.wday == 1 and lnum + 1 or lnum
+    local today, hasentry, hl = os.date("*t"), exists(first --[[@as osdateparam]])
+    if first.year == today.year and first.month == today.month and first.day == today.day then
+      hl = hasentry and "CalToday" or "CalNoToday"
+    elseif first.month ~= month then
+      hl = hasentry and "CalOther" or "CalNoOther"
+    elseif hasentry then
+      hl = "CalDay"
+    end
+    vim.api.nvim_buf_set_extmark(bufnr, namespace, lnum, (first.wday - 1) * 5,
+      { end_col = first.wday * 5, hl_group = hl })
+    first = offset(first, { day = 1 })
+  end
+  vim.keymap.set("", "gf", function()
+    local col = vim.api.nvim_win_get_cursor(0)[2]
+    local line = vim.api.nvim_get_current_line()
+    local day = tonumber(line:sub(math.floor(col / 5) * 5, math.floor(col / 5 + 1) * 5))
+    open { year = year, month = month, day = day --[[@as integer]] }
+  end, { buffer = bufnr, desc = "Open journal entry." })
+  vim.cmd(bufnr .. "b!")
 end
 
 vim.api.nvim_create_user_command("Calendir", function(args)
@@ -111,31 +191,51 @@ vim.api.nvim_create_user_command("Calendir", function(args)
     local date = os.date("*t")
     open { year = date.year, month = date.month, day = date.day + 1 }
   elseif args.args == "previous" then
-    local date = getcurrent()
-    if date then
-      date.day = date.day - 1
-      open(date)
+    local type, date = getcurrent()
+    --- @cast date osdate
+    if type == "year" then
+      yearcalendar(date.year - 1)
+    elseif type == "month" then
+      date = offset(date, { month = -1 })
+      monthcalendar(date.year --[[@as integer]], date.month --[[@as integer]])
+    elseif type == "journal" then
+      open(offset(date, { day = -1 }) --[[@as osdateparam]])
     end
   elseif args.args == "next" then
-    local date = getcurrent()
-    if date then
-      date.day = date.day + 1
-      open(date)
+    local type, date = getcurrent()
+    --- @cast date osdate
+    if type == "year" then
+      yearcalendar(date.year + 1)
+    elseif type == "month" then
+      date = offset(date, { month = 1 })
+      monthcalendar(date.year --[[@as integer]], date.month --[[@as integer]])
+    elseif type == "journal" then
+      open(offset(date, { day = 1 }) --[[@as osdateparam]])
     end
   else
-    local year = tonumber(args.args:sub(1, 4))
-    local month = tonumber(args.args:sub(6, 7))
-    if not year then
-      yearcalendar(tonumber(os.date("%Y")) --[[@as integer]])
-    elseif not month then
-      yearcalendar(year)
+    local year, month, day = args.args:match("^%s*(%d+)/(%d+)/(%d+)%s*$")
+    if year then
+      open { year = year, month = month, day = day }
+      return
+    end
+    year, month = args.args:match("^%s*(%d+)/(%d+)%s*$")
+    if year then
+      monthcalendar(tonumber(year) --[[@as integer]], tonumber(month) --[[@as integer]])
+      return
+    end
+    year = args.args:match("^%s*(%d+)%s*$")
+    if year then
+      yearcalendar(tonumber(year) --[[@as integer]])
+    elseif args.args:match("^%s*$") then
+      local today = os.date("*t")
+      monthcalendar(today.year --[[@as integer]], today.month --[[@as integer]])
     else
-      -- month calendar
+      vim.notify("Calendir: unreconized argument: " .. args.args, vim.log.levels.ERROR, {})
     end
   end
 end, {
   desc = "Calendir command.",
-  nargs = 1,
+  nargs = "?",
   complete = function(arglead, cmdline, curpos)
     if curpos ~= #cmdline then return end
     return vim.tbl_filter(function(e)
