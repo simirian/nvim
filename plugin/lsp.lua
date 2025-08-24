@@ -22,20 +22,14 @@ vim.opt.shortmess:append("c")
 ---
 --- 1. if there's a pum, insert the selction
 --- 2. if there's a snippet, navigate forwards
---- 3. if in starting whitespace, increase indent
---- 4. "<tab>"
+--- 3. invoke completion
 local function tab()
-  local line = vim.api.nvim_get_current_line()
   if vim.fn.pumvisible() ~= 0 then
     return "<C-y>"
   elseif vim.snippet.active() then
     return "<cmd>lua vim.snippet.jump(1)<cr>"
-  elseif line:match("^%s*$") then
-    return "<tab>"
-  elseif line:sub(1, vim.api.nvim_win_get_cursor(0)[2]):match("^%s*$") then
-    return "<cmd>><cr>"
   end
-  return "<tab>"
+  return "<C-x><C-o>"
 end
 
 --- Selects the previous item in the completion menu, or opens omnifunc if it is
@@ -44,22 +38,15 @@ end
 ---
 --- 1. if there's a pum, close it
 --- 2. if there's a snippet, navigate backwards
---- 3. if in staring whitespace, increase indent
---- 4. invoke completion
+--- 3. <tab>
 local function s_tab()
-  local line = vim.api.nvim_get_current_line()
   if vim.fn.pumvisible() ~= 0 then
     return "<C-e>"
   elseif vim.snippet.active() then
     return "<cmd>lua vim.snippet.jump(-1)<cr>"
-  elseif line:sub(1, vim.api.nvim_win_get_cursor(0)[2]):match("^%s*$") then
-    return "<cmd><<cr>"
   end
-  return "<C-x><C-o>"
+  return "<tab>"
 end
-
-vim.keymap.set({ "i", "s" }, "<tab>", tab, { desc = "Complete or snippet jump.", expr = true, silent = true })
-vim.keymap.set({ "i", "s" }, "<S-tab>", s_tab, { desc = "Snippet return or cancel.", expr = true, silent = true })
 
 -- found with the help of https://github.com/onsails/lspkind.nvim
 local kinds = {
@@ -103,47 +90,15 @@ local function lsptovim(item)
   }
 end
 
---- @type boolean
-local cancomplete = false
-
---- Checks if the inserted char can trigger completion, and if so allows
---- completion after the character is inserted.
-local function testcomplete()
-  if vim.fn.pumvisible() == 0 and vim.fn.state("m") ~= "m" and vim.v.char:find("[%a.]") then
-    cancomplete = true
-  end
-end
-
---- If the completion test passed, then invoke completion.
-local function autocomplete()
-  if cancomplete then
-    vim.lsp.completion.get()
-    cancomplete = false
-  end
-end
-
-local augroup = vim.api.nvim_create_augroup("lsp", {clear = true})
-
 --- @type vim.lsp.Config
 local defaults = {
   root_markers = { ".git" },
   on_attach = function(client, bufnr)
-    -- enable completion
     if client.capabilities.textDocument.completion then
-      vim.lsp.completion.enable(true, client.id, bufnr, { convert = lsptovim })
-      vim.api.nvim_create_autocmd("InsertCharPre", {
-        desc = "Test for language server autocompletion.",
-        group = augroup,
-        buffer = bufnr,
-        callback = testcomplete,
-      })
-      vim.api.nvim_create_autocmd("TextChangedI", {
-        desc = "Language server autocomplete when typing.",
-        group = augroup,
-        buffer = bufnr,
-        callback = autocomplete,
-      })
+      vim.lsp.completion.enable(true, client.id, bufnr, { convert = lsptovim, autotrigger = true })
     end
+    vim.keymap.set({ "i", "s" }, "<tab>", tab, { desc = "Complete or snippet jump.", expr = true, silent = true, buffer = bufnr })
+    vim.keymap.set({ "i", "s" }, "<S-tab>", s_tab, { desc = "Snippet return or cancel.", expr = true, silent = true, buffer = bufnr })
   end,
 }
 vim.lsp.config("*", defaults)
