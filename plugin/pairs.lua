@@ -385,9 +385,7 @@ vim.keymap.set("v", "S", function()
   local opstart = vim.fn.getpos("v")
   local opend = vim.fn.getpos(".")
   if opstart[2] > opend[2] then
-    local tmp = opstart
-    opstart = opend
-    opend = tmp
+    opstart, opend = opend, opstart
   end
   vim.api.nvim_buf_set_mark(0, "[", opstart[2], opstart[3], {})
   if vim.api.nvim_get_mode().mode:sub(1, 1) == "" then

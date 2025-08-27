@@ -10,9 +10,9 @@ local orange = "#c17a44" -- literals
 local yellow = "#b4a03c" -- variables, constants
 local lime = "#819e3d" -- namespaces
 local green = "#5b8f38" -- strings, links
-local teal = "#35927f" -- special characters
 local cyan = "#357e92"
 local blue = "#4366a3"
+local purple = "#123456"
 
 local back = "#242220" -- normal background
 local backlight = "#363330" -- pum background, buffer markers
@@ -177,7 +177,7 @@ hi("@label", "Label")
 hi("String", { fg = green })
 hi("@string", "String")
 hi("@string.documentation", "@string")
-hi("@string.regexp", { fg = teal })
+hi("@string.regexp", { fg = cyan })
 hi("@string.escape", "@string.regexp")
 hi("@string.special", "@string.regexp")
 hi("@string.special.symbol", "@string.regexp")
@@ -185,7 +185,7 @@ hi("@string.special.path", "@string.regexp")
 hi("@string.special.url", "@string.regexp")
 
 -- characters
-hi("Character", { fg = teal })
+hi("Character", { fg = cyan })
 hi("@character", "Character")
 hi("@character.special", "@character")
 
@@ -307,7 +307,7 @@ hi("@diff.delta", "DiffChange")
 -- tags
 hi("Tag", { fg = green })
 hi("@tag", { fg = green })
-hi("@tag.builtin", { fg = teal })
+hi("@tag.builtin", { fg = cyan })
 hi("@tag.attribute", { fg = text })
 hi("@tag.delimiter", { fg = text })
 
