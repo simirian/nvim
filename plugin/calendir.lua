@@ -5,13 +5,17 @@ vim.g.calendir = vim.g.calendir or vim.env.HOME .. "/Documents/calendir"
 
 --- Opens the daily document for the specified time.
 --- @param date osdateparam The date to open the file of.
-local function open(date)
+--- @param bang boolean? If the command was executed with a bang.
+local function open(date, bang)
   local time = os.time(date)
-  vim.fn.mkdir(vim.g.calendir .. os.date("/%Y/%m", time), "p")
-  vim.cmd.edit(vim.g.calendir .. os.date("/%Y/%m/%d.md", time))
-  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-  if #lines == 1 and lines[1] == "" then
-    vim.api.nvim_buf_set_lines(0, 0, -1, false, { os.date("# Daily %Y-%m-%d", time) --[[@as string]] })
+  if not pcall(vim.cmd --[[@as fun()]], "edit" .. (bang and "! " or " ") .. vim.g.calendir .. os.date("/%Y/%m/%d.md", time)) then
+    vim.notify(vim.v.errmsg, vim.log.levels.ERROR, {})
+  else
+    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    if #lines == 1 and lines[1] == "" then
+      vim.api.nvim_buf_set_lines(0, 0, -1, false, { os.date("# Daily %Y-%m-%d", time) --[[@as string]] })
+    end
+    vim.fn.mkdir(vim.g.calendir .. os.date("/%Y/%m", time), "p")
   end
 end
 
@@ -66,14 +70,14 @@ local namespace = vim.api.nvim_create_namespace("calendir")
 local calendars = {}
 
 --- Creates a buffer for a calendar collection.
---- @param path string The path within the calendir.
+--- @param name string The name of the calendar.
 --- @return integer bufnr
-local function makecalbuf(path)
-  local bufnr = calendars[path]
+local function makecalbuf(name)
+  local bufnr = calendars[name]
   if not bufnr then
     bufnr = vim.api.nvim_create_buf(true, true)
-    vim.api.nvim_buf_set_name(bufnr, "calendir:///" .. path)
-    calendars[path] = bufnr
+    vim.api.nvim_buf_set_name(bufnr, "calendir:///" .. name)
+    calendars[name] = bufnr
   end
   return bufnr
 end
@@ -86,7 +90,8 @@ end
 
 --- Opens a calendar year buffer.
 --- @param year integer The year to display.
-local function yearcalendar(year)
+--- @param bang boolean? If the command was executed with a bang.
+local function yearcalendar(year, bang)
   local bufnr = makecalbuf(tostring(year))
   vim.bo[bufnr].modifiable = true
   local lines = { monthnames }
@@ -127,20 +132,23 @@ local function yearcalendar(year)
     local day = curpos[1] - 1
     open { year = year, month = month, day = day }
   end, { buffer = bufnr, desc = "Open journal entry." })
-  vim.cmd(bufnr .. "b!")
+  if not pcall(vim.cmd --[[@as fun()]], bufnr .. "b" .. (bang and "!" or "")) then
+    vim.notify(vim.v.errmsg, vim.log.levels.ERROR, {})
+  end
 end
 
 --- Names of days of the week, to be used in monthly calendars.
 local daynames = ""
 for wday = 1, 7 do
-  daynames = daynames .. os.date(" %a ", os.time{year = 1970, month = 1, day = 3 + wday})
+  daynames = daynames .. os.date(" %a ", os.time { year = 1970, month = 1, day = 3 + wday })
 end
 
 --- Opens a month calendar buffer.
 --- @param year integer The year.
 --- @param month integer The month.
-local function monthcalendar(year, month)
-  local bufnr = makecalbuf(("%d/%02d"):format(year, month))
+--- @param bang boolean? If the command was executed with a bang.
+local function monthcalendar(year, month, bang)
+  local bufnr = makecalbuf(os.date("%B %Y", os.time { year = year, month = month, day = 1 }) --[[@as string]])
   vim.bo[bufnr].modifiable = true
   local first = os.date("*t", os.time { year = year, month = month, day = 1 }) --[[@as osdate]]
   while first.wday ~= 1 do
@@ -178,57 +186,59 @@ local function monthcalendar(year, month)
     local day = tonumber(line:sub(math.floor(col / 5) * 5, math.floor(col / 5 + 1) * 5))
     open { year = year, month = month, day = day --[[@as integer]] }
   end, { buffer = bufnr, desc = "Open journal entry." })
-  vim.cmd(bufnr .. "b!")
+  if not pcall(vim.cmd --[[@as fun()]], bufnr .. "b" .. (bang and "!" or "")) then
+    vim.notify(vim.v.errmsg, vim.log.levels.ERROR, {})
+  end
 end
 
 vim.api.nvim_create_user_command("Calendir", function(args)
   if args.args == "today" then
-    open(os.date("*t") --[[@as osdateparam]])
+    open(os.date("*t") --[[@as osdateparam]], args.bang)
   elseif args.args == "yesterday" then
     local date = os.date("*t")
-    open { year = date.year, month = date.month, day = date.day - 1 }
+    open({ year = date.year, month = date.month, day = date.day - 1 }, args.bang)
   elseif args.args == "tomorrow" then
     local date = os.date("*t")
-    open { year = date.year, month = date.month, day = date.day + 1 }
+    open({ year = date.year, month = date.month, day = date.day + 1 }, args.bang)
   elseif args.args == "previous" then
     local type, date = getcurrent()
     --- @cast date osdate
     if type == "year" then
-      yearcalendar(date.year - 1)
+      yearcalendar(date.year - 1, args.bang)
     elseif type == "month" then
       date = offset(date, { month = -1 })
-      monthcalendar(date.year --[[@as integer]], date.month --[[@as integer]])
+      monthcalendar(date.year --[[@as integer]], date.month --[[@as integer]], args.bang)
     elseif type == "journal" then
-      open(offset(date, { day = -1 }) --[[@as osdateparam]])
+      open(offset(date, { day = -1 }) --[[@as osdateparam]], args.bang)
     end
   elseif args.args == "next" then
     local type, date = getcurrent()
     --- @cast date osdate
     if type == "year" then
-      yearcalendar(date.year + 1)
+      yearcalendar(date.year + 1, args.bang)
     elseif type == "month" then
       date = offset(date, { month = 1 })
-      monthcalendar(date.year --[[@as integer]], date.month --[[@as integer]])
+      monthcalendar(date.year --[[@as integer]], date.month --[[@as integer]], args.bang)
     elseif type == "journal" then
-      open(offset(date, { day = 1 }) --[[@as osdateparam]])
+      open(offset(date, { day = 1 }) --[[@as osdateparam]], args.bang)
     end
   else
     local year, month, day = args.args:match("^%s*(%d+)/(%d+)/(%d+)%s*$")
     if year then
-      open { year = year, month = month, day = day }
+      open({ year = year, month = month, day = day }, args.bang)
       return
     end
     year, month = args.args:match("^%s*(%d+)/(%d+)%s*$")
     if year then
-      monthcalendar(tonumber(year) --[[@as integer]], tonumber(month) --[[@as integer]])
+      monthcalendar(tonumber(year) --[[@as integer]], tonumber(month) --[[@as integer]], args.bang)
       return
     end
     year = args.args:match("^%s*(%d+)%s*$")
     if year then
-      yearcalendar(tonumber(year) --[[@as integer]])
+      yearcalendar(tonumber(year) --[[@as integer]], args.bang)
     elseif args.args:match("^%s*$") then
       local today = os.date("*t")
-      monthcalendar(today.year --[[@as integer]], today.month --[[@as integer]])
+      monthcalendar(today.year --[[@as integer]], today.month --[[@as integer]], args.bang)
     else
       vim.notify("Calendir: unreconized argument: " .. args.args, vim.log.levels.ERROR, {})
     end
@@ -236,6 +246,7 @@ vim.api.nvim_create_user_command("Calendir", function(args)
 end, {
   desc = "Calendir command.",
   nargs = "?",
+  bang = true,
   complete = function(arglead, cmdline, curpos)
     if curpos ~= #cmdline then return end
     return vim.tbl_filter(function(e)
