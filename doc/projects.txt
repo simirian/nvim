@@ -9,14 +9,14 @@ functionality is exposed through a single `:Project` command with intelligent
 completion.
 
 ==============================================================================
-Project Command						    *projects-command*
+Project Command					*projects-command* *:Project*
 
 Everything this plugin has to offer can be accessed thorugh the `:Project`
 command and its various sub-commands. Altogether, they allow you to add and
 remove saved projects, include and exclude project directories, and load
 projects quickly and easily.
 
-ADDING AND REMOVING PROJECTS		      *projects-add* *projects-remove*
+ADDING AND REMOVING PROJECTS		*projects-add* *projects-remove*
 
 Adding and removing projects manually requires the `:Project add NAME` and
 `:Project remove NAME` commands. In both cases, `NAME` refers to the alias
@@ -25,7 +25,7 @@ vim's current directory is automatically used as the project directory. Adding
 and removing projects manually this way will persist changes through restarts
 of vim in a file called `projects.json` in vim's data directory.
 
-INCLUDING AND EXCLUDING DIRECTORIES	 *projects-include* *projects-exclude*
+INCLUDING AND EXCLUDING DIRECTORIES	*projects-include* *projects-exclude*
 
 The contents of entire directories can be added to the projects list quickly
 by including directories with the `:Project include DIR` command. Directories
@@ -37,7 +37,7 @@ projects will have lower priority than saved projects if there are name
 conflicts. If there are name conflicts between multiple included projects,
 then priority is granted randomly.
 
-OPENING PROJECTS					       *projects-open*
+OPENING PROJECTS					*projects-open*
 
 Projects can be opened with the `:Project open NAME` command, so long as
 `NAME` is the name of a saved or included project. This will run `:cd` on the

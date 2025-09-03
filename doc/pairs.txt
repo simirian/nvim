@@ -7,7 +7,7 @@ first character. It also provides a surround operator and additional keymaps
 to change and delete surrounding pairs.
 
 ==============================================================================
-Autopairs						      *pairs-autopair*
+Autopairs						*pairs-autopair*
 
 Autopairs are defined by filetype and should automatically apply when typing
 in a buffer. When you type the closing character of a pair, if a pair was
@@ -27,14 +27,14 @@ you want to pair. This will prevent the insert mappings from taking effect,
 and will insert the character that you type literally.
 
 ==============================================================================
-Surroundings						      *pairs-surround*
+Surroundings						*pairs-surround*
 
 Surrounds allow easy manipulation of pairs around text. The surround operator
 allows you to add a variety of different forms of text on each side of a
 selection. The delete and change operators allow manipulation of existing
 surroundings in a line.
 
-SURROUND OPERATOR					  *pairs-surround-add*
+SURROUND OPERATOR					*pairs-surround-add*
 						*pairs-s* *pairs-ss* *pairs-S*
 
 The remapped s operator (surround) allows you to surround any text with

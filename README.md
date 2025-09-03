@@ -42,12 +42,12 @@ These files are relatively brief. It is recommended that if you want to use
 their features, you read the full help file, as they will provide insight into
 how to use them and what might go wrong when using them.
 
+- *calendir* `:h calendir.txt` provides calendar and journal functionality
 - *fex* `:h fex.txt` lets you edit the file system like a buffer
 - *lines* customizes the status line and tab line
 - *lsp* sets up native vim language server functionality and tab completion
 - *pairs* `:h pairs.txt` provides autopairs and surrounds
 - *projects* `:h projects.txt` makes it easy to open projects quickly
-- *calendir* `:h calendir.txt` provides calendar and journal functionality
 
 ## External Plugins
 

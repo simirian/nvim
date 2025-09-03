@@ -8,7 +8,7 @@ intuitive. The files associated with this plugin are `plugin/fex.lua` and
 `syntax/fex.vim`.
 
 ==============================================================================
-Editing Files							 *fex-editing*
+Editing Files							*fex-editing*
 
 To open a fex buffer, simply `:edit` a directory as if it was a normal file.
 Each line in a fex buffer represents a single file on the file system. The
@@ -50,14 +50,14 @@ or |dd|, then pasitng it in another location with |p|. Just like with copying
 and other actions, the pasted files can be further manipulated.
 
 ==============================================================================
-Errors								  *fex-errors*
+Errors								*fex-errors*
 
 You file system has important data on it which fex does not want to mess up.
 For this reason, fex will check before committing changes to the file system
 to ensure that certain special cases do not cause problems. If any problem is
 encountered, fex will stop and inform the user, then cancel the write.
 
-MALFORMED LINE							       *FEXE1*
+MALFORMED LINE							*FEXE1*
 
 This problem occurs when fex is parsing the lines in all fax buffers for
 changes. Fex expects the lines to be in a certain form, and if they are not
@@ -76,7 +76,7 @@ The simplest way to fix a malformed line error is to simply undo whatever it
 was that caused the error. You can revert the contents of a fex buffer to the
 state of the file system by editing the buffer with |:edit`.
 
-MODIFIED CHILD OF MODIFIED DIRECTORY				       *FEXE2*
+MODIFIED CHILD OF MODIFIED DIRECTORY				*FEXE2*
 
 When a directory is modified and its children are also modified, it creates a
 complex situation where it is difficult to robustly perform file operations.
@@ -93,7 +93,7 @@ first should be intuitive, this error is moreso a notice that you've
 accidentally caused unsafe behavior rather than a demand that you do difficult
 work instead of the plugin.
 
-ERROR ACCESSING FILE						       *FEXE3*
+ERROR ACCESSING FILE						*FEXE3*
 
 This error occurs when fex is validating that the current change to fex
 buffers are valid. If fex detects that a file which it expects to exist does
@@ -104,7 +104,7 @@ Fixing this error is almost never something that can be done within nvim,
 because it is most often caused when a file in a fex buffer is externally
 deleted.
 
-MULTIPLY DEFINED TARGET						       *FEXE4*
+MULTIPLY DEFINED TARGET						*FEXE4*
 
 Multiply defined target errors happen when you rename or copy multiple files
 to the same location at the same time. Fex will notify you of the file which
@@ -115,7 +115,7 @@ remove all but one reference to the name in conflict, so that only one file
 will be moved / copied / created at that location.
 
 ==============================================================================
-Fex Keymaps							 *fex-keymaps*
+Fex Keymaps							*fex-keymaps*
 
 Fex adds two keymaps to make it easier to edit files.
 

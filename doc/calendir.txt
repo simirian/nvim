@@ -6,7 +6,7 @@ This plugin makes it easy for you to keep a journal and open calendar buffers
 to help keep track of that journal.
 
 ==============================================================================
-Calendir Directory					  *calendir-directory*
+Calendir Directory					*calendir-directory*
 
 All of your journal entries are stored in the directory specified by
 `g:calendir`. By default the calendir will be `~/Documents/calendir`. The
@@ -25,8 +25,8 @@ features of the plugin. Adding a `!` to the end of the command works like
 normal editing commands and will hide the current buffer before opening the
 calendar or journal file.
 
-CALENDIR JOURNAL			   *calendir-journal* *calendir-today*
-				      *calendir-yesterday* *calendir-tomorrow*
+CALENDIR JOURNAL			*calendir-journal* *calendir-today*
+				*calendir-yesterday* *calendir-tomorrow*
 
 The calendir plugin's primary goal is to make it simple to keep a daily
 journal. The journal stored in the |calendir-directory| can be accessed and
@@ -37,7 +37,7 @@ entries of their respective days. If a journal entry does not yet exist, then
 a new buffer is created at its location and it will be given the header "#
 Daily year-month-day".
 
-CALENDIR DATES				   *calendir-calendar* *calendir-date*
+CALENDIR DATES				*calendir-calendar* *calendir-date*
 
 The default argument to the `:Calendir` command is a date. The date can
 specify a year, month, and day each as a list of digits separated by slashes
@@ -48,7 +48,7 @@ current window. Omitting the day and month will open a yearly calendar
 instead. Calendars will have special highlight for the current day,
 unimportant days, and days which have a journal entry file.
 
-CALENDIR NAVIGATION			   *calendir-previous* *calendir-next*
+CALENDIR NAVIGATION			*calendir-previous* *calendir-next*
 
 While in any calendir buffer, you can navigate to nearby calendir buffers with
 the `:Calendir next` and `:Calendir previous` commands. When in a journal
