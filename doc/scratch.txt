@@ -1,0 +1,30 @@
+*scratch.txt*	Scratch buffer editing.
+
+				 by simirian
+
+This plugin adds a quick interface for editing multiple scratch buffers of
+various file types, as well as a dummy text buffer.
+
+==============================================================================
+Commands						*scratch-commands*
+
+The interface for this plugin is exposed through two commands. Both of these
+commands create scratch buffers which adhere to |scratch-buffer|, but will
+also be listed in the buffer list.
+
+SCRATCH						*:Scratch* *scratch-command*
+
+The `:Scratch` command opens an empty scratch buffer. The argument supplied to
+the command will be interpreted as a file type, and the 'filetype' option will
+be set to the argument for that scratch buffer. Using a count will edit that
+particular scratch buffer for that file type. This means that each file type
+(including no file type) have an independent set of buffers of that file type.
+
+ANNABELL LEE				*:AnnabellLee* *annabell-lee-command*
+
+The `:AnnabelLee` command can be used to open a buffer with dummy text. There
+is exactly one annabel lee buffer, unlike with the `:Scratch` command. The
+file type of the buffer will be markdown and the text in the buffer is the
+poem "Annabell Lee" by Edgar Allen Poe.
+
+ vim:tw=78:ts=8:noet:ft=help:norl:

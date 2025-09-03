@@ -48,6 +48,7 @@ how to use them and what might go wrong when using them.
 - *lsp* sets up native vim language server functionality and tab completion
 - *pairs* `:h pairs.txt` provides autopairs and surrounds
 - *projects* `:h projects.txt` makes it easy to open projects quickly
+- *scratch* `:h scratch.txt` access to scratch buffers of any file type
 
 ## External Plugins
 
