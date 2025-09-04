@@ -15,8 +15,8 @@ local blue = "#4366a3"
 local purple = "#123456"
 
 local back = "#242220" -- normal background
-local backlight = "#363330" -- pum background, buffer markers
-local select = "#3f3a38" -- visual and quickfix selection
+local backlight = "#33312e" -- pum background, buffer markers
+local select = "#3e3b38" -- visual and quickfix selection
 local border = "#484440" -- float background
 local textbg = "#5d534b" -- borders, line number, end of buffer
 local textdark = "#807870" -- dark text
@@ -368,3 +368,7 @@ hi("CalToday", { fg = back, bg = yellow })
 hi("CalNoToday", { fg = back, bg = text })
 hi("CalOther", { fg = textdark, bg = backlight })
 hi("CalNoOther", { fg = textdark})
+
+-- pick groups
+hi("PickInput", { fg = text, bg = select })
+hi("PickList", { fg = text, bg = backlight })

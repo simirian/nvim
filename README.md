@@ -91,7 +91,7 @@ this list will be removed once this list is completed to a satisfactory degree.
     - [x] snippet completion
 - [ ] `lazy.nvim` -> git sub-modules
     - this shouldn't be too hard with git sub-modules
-- [ ] `telescope.nvim`, `plenary.nvim` -> `select` (use `vim.ui.select`)
+- [o] `telescope.nvim`, `plenary.nvim` -> `pick` (use `vim.ui.select`)
     - this is a monumental task and will probably be one of the last things to
       get replaced
 - [ ] `nvim-treesitter`
