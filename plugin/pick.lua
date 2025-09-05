@@ -44,6 +44,7 @@ local iwin
 local lwin
 
 --- Opens the picker windows.
+--- @param title string The title of the input window.
 local function openwins(title)
   iwin = iwin or vim.api.nvim_open_win(ibuf, true, {
     relative = "editor",
@@ -100,6 +101,7 @@ local function displayframe()
 end
 
 --- Sets the input buffer's item list to the
+--- @param newitems any[] The items to set as the list's items.
 local function setlist(newitems)
   items, n, frame = newitems, 1, nil
   vim.bo[lbuf].modifiable = true
@@ -108,6 +110,7 @@ local function setlist(newitems)
 end
 
 --- Sets the input buffer's contents.
+--- @param line string The line to set the input window's text to.
 local function setinput(line)
   vim.api.nvim_buf_set_lines(ibuf, 0, -1, false, { line })
 end
@@ -180,6 +183,77 @@ vim.keymap.set({ "i", "n" }, "<C-k>", function()
   displayframe()
 end, { desc = "Select previous item in list.", buffer = ibuf })
 
+--- Scores a string based on how well it matches a query. I made this up in an
+--- hour. It has O(n) and does not match optimally, but it's fuzzy so who cares.
+--- Basically designed to be as fast as possible. Probably breaks with utf-8.
+--- @param item string The item to score.
+--- @param query string The query to score based on.
+local function score(item, query)
+    local s = 0
+    local qi = 1                 -- query index
+    local qc = query:sub(qi, qi) -- query character
+    local li = 0                 -- index of last match
+    for i = 1, #item do
+      local ic = item:sub(i, i)
+      -- base score is 5 if exact match, 1 if case insensitive, and 0 otherwise
+      local b = ic == qc and 5 or (ic:lower() == qc:lower() and 1 or 0)
+      if b ~= 0 then
+        --           v-- score less if it's been a while since the last match
+        --                               v-- later chars are slightly less relevant
+        s = s + (b / (i - li)) * (0.8 + 0.2 * (1 - i / #item))
+        li, qi, qc = i, qi + 1, query:sub(qi + 1, qi + 1)
+      end
+    end
+    -- penalize heavily for not completing the query
+    s = s - (qi > #query and 0 or 10) * (#query - qi + 1)
+    -- reward less for how much of the item wasn't matched
+    return s * (0.8 + 0.2 * ((qi - 1) / #item))
+end
+
+--- Simple fuzzy finding algorithm.
+--- @param list string[] List of strings to score.
+--- @param query string The query string to score based on.
+--- @return string[]
+local function fuzz(list, query)
+  list = vim.tbl_map(function(e)
+    return { e, score(tostring(e), query) }
+  end, list)
+  list = vim.tbl_filter(function(e)
+    return e[2] > 0
+  end, list)
+  table.sort(list, function(a, b)
+    return a[2] > b[2]
+  end)
+  return vim.tbl_map(function(e) return e[1] end, list)
+end
+
+--- Filters/sorts selections based on mini.nvim's pick module, but also forces
+--- fuzzy matching if the first character is a space, and ignores that space.
+--- Uses the above fuzz() function as a fallback for when there isn't a prefix.
+--- @param list string[] The list to be filtered.
+--- @param query string The query to use to filter the list.
+--- @return string[]
+local function match(list, query)
+  local function pmatch(s, q)
+    local ok, found = pcall(string.match, s, q)
+    return ok and found ~= nil
+  end
+  if query == "" then return list end
+  local neg = query:sub(1, 1) == "!"
+  local mode = neg and query:sub(2, 2) or query:sub(1, 1)
+  local predicates = {
+    ["'"] = function(e) return pmatch(e, query) ~= neg end,
+    ["^"] = function(e) return pmatch(e, "^" .. query) ~= neg end,
+    ["$"] = function(e) return pmatch(e, query .. "$") ~= neg end,
+  }
+  if predicates[mode] then
+    query = query:sub(neg and 3 or 2)
+    return vim.tbl_filter(predicates[mode], list)
+  else
+    return fuzz(list, query:sub(query:sub(1, 1) == " " and 2 or 1))
+  end
+end
+
 --- Runs a command and collectes its output into an array of lines. Runs the
 --- callback with the collected lines as input.
 --- @param cmd string[] The command to run.
@@ -231,6 +305,24 @@ local function pick(args)
   confirm = args.confirm
   setinput(args.input or "")
   setlist(args.items or {})
+end
+
+--- @diagnostic disable-next-line: duplicate-set-field
+vim.ui.select = function(list, opts, on_choice)
+  pick {
+    generate = function(prompt)
+      return match(list, prompt)
+    end,
+    display = function(item)
+      return (opts.format_item or tostring)(item)
+    end,
+    confirm = function(item, idx)
+      closewins()
+      on_choice(item, idx)
+    end,
+    items = list,
+    title = opts.prompt,
+  }
 end
 
 --- Function to open a picker. Should call `pick()` with the correct arguments
