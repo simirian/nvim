@@ -189,6 +189,7 @@ local function dir_update(bufnr)
       line_hl_group = children[i].type == "directory" and "Directory" or nil,
       end_col = line:find("\t", 1, false) - 1,
       conceal = "",
+      invalidate = true,
     })
   end
 end
@@ -397,7 +398,7 @@ local function dir_setup(bufnr)
     buffer = bufnr,
     callback = sync,
   })
-  vim.keymap.set("", "<cr>", function()
+  vim.keymap.set("", "gf", function()
     local line = vim.api.nvim_get_current_line()
     local name = line:sub(1, 1) == "/" and line:match("\t(.*)") or line
     if not name or name:match("^%s*$") then
@@ -422,6 +423,7 @@ local function dir_setup(bufnr)
     vim.b[bufnr].fex_showhidden = not vim.b[bufnr].fex_showhidden
     dir_update(bufnr)
   end, { desc = "Toggle hidden files in fex buffer.", buffer = bufnr })
+  vim.keymap.set("n", "cc", "0f\tlC", { desc = "Quickly rename a file.", buffer = bufnr })
   vim.bo[bufnr].bufhidden = "hide"
   vim.bo[bufnr].swapfile = false
   vim.bo[bufnr].tabstop = 8
