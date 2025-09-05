@@ -8,9 +8,12 @@ vim.g.calendir = vim.g.calendir or vim.env.HOME .. "/Documents/calendir"
 --- @param bang boolean? If the command was executed with a bang.
 local function open(date, bang)
   local time = os.time(date)
-  if not pcall(vim.cmd --[[@as fun()]], "edit" .. (bang and "! " or " ") .. vim.g.calendir .. os.date("/%Y/%m/%d.md", time)) then
+  local path = vim.g.calendir .. os.date("/%Y/%m/%d.md", time)
+  if not pcall(vim.cmd --[[@as fun()]], "edit" .. (bang and "! " or " ") .. path) then
     vim.notify(vim.v.errmsg, vim.log.levels.ERROR, {})
   else
+    vim.b.calendir_date = vim.b.calendir_date or date
+    vim.b.calendir_type = vim.b.calendir_type or "journal"
     local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
     if #lines == 1 and lines[1] == "" then
       vim.api.nvim_buf_set_lines(0, 0, -1, false, { os.date("# Daily %Y-%m-%d", time) --[[@as string]] })
@@ -26,19 +29,33 @@ end
 --- @return "year"|"month"|"journal"? type
 --- @return osdate? date
 local function getcurrent()
-  local bufname = vim.api.nvim_buf_get_name(0)
-  if bufname:find("^calendir:///") == 1 then
-    local year = tonumber(bufname:match("^calendir:///(%d+)"))
-    local month = tonumber(bufname:match("^calendir:///%d+/(%d+)"))
-    return month and "month" or "year", { year = year, month = month or 1, day = 1, }
-  else
-    local path = vim.fs.normalize(bufname)
-    local calendirpath = vim.fs.normalize(vim.g.calendir)
-    if path:find(calendirpath, 1, true) ~= 1 then return end
-    local year, month, day = path:match("(%d%d%d%d)/(%d%d)/(%d%d)%.md$")
-    return "journal", { day = tonumber(day), month = tonumber(month), year = tonumber(year) }
-  end
+  return vim.b.calendir_type, vim.b.calendir_date
 end
+
+vim.api.nvim_create_autocmd("BufNew", {
+  desc = "Set calendir journal buffer name and type.",
+  pattern = vim.fs.normalize(vim.g.calendir .. "/*/*/*.md"),
+  callback = function()
+    vim.b.calendir_type = "journal"
+    local year, month, day = vim.api.nvim_buf_get_name(0):match("[/\\](%d+)[/\\](%d+)[/\\](%d+).md$")
+    vim.b.calendir_date = { year = tonumber(year), month = tonumber(month), day = tonumber(day) }
+  end,
+})
+
+vim.api.nvim_create_autocmd("VimEnter", {
+  desc = "Set calendir journal buffer name and type.",
+  callback = function()
+    local buffers = vim.api.nvim_list_bufs()
+    for _, buffer in ipairs(buffers) do
+      local bufname = vim.api.nvim_buf_get_name(buffer)
+      if vim.startswith(vim.fs.normalize(bufname), vim.fs.normalize(vim.g.calendir)) then
+        local year, month, day = bufname:match("[/\\](%d+)[/\\](%d+)[/\\](%d+).md$")
+        vim.b[buffer].calendir_type = "journal"
+        vim.b[buffer].calendir_date = { year = year, month = month, day = day }
+      end
+    end
+  end,
+})
 
 --- Checks if a journal entry exists for the given day.
 --- @param date osdateparam The date of the entry to check.
@@ -93,12 +110,14 @@ end
 --- @param bang boolean? If the command was executed with a bang.
 local function yearcalendar(year, bang)
   local bufnr = makecalbuf(tostring(year))
+  vim.b[bufnr].calendir_date = { year = year, month = 1, day = 1 }
+  vim.b[bufnr].calendir_type = "year"
   vim.bo[bufnr].modifiable = true
   local lines = { monthnames }
   for day = 1, 28 do
     table.insert(lines, ("%4d "):format(day):rep(12))
   end
-  for day = 9, 31 do
+  for day = 29, 31 do
     local line = ""
     for month = 1, 12 do
       if os.date("*t", os.time { year = year, month = month, day = day }).month == month then
@@ -143,30 +162,45 @@ for wday = 1, 7 do
   daynames = daynames .. os.date(" %a ", os.time { year = 1970, month = 1, day = 3 + wday })
 end
 
+---Checks if the first date is before the second date.
+---@param a osdate The date which should be first.
+---@param b osdate The date which should be second.
+---@return boolean
+local function before(a, b)
+  return os.time(a --[[@as osdateparam]]) < os.time(b --[[@as osdateparam]])
+end
+
 --- Opens a month calendar buffer.
 --- @param year integer The year.
 --- @param month integer The month.
 --- @param bang boolean? If the command was executed with a bang.
 local function monthcalendar(year, month, bang)
-  local bufnr = makecalbuf(os.date("%B %Y", os.time { year = year, month = month, day = 1 }) --[[@as string]])
-  vim.bo[bufnr].modifiable = true
-  local first = os.date("*t", os.time { year = year, month = month, day = 1 }) --[[@as osdate]]
+  local date = { year = year, month = month, day = 1 }
+  local bufnr = makecalbuf(os.date("%B %Y", os.time(date)) --[[@as string]])
+  vim.b[bufnr].calendir_date = date
+  vim.b[bufnr].calendir_type = "month"
+  local first = os.date("*t", os.time(date)) --[[@as osdate]]
   while first.wday ~= 1 do
     first = offset(first, { day = -1 })
   end
+  local last = os.date("*t", os.time { year = year, month = month + 1, day = 1 }) --[[@as osdate]]
+  while last.wday ~= 1 do
+    last = offset(last, { day = 1 })
+  end
   local lines = { daynames }
-  local date = vim.deepcopy(first)
-  while date.month <= month or date.wday ~= 1 do
+  date = vim.deepcopy(first)
+  while before(date, last) do
     local lead = date.wday == 1 and "" or table.remove(lines)
     table.insert(lines, ("%s%4d "):format(lead, date.day))
     date = offset(date, { day = 1 })
   end
+  vim.bo[bufnr].modifiable = true
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
   vim.bo[bufnr].modifiable = false
   vim.bo[bufnr].modified = false
   local lnum = 0
   vim.api.nvim_buf_clear_namespace(bufnr, namespace, 0, -1)
-  while first.month <= month or first.wday ~= 1 do
+  while before(first, last) do
     lnum = first.wday == 1 and lnum + 1 or lnum
     local today, hasentry, hl = os.date("*t"), exists(first --[[@as osdateparam]])
     if first.year == today.year and first.month == today.month and first.day == today.day then
@@ -250,7 +284,7 @@ end, {
   complete = function(arglead, cmdline, curpos)
     if curpos ~= #cmdline then return end
     return vim.tbl_filter(function(e)
-      return e:sub(1, #arglead) == arglead
+      return vim.startswith(e, arglead)
     end, { "today", "yesterday", "tomorrow", "previous", "next" })
   end,
 })
