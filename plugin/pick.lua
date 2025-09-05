@@ -360,6 +360,58 @@ function pickers.grep(remember)
   }
 end
 
+local helpinput = "" --- @type string
+local helpitems = {} --- @type string[]
+function pickers.help(remember)
+  pick {
+    generate = function(prompt)
+      helpinput = prompt
+      helpitems = {}
+      local files = vim.api.nvim_get_runtime_file("doc/tags", true)
+      for _, file in ipairs(files) do
+        --- @diagnostic disable: undefined-field
+        local fd = vim.loop.fs_open(file, "r", 420)
+        local size = vim.loop.fs_fstat(fd).size
+        local contents = vim.loop.fs_read(fd, size)
+        vim.loop.fs_close(fd)
+        --- @diagnostic enable: undefined-field
+        local entries = vim.split(contents, "[\r\n]+", { trimempty = true })
+        helpitems = vim.list_extend(helpitems, vim.tbl_map(function(e) return e:match("^[^\t]*") end, entries))
+      end
+      helpitems = match(helpitems, prompt)
+      return helpitems
+    end,
+    confirm = function(item)
+      closewins()
+      vim.cmd.help(item)
+    end,
+    input = remember and helpinput or "",
+    items = remember and helpitems or {},
+  }
+end
+
+local fileprg
+local fileinput = ""
+local fileitems = {}
+function pickers.files(remember)
+  pick {
+    generate = function(prompt, set)
+      fileinput = prompt
+      if fileprg then fileprg:kill(15) end
+      fileprg = cmdlines({"rg", "--files", "--iglob=!.git/", "-."}, {}, function(lines)
+        fileitems = match(lines, prompt)
+        set(fileitems)
+      end)
+    end,
+    confirm = function(item)
+      closewins()
+      vim.cmd.edit(item)
+    end,
+    input = remember and fileinput or "",
+    items = remember and fileitems or {},
+  }
+end
+
 vim.api.nvim_create_user_command("Pick", function(args)
   pickers[args.args](args.bang)
 end, {
@@ -374,5 +426,9 @@ end, {
   end,
 })
 
+vim.keymap.set("n", "<leader>ff", function() pickers.files() end, { desc = "Find files." })
+vim.keymap.set("n", "<leader>fF", function() pickers.files(true) end, { desc = "Find files with the last query." })
+vim.keymap.set("n", "<leader>fh", function() pickers.help() end, { desc = "Find help." })
+vim.keymap.set("n", "<leader>fH", function() pickers.help(true) end, { desc = "Find help with the last query." })
 vim.keymap.set("n", "<leader>fg", function() pickers.grep() end, { desc = "Find with grep." })
 vim.keymap.set("n", "<leader>fG", function() pickers.grep(true) end, { desc = "Find with the last grep query." })
