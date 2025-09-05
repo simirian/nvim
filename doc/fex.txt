@@ -117,10 +117,11 @@ will be moved / copied / created at that location.
 ==============================================================================
 Fex Keymaps							*fex-keymaps*
 
-Fex adds two keymaps to make it easier to edit files.
+While in a fex buffer, two keymaps will be defined to make the buffer easier
+to use.
 
-keymap	description					tag ~
-_	Open vim's current directory.			*fex-_*
--	Open the parent directory of the current file.	*fex--*
+keymap	action ~
+gf	edit the file on the current line
+gh	toggle showing hidden ("." prefixed) files
 
  vim:tw=78:ts=8:noet:ft=help:norl:

@@ -19,12 +19,15 @@ closing pair will be tested first, then the opening pair.
 
 Pressing <cr> while in between two pair characters will separate them
 normally, then add an additional line between the two which should be
-correctly indented. Pressing <bs> while in between two pair characters will
-delete both the opening and closing character as if you typed <bs><del>.
+correctly indented. This is equivalent to pressing the keys <cr><up><end><cr>.
+Pressing <bs> while in between two pair characters will delete both the
+opening and closing character as if you typed <bs><del>.
 
 To insert a character without causing pairing, use CTRL-V, then the character
 you want to pair. This will prevent the insert mappings from taking effect,
-and will insert the character that you type literally.
+and will insert the character that you type literally. This is extremely
+useful default vim behavior that not enough people know about, it can even
+input control characters or literal tabs even when 'expandtab' is on!
 
 ==============================================================================
 Surroundings						*pairs-surround*
