@@ -47,7 +47,8 @@ function Statusline()
 
   local fname = vim.fs.basename(vim.api.nvim_buf_get_name(bufnr))
   local ico, hl = get_icon(fname)
-  local center = " %#" ..hl .. "#" .. ico .. " %*%t %n " .. (vim.bo[bufnr].modified and " " or "") .. "%*"
+  local bufname = vim.b[bufnr].bufname or "%t"
+  local center = " %#" ..hl .. "#" .. ico .. " %*" .. bufname .. " %n " .. (vim.bo[bufnr].modified and " " or "") .. "%*"
 
   local right = "%#User2# %l/%L %c "
 
