@@ -57,24 +57,36 @@ vim.api.nvim_create_autocmd("FileType", {
     if vim.bo.textwidth == 0 then
       vim.bo.textwidth = 80
     end
-    vim.wo.spell = true
-  end
+  end,
 })
+
+vim.api.nvim_create_autocmd( "FileType", {
+  desc = "Set spell only in text and markdown files.",
+  callback = function()
+    if vim.bo.ft == "text" or vim.bo.ft == "markdown" then
+      vim.wo.spell = true
+    else
+      vim.wo.spell = false
+    end
+  end,
+})
+
 vim.api.nvim_create_autocmd("BufWinEnter", {
   desc = "Ensure colorcolumn matches textwidth.",
   callback = function()
     local tw = vim.bo.textwidth
     vim.wo.colorcolumn = tw == 0 and "81" or "+1"
-  end
+  end,
 })
 
 vim.api.nvim_create_autocmd({ "BufEnter", "TermOpen" }, {
   desc = "Enter insert mode upon entering a terminal buffer.",
-  pattern = "term://*", command = "startinsert"
+  pattern = "term://*",
+  command = "startinsert",
 })
 vim.api.nvim_create_autocmd("TermLeave", {
   desc = "Leave insert mode when leaving a terminal buffer.",
-  command = "stopinsert"
+  command = "stopinsert",
 })
 
 -- ((keymaps)) -----------------------------------------------------------------
@@ -95,15 +107,14 @@ vim.keymap.set("t", "<C-l>", "<C-\\><C-o>gt", { desc = "Go to next tab page." })
 vim.keymap.set("i", "jj", "<esc>", { desc = "Escape insert mode." })
 vim.keymap.set("t", "<esc><esc>", "<C-\\><C-n>", { desc = "Leave terminal mode." })
 
-vim.keymap.set("", "<leader>p", "\"+p", { desc = "Paste from system clipboard." })
-vim.keymap.set("", "<leader>y", "\"+y", { desc = "Yank to system clipboard." })
-
-vim.keymap.set("v", "<tab>", ">gv", { desc = "Indent selected liens" })
-vim.keymap.set("v", "<S-tab>", "<gv", { desc = "Unindent selected lines" })
+vim.keymap.set("", "<leader>p", '"+p', { desc = "Paste from system clipboard." })
+vim.keymap.set("", "<leader>P", '"+P', { desc = "Paste from system clipboard." })
+vim.keymap.set("", "<leader>y", '"+y', { desc = "Yank to system clipboard." })
+vim.keymap.set("", "<leader>Y", '"+Y', { desc = "Yank to system clipboard." })
 
 vim.keymap.set("", "U", "<C-r>", { desc = "Redo." })
-vim.keymap.set("", "-", ":e %:h<cr>", { desc = "Open current buffer's parent." })
-vim.keymap.set("", "_", ":e .<cr>", { desc = "Open nvim's current directory." })
+vim.keymap.set("", "-", ":e %:p:s?[/\\\\]$??:h<cr>", { desc = "Open current buffer's parent.", silent = true })
+vim.keymap.set("", "_", ":e .<cr>", { desc = "Open nvim's current directory.", silent = true })
 
 -- ((lazy.nvim)) ---------------------------------------------------------------
 
