@@ -218,7 +218,7 @@ local function dir_addchanges(bufnr)
       end
       if id and name then
         changes[id] = changes[id] or {}
-        name = vim.fs.normalize(bufname .. "/" .. name)
+        name = vim.fs.normalize(bufname .. "/" .. name) .. line:match("/?$")
         changes[id][name] = true
         targets[name] = targets[name] and targets[name] + 1 or 1
       else
