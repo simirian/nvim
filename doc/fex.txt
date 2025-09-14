@@ -24,7 +24,11 @@ any fex buffer. Note that this will apply changes in ALL fex buffers.
 Adding files can be done by creating lines which don't contain an id. This is
 easiest to do with the |o| keybind, which will create a new blank line and put
 you into insert mode in that line, where you can then type a file name then
-write the fex buffer to create that file.
+write the fex buffer to create that file. When a new file name ends with a
+`/`, that name will be created as a directory instead of a file. In addition,
+file names can contain `/` characters, and the name will be interpreted as a
+path to a file. All of the parent files will be created when the file is
+created.
 
 The best way to delete a file is to completely delete its line. This can be
 done with |V| selections or with |dd| to delete the current line. In the
@@ -117,11 +121,12 @@ will be moved / copied / created at that location.
 ==============================================================================
 Fex Keymaps							*fex-keymaps*
 
-While in a fex buffer, two keymaps will be defined to make the buffer easier
+While in a fex buffer, a few keymaps will be defined to make the buffer easier
 to use.
 
 keymap	action ~
 gf	edit the file on the current line
 gh	toggle showing hidden ("." prefixed) files
+cc	clear and edit the file name in a line without changing the id
 
  vim:tw=78:ts=8:noet:ft=help:norl:
