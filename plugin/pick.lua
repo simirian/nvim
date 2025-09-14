@@ -313,9 +313,7 @@ vim.ui.select = function(list, opts, on_choice)
     generate = function(prompt)
       return match(list, prompt)
     end,
-    display = function(item)
-      return (opts.format_item or tostring)(item)
-    end,
+    display = opts.format_item,
     confirm = function(item, idx)
       closewins()
       on_choice(item, idx)
@@ -412,6 +410,27 @@ function pickers.files(remember)
   }
 end
 
+local buffersinput = ""
+local buffersitems = {}
+function pickers.buffers(remember)
+  pick {
+    generate = function(prompt)
+      local b = vim.tbl_filter(function(e) return vim.bo[e].buflisted end, vim.api.nvim_list_bufs())
+      buffersitems = match(vim.tbl_map(function(e)
+        return vim.fs.normalize(vim.fn.fnamemodify(vim.api.nvim_buf_get_name(e), ":p:~:."))
+      end, b), prompt)
+      vim.print(buffersitems)
+      return buffersitems
+    end,
+    confirm = function(item)
+      closewins()
+      vim.cmd("b! " .. item)
+    end,
+    input = remember and buffersinput or "",
+    items = remember and buffersitems or {},
+  }
+end
+
 vim.api.nvim_create_user_command("Pick", function(args)
   pickers[args.args](args.bang)
 end, {
@@ -427,8 +446,10 @@ end, {
 })
 
 vim.keymap.set("n", "<leader>ff", function() pickers.files() end, { desc = "Find files." })
-vim.keymap.set("n", "<leader>fF", function() pickers.files(true) end, { desc = "Find files with the last query." })
+vim.keymap.set("n", "<leader>fF", function() pickers.files(true) end, { desc = "Remember files." })
 vim.keymap.set("n", "<leader>fh", function() pickers.help() end, { desc = "Find help." })
-vim.keymap.set("n", "<leader>fH", function() pickers.help(true) end, { desc = "Find help with the last query." })
+vim.keymap.set("n", "<leader>fH", function() pickers.help(true) end, { desc = "Remember help." })
 vim.keymap.set("n", "<leader>fg", function() pickers.grep() end, { desc = "Find with grep." })
-vim.keymap.set("n", "<leader>fG", function() pickers.grep(true) end, { desc = "Find with the last grep query." })
+vim.keymap.set("n", "<leader>fG", function() pickers.grep(true) end, { desc = "Remember grep." })
+vim.keymap.set("n", "<leader>fb", function() pickers.buffers() end, { desc = "Find buffers." })
+vim.keymap.set("n", "<leader>fB", function() pickers.buffers(true) end, { desc = "Remember buffers." })
