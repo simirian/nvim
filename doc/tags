@@ -39,10 +39,12 @@ pick-fuzz	pick.txt	/*pick-fuzz*
 pick-keymaps	pick.txt	/*pick-keymaps*
 pick-pickers	pick.txt	/*pick-pickers*
 pick.txt	pick.txt	/*pick.txt*
+projects-<leader>fp	projects.txt	/*projects-<leader>fp*
 projects-add	projects.txt	/*projects-add*
 projects-command	projects.txt	/*projects-command*
 projects-exclude	projects.txt	/*projects-exclude*
 projects-include	projects.txt	/*projects-include*
+projects-keymaps	projects.txt	/*projects-keymaps*
 projects-open	projects.txt	/*projects-open*
 projects-remove	projects.txt	/*projects-remove*
 projects.txt	projects.txt	/*projects.txt*

@@ -44,4 +44,12 @@ Projects can be opened with the `:Project open NAME` command, so long as
 directory where the project is located. Custom command line completion makes
 this command very quick to use if you correctly set 'wildchar'.
 
+==============================================================================
+Projects keymaps		*projects-keymaps* *projects-<leader>fp*
+
+The projects module defines the `<leader>fp` keymap to make project selection
+easier. This keymap uses |vim.ui.select()| as the selection mechanism, so if
+|pick.txt| is enabled, you will be able to use a fuzzy picker over the loaded
+project names.
+
  vim:tw=78:ts=8:noet:ft=help:norl:

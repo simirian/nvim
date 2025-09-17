@@ -174,3 +174,11 @@ end, {
     end
   end
 })
+
+vim.keymap.set("n", "<leader>fp", function()
+  vim.ui.select(vim.tbl_keys(vim.tbl_deep_extend("force", included, saved)), {}, function(item)
+    if item then
+      open(item)
+    end
+  end)
+end, {})
