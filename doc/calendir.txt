@@ -48,12 +48,17 @@ current window. Omitting the day and month will open a yearly calendar
 instead. Calendars will have special highlight for the current day,
 unimportant days, and days which have a journal entry file.
 
-CALENDIR NAVIGATION			*calendir-previous* *calendir-next*
+CALENDIR NAVIGATION					*calendir-navigation*
 
 While in any calendir buffer, you can navigate to nearby calendir buffers with
-the `:Calendir next` and `:Calendir previous` commands. When in a journal
-entry, this will navigate to the previous or next journal entry. While in a
-month calendar, this will navigate to adjacent months, and while in a year
-calendar to adjacent years.
+the `:Calendir +n` and `:Calendir -n`, where `n` is replaced with an offset
+from the current buffer. The most common permutations of these commands are
+`:Calendir +1` and `:Calendir -1`, which switch to the next and previous
+buffer of the current level respectively. When in a buffer in the
+|calendir-directory|, these commands will navigate to the previous or next
+entry in that directory by level. E.g. if you have the buffer for
+`calendir/2025/09` open in fex, using `:Calendir -1` will open
+`calendir/2025/08`. While in an actual calendar, this will navigate to
+adjacent calendar entries of the same level.
 
  vim:tw=78:ts=8:noet:ft=help:norl:
