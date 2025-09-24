@@ -1,5 +1,5 @@
 -- simirian's Neovim
--- file explorer
+-- file explorer plugin
 
 -- Credit where it's due, this plugin was heavily inspired by peer plugins like
 -- dirbuf and oil. It just aims to be smaller and perhaps a little simpler.
@@ -398,7 +398,7 @@ local function dir_setup(bufnr)
     buffer = bufnr,
     callback = sync,
   })
-  vim.keymap.set("", "gf", function()
+  vim.keymap.set("", "<cr>", function()
     local line = vim.api.nvim_get_current_line()
     local name = line:sub(1, 1) == "/" and line:match("\t(.*)") or line
     if not name or name:match("^%s*$") then

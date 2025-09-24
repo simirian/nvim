@@ -23,7 +23,8 @@ All of the functionality of this plugin is available through the `:Calendir`
 command. It has several subcommands which can be used to interact with
 features of the plugin. Adding a `!` to the end of the command works like
 normal editing commands and will hide the current buffer before opening the
-calendar or journal file.
+calendar or journal file. Pressing <cr> on any entry in a calendar will open
+that entry for editing.
 
 CALENDIR JOURNAL			*calendir-journal* *calendir-today*
 				*calendir-yesterday* *calendir-tomorrow*

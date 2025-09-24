@@ -214,7 +214,7 @@ local function yearcal(bufnr, date)
     end
   end
 
-  vim.keymap.set("", "gf", function()
+  vim.keymap.set("", "<cr>", function()
     local curpos = vim.api.nvim_win_get_cursor(0)
     local month, day = math.floor(curpos[2] / 5) + 1, curpos[1] - 1
     edit(true, { year = date.year, month = month, day = day }, "day")
@@ -272,7 +272,7 @@ local function monthcal(bufnr, date)
     iter = offset(iter, "day", 1)
   end
 
-  vim.keymap.set("", "gf", function()
+  vim.keymap.set("", "<cr>", function()
     local col = vim.api.nvim_win_get_cursor(0)[2]
     local line = vim.api.nvim_get_current_line()
     local day = tonumber(line:sub(math.floor(col / 5) * 5, math.floor(col / 5 + 1) * 5))

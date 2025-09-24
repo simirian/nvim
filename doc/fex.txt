@@ -125,7 +125,7 @@ While in a fex buffer, a few keymaps will be defined to make the buffer easier
 to use.
 
 keymap	action ~
-gf	edit the file on the current line
+<cr>	edit the file on the current line
 gh	toggle showing hidden ("." prefixed) files
 cc	clear and edit the file name in a line without changing the id
 
