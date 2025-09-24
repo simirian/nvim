@@ -34,6 +34,9 @@ vim.o.path = ".,,**"
 vim.opt.isfname:remove { "[", "]" }
 vim.opt.suffixesadd = { ".md" }
 
+vim.o.swapfile = false
+vim.o.shada = ""
+
 --- @diagnostic disable-next-line: undefined-field
 if vim.loop.os_uname().sysname == "Windows_NT" then
   vim.o.shell = vim.fn.executable("pwsh") == 1 and "pwsh" or "powershell"
