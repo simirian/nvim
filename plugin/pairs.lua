@@ -1,5 +1,5 @@
 --- simirian's Neovim
---- autopairs and surrounds
+--- autopair and surround plugin
 
 -- ((autopairs)) ---------------------------------------------------------------
 

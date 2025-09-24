@@ -1,5 +1,5 @@
 -- simirian's Neovim
--- projects module
+-- projects plugin
 
 --- Map from project name to path.
 --- @type table<string, string>

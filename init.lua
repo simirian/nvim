@@ -132,7 +132,6 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup {
   rocks = { enabled = false },
   spec = {
-    { "nvim-tree/nvim-web-devicons", lazy = true },
     {
       "nvim-treesitter/nvim-treesitter",
       branch = "main",

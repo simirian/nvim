@@ -177,14 +177,10 @@ local function dir_update(bufnr)
     if children[i].type == "directory" then
       ico, hl = "", "Directory"
     else
-      local ok, devicons = pcall(require, "nvim-web-devicons")
-      if ok then
-        local name = line:match("\t(.*)")
-        ico, hl = devicons.get_icon(name, name:match("[^.]+$"))
-      end
+      ico, hl = require("icons").get(line:match("\t(.*)"))
     end
     vim.api.nvim_buf_set_extmark(bufnr, ns, i - 1, 0, {
-      virt_text = { { (ico or "") .. " ", hl or "FileKind" } }, -- TODO: fix highlight, icons module?
+      virt_text = { { ico .. " ", hl } },
       virt_text_pos = "inline",
       line_hl_group = children[i].type == "directory" and "Directory" or nil,
       end_col = line:find("\t", 1, false) - 1,

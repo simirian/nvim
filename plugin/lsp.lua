@@ -1,5 +1,5 @@
 -- simirian's Neovim
--- LSP configuration
+-- LSP configuration plugin
 
 vim.diagnostic.config {
   virtual_text = {

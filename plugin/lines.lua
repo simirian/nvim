@@ -1,13 +1,5 @@
--- lua statusline and tabline
--- by simirian
-
-local function get_icon(fname)
-  local has_devicons, devicons = pcall(require, "nvim-web-devicons")
-  if has_devicons then
-    return devicons.get_icon(fname, fname:match("[^./\\]+$"), { default = true })
-  end
-  return "?", "Normal"
-end
+-- simirian's Neovim
+-- status and tab line plugin
 
 local augroup = vim.api.nvim_create_augroup("Lines", { clear = false })
 vim.api.nvim_create_autocmd("DiagnosticChanged", {
@@ -46,7 +38,7 @@ function Statusline()
   end
 
   local fname = vim.fs.basename(vim.api.nvim_buf_get_name(bufnr))
-  local ico, hl = get_icon(fname)
+  local ico, hl = require("icons").get(fname)
   local bufname = vim.b[bufnr].bufname or "%t"
   local center = " %#" ..hl .. "#" .. ico .. " %*" .. bufname .. " %n " .. (vim.bo[bufnr].modified and " " or "") .. "%*"
 

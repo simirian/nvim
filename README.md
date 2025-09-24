@@ -88,5 +88,6 @@ removed once it is completed to a satisfactory degree.
       get replaced (it wasn't that bad, but I didn't make a previewer)
 - [ ] `nvim-treesitter`
     - I don't actually think this is practical to remove
-- [ ] `nvim-web-devicons`
+- [x] `nvim-web-devicons`
     - again, I don't actually think this is practical to remove
+    - turns out it's pretty trivial to replace

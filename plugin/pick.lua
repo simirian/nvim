@@ -1,5 +1,5 @@
 --- simirian's Neovim
---- generic picker module
+--- generic picker plugin
 
 --- Generates the list of items to display.
 --- @type fun(prompt: string, set: fun(items: any[])): any[]?

@@ -372,3 +372,15 @@ hi("CalNoOther", { fg = textdark})
 -- pick groups
 hi("PickInput", { fg = text, bg = select })
 hi("PickList", { fg = text, bg = backlight })
+
+-- icon highlights
+hi("IconRed", { fg = red })
+hi("IconOrange", { fg = orange })
+hi("IconYellow", { fg = yellow })
+hi("IconLime", { fg = lime })
+hi("IconGreen", { fg = green })
+hi("IconCyan", { fg = cyan })
+hi("IconBlue", { fg = blue })
+hi("IconPurple", { fg = purple })
+hi("IconWhite", { fg = textlight })
+hi("IconGray", { fg = textdark })
