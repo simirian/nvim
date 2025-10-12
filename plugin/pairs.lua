@@ -1,43 +1,51 @@
 --- simirian's Neovim
 --- autopair and surround plugin
 
--- ((autopairs)) ---------------------------------------------------------------
-
 --- Rule for pairing (and also deleting) items.
---- @class Pairs.Rule
+--- @class Pairs.Pair
 --- The character which is the start of the pair.
 --- @field open string
 --- The character which is the end of the pair.
 --- @field close string
 --- A lua pattern which matches characters after which the pair will not be
 --- completed when the opneing character is typed.
---- @field notafter string
+--- @field notafter? string
 
 --- List of pairs.
---- @type table<string, Pairs.Rule>
-local rules = {
-  parens = { open = "(", close = ")", notafter = "\\" },
-  brackets = { open = "[", close = "]", notafter = "\\" },
-  braces = { open = "{", close = "}", notafter = "\\" },
-  angles = { open = "<", close = ">", notafter = "\\" },
-  dquote = { open = '"', close = '"', notafter = "\\", },
+--- @type table<string, Pairs.Pair>
+local pairchars = {
+  parens = { open = "(", close = ")" },
+  brackets = { open = "[", close = "]" },
+  braces = { open = "{", close = "}" },
+  angles = { open = "<", close = ">" },
+  dquote = { open = '"', close = '"' },
   quote = { open = "'", close = "'", notafter = "[\\%a]" },
-  grave = { open = "`", close = "`", notafter = "\\" },
-  aster = { open = "*", close = "*", notafter = "[\\%d]" },
-  equal = { open = "=", close = "=", notafter = "[\\%d]" },
-  under = { open = "_", close = "_", notafter = "[\\%a]" },
-  caret = { open = "^", close = "^", notafter = "[\\%d]" },
-  bar = { open = "|", close = "|", notafter = "\\" },
-  tilde = { open = "~", close = "~", notafter = "\\" },
+  grave = { open = "`", close = "`" },
 }
+
+local pairnames = {
+  ["("] = "parens",
+  [")"] = "parens",
+  ["["] = "brackets",
+  ["]"] = "brackets",
+  ["{"] = "braces",
+  ["}"] = "braces",
+  ["<"] = "angels",
+  [">"] = "angles",
+  ['"'] = "dquote",
+  ["'"] = "quote",
+  ["`"] = "grave",
+}
+
+-- ((autopairs)) ---------------------------------------------------------------
 
 --- Map of file types to their pair rules.
 --- @type table<string, string[]|boolean>
 local ft = {
   default = { "parens", "brackets", "braces", "dquote", "quote" },
-  markdown = { "parens", "brackets", "braces", "dquote", "quote", "grave", "aster", "under" },
+  markdown = { "parens", "brackets", "braces", "dquote", "quote", "grave" },
   TelescopePrompt = false,
-  PAIRTEST = { "parens", "brackets", "braces", "angles", "dquote", "quote", "grave", "aster", "equal", "under", "caret", "bar", "tilde" },
+  PAIRTEST = { "parens", "brackets", "braces", "angles", "dquote", "quote", "grave" },
 }
 
 --- Map of closing characters to the number of times they can be typed over this
@@ -46,54 +54,54 @@ local ft = {
 local paircounts = {}
 
 --- Generates an expr keymap function to open or close a symmetrical pair.
---- @param rule Pairs.Rule The rule to generate the keymap function for.
+--- @param pair Pairs.Pair The rule to generate the keymap function for.
 --- @return fun(): string
-local function openclose(rule)
+local function openclose(pair)
   return function()
-    if vim.b.pairs_rules and vim.b.pairs_rules[rule.open] then
+    if vim.b.pairs_rules and vim.b.pairs_rules[pair.open] then
       local line = vim.api.nvim_get_current_line()
       local col = vim.api.nvim_win_get_cursor(0)[2]
-      if paircounts[rule.open] and line:sub(col + 1, col + 1) == rule.close then
-        paircounts[rule.open] = paircounts[rule.open] > 1 and paircounts[rule.open] - 1 or nil
+      if paircounts[pair.open] and line:sub(col + 1, col + 1) == pair.close then
+        paircounts[pair.open] = paircounts[pair.open] > 1 and paircounts[pair.open] - 1 or nil
         return "<right>"
-      elseif not line:sub(col, col):find(rule.notafter) then
-        paircounts[rule.open] = paircounts[rule.open] and paircounts[rule.open] + 1 or 1
-        return rule.open .. rule.close .. "<left>"
+      elseif not pair.notafter or not line:sub(col, col):find(pair.notafter) then
+        paircounts[pair.open] = paircounts[pair.open] and paircounts[pair.open] + 1 or 1
+        return pair.open .. pair.close .. "<left>"
       end
     end
-    return rule.open
+    return pair.open
   end
 end
 
 --- Generates an expr keymap function to open a asymmetrical pair.
---- @param rule Pairs.Rule The rule to generate the keymap function for.
+--- @param pair Pairs.Pair The rule to generate the keymap function for.
 --- @return fun(): string
-local function open(rule)
+local function open(pair)
   return function()
-    if vim.b.pairs_rules and vim.b.pairs_rules[rule.open] then
+    if vim.b.pairs_rules and vim.b.pairs_rules[pair.open] then
       local col = vim.api.nvim_win_get_cursor(0)[2]
-      if not vim.api.nvim_get_current_line():sub(col, col):find(rule.notafter) then
-        paircounts[rule.open] = paircounts[rule.open] and paircounts[rule.open] + 1 or 1
-        return rule.open .. rule.close .. "<left>"
+      if not pair.notafter or not vim.api.nvim_get_current_line():sub(col, col):find(pair.notafter) then
+        paircounts[pair.open] = paircounts[pair.open] and paircounts[pair.open] + 1 or 1
+        return pair.open .. pair.close .. "<left>"
       end
     end
-    return rule.open
+    return pair.open
   end
 end
 
 --- Generates an expr keymap function to close a asymmetrical pair.
---- @param rule Pairs.Rule The rule to generate the keymap function for.
+--- @param pair Pairs.Pair The rule to generate the keymap function for.
 --- @return fun(): string
-local function close(rule)
+local function close(pair)
   return function()
-    if vim.b.pairs_rules and vim.b.pairs_rules[rule.open] then
+    if vim.b.pairs_rules and vim.b.pairs_rules[pair.open] then
       local col = vim.api.nvim_win_get_cursor(0)[2]
-      if paircounts[rule.open] and vim.api.nvim_get_current_line():sub(col + 1, col + 1) == rule.close then
-        paircounts[rule.open] = paircounts[rule.open] > 1 and paircounts[rule.open] - 1 or nil
+      if paircounts[pair.open] and vim.api.nvim_get_current_line():sub(col + 1, col + 1) == pair.close then
+        paircounts[pair.open] = paircounts[pair.open] > 1 and paircounts[pair.open] - 1 or nil
         return "<right>"
       end
     end
-    return rule.close
+    return pair.close
   end
 end
 
@@ -102,10 +110,10 @@ end
 local function bs()
   local line, col = vim.api.nvim_get_current_line(), vim.api.nvim_win_get_cursor(0)[2]
   local before, after = line:sub(col, col), line:sub(col + 1, col + 1)
-  for _, rule in pairs(vim.b.pairs_rules --[[@as Pairs.Rule[] ]] or {}) do
-    if rule.open == before and rule.close == after then
-      if paircounts[rule.open] then
-        paircounts[rule.open] = paircounts[rule.open] > 1 and paircounts[rule.open] - 1 or nil
+  for _, pair in pairs(vim.b.pairs_rules --[[@as Pairs.Pair[] ]] or {}) do
+    if pair.open == before and pair.close == after then
+      if paircounts[pair.open] then
+        paircounts[pair.open] = paircounts[pair.open] > 1 and paircounts[pair.open] - 1 or nil
       end
       return "<bs><del>"
     end
@@ -118,22 +126,29 @@ end
 local function cr()
   local line, col = vim.api.nvim_get_current_line(), vim.api.nvim_win_get_cursor(0)[2]
   local before, after = line:sub(col, col), line:sub(col + 1, col + 1)
-  print(before, after)
-  for _, rule in pairs(vim.b.pairs_rules --[[@as Pairs.Rule[] ]] or {}) do
-    if rule.open == before and rule.close == after then
+  for _, pair in pairs(vim.b.pairs_rules --[[@as Pairs.Pair[] ]] or {}) do
+    if pair.open == before and pair.close == after then
       return "<cr><up><end><cr>"
     end
   end
   return "<cr>"
 end
 
-for _, rule in pairs(rules) do
-  local opts = { desc = "Autopair " .. rule.open .. rule.close, expr = true }
-  if rule.open == rule.close then
-    vim.keymap.set("i", rule.open, openclose(rule), opts)
+for _, pair in pairs(pairchars) do
+  if pair.open == pair.close then
+    vim.keymap.set("i", pair.open, openclose(pair), {
+      desc = "Auto-pair " .. pair.open .. pair.close,
+      expr = true,
+    })
   else
-    vim.keymap.set("i", rule.open, open(rule), opts)
-    vim.keymap.set("i", rule.close, close(rule), opts)
+    vim.keymap.set("i", pair.open, open(pair), {
+      desc = "Auto-open " .. pair.open .. pair.close,
+      expr = true,
+    })
+    vim.keymap.set("i", pair.close, close(pair), {
+      desc = "Auto-close " .. pair.open .. pair.close,
+      expr = true,
+    })
   end
 end
 
@@ -156,9 +171,9 @@ vim.api.nvim_create_autocmd("FileType", {
     if ftrules == false then return end
     ftrules = ftrules --[[@as string[] ]] or ft.default
     local bufrules = {}
-    for _, rulename in pairs(ftrules) do
-      local rule = rules[rulename]
-      bufrules[rule.open] = rule
+    for _, pairname in pairs(ftrules) do
+      local pair = pairchars[pairname]
+      bufrules[pair.open] = pair
     end
     vim.b.pairs_rules = bufrules
   end,
@@ -166,97 +181,41 @@ vim.api.nvim_create_autocmd("FileType", {
 
 -- ((surround)) ----------------------------------------------------------------
 
---- A tuple which contains the open and close string for a pair.
---- @alias Pairs.OCTuple { open: string, close: string }
+--- This is true when inside a keymap, if getcharpair should update.
+--- @type boolean
+local keymap = false
 
---- A class which represents a surrounding pair.
---- @class Pairs.MarkerSet
---- The sides to surround text with, or a function to generate them.
---- @field a Pairs.OCTuple|fun(): Pairs.OCTuple
---- The sides to be searched for when deleting surroundings, or a function to
---- generate them. Uses `a` as a fallback.
---- @field d? Pairs.OCTuple|fun(): Pairs.OCTuple
+--- @type Pairs.Pair
+local paira
 
---- @type table<string, Pairs.MarkerSet>
-local msets = {
-  ["("] = { a = { open = "(", close = ")" }, d = { open = "%(", close = "%)" } },
-  [")"] = { a = { open = "( ", close = " )" }, d = { open = "%(%s*", close = "%s*%)" } },
-  ["["] = { a = { open = "[", close = "]" }, d = { open = "%[", close = "%]" } },
-  ["]"] = { a = { open = "[ ", close = " ]" }, d = { open = "%[%s*", close = "%s*%]" } },
-  ["{"] = { a = { open = "{", close = "}" } },
-  ["}"] = { a = { open = "{ ", close = " }" }, d = { open = "{%s*", close = "%s*}" } },
-  ["<"] = { a = { open = "<", close = ">" } },
-  [">"] = { a = { open = "< ", close = " >" }, d = { open = "<%s*", close = "%s*>" } },
-  ['"'] = { a = { open = '"', close = '"' } },
-  ["'"] = { a = { open = "'", close = "'" } },
-  ["`"] = { a = { open = "`", close = "`" } },
-  -- tags (T for space)
-  ["t"] = {
-    a = function()
-      local tagname = vim.fn.input("t ")
-      return { open = "<" .. tagname .. ">", close = "</" .. tagname .. ">" }
-    end,
-    d = function()
-      local tagname = vim.fn.input("t "):gsub("%%", "%%%%")
-      return { open = "<" .. tagname .. "[^<>]*>", close = "</" .. tagname .. ">" }
-    end,
-  },
-  ["T"] = {
-    a = function()
-      local tagname = vim.fn.input("T ")
-      return { open = "<" .. tagname .. "> ", close = " </" .. tagname .. ">" }
-    end,
-    d = function()
-      local tagname = vim.fn.input("T "):gsub("%%", "%%%%")
-      return { open = "<" .. tagname .. "[^<>]*>%s*", "%s*</" .. tagname .. ">" }
-    end,
-  },
-  -- p prompt (P for space)
-  ["p"] = {
-    a = function()
-      local text = vim.fn.input("p ")
-      return { open = text, close = text }
-    end,
-    d = function()
-      local text = vim.fn.input("p "):gsub("%%", "%%%%")
-      return { open = text, close = text }
-    end,
-  },
-  ["P"] = {
-    a = function()
-      local text = vim.fn.input("P ")
-      return { open = text .. " ", close = " " .. text }
-    end,
-    d = function()
-      local text = vim.fn.input("P "):gsub("%%", "%%%%")
-      return { open = text .. "%s*", close = "%s*" .. text }
-    end,
-  },
-}
+--- @type Pairs.Pair
+local paird
 
 --- Queries the user for a character and returns the marker set associated with
 --- that character or nil if there isn't one.
 --- @param source string The source to print on the command line.
---- @return Pairs.MarkerSet
-local function getmarkset(source)
-  vim.api.nvim_echo({ { source .. " " } }, false, {})
+--- @return Pairs.Pair
+local function getcharpair(source)
+  vim.api.nvim_echo({ { source } }, false, {})
   local char = vim.fn.getchar()
   if type(char) == "number" then
     char = string.char(char)
   end
-  return msets[char]
+  return pairchars[pairnames[char or 0] or 0]
 end
 
 --- Surround operator function. Should never be called manually, only from
---- 'opfunc' internally.
+--- 'opfunc' internally. When the `keymap` variable is set, this function will
+--- ask the user to input a pair character to use, otherwise (during . repeats)
+--- it will use the last entered pair.
 --- TODO: update indentation/formatting over surround
 --- @param mode "char"|"line"|"block"
 function Surround(mode)
-  -- get markers to add
-  local set = getmarkset("s")
-  local add = set and (type(set.a) == "function" and set.a() or set.a)
-  if not add then return end
-  -- add markers based on operator mode and mark positions
+  if keymap then
+    keymap = false
+    paira = getcharpair("s")
+  end
+  if not paira then return end
   local selectstart = vim.api.nvim_buf_get_mark(0, "[")
   local selectend = vim.api.nvim_buf_get_mark(0, "]")
   local lines = vim.api.nvim_buf_get_lines(0, selectstart[1] - 1, selectend[1], false)
@@ -264,28 +223,28 @@ function Surround(mode)
     if #lines == 1 then
       lines[1] = table.concat {
         lines[1]:sub(1, selectstart[2]),
-        add.open,
+        paira.open,
         lines[1]:sub(selectstart[2] + 1, selectend[2] + 1),
-        add.close,
+        paira.close,
         lines[1]:sub(selectend[2] + 2),
       }
     else
-      lines[1] = lines[1]:sub(1, selectstart[2]) .. add.open .. lines[1]:sub(selectstart[2] + 1)
-      lines[#lines] = lines[#lines]:sub(1, selectend[2] + 1) .. add.close .. lines[#lines]:sub(selectend[2] + 2)
+      lines[1] = lines[1]:sub(1, selectstart[2]) .. paira.open .. lines[1]:sub(selectstart[2] + 1)
+      lines[#lines] = lines[#lines]:sub(1, selectend[2] + 1) .. paira.close .. lines[#lines]:sub(selectend[2] + 2)
     end
     vim.api.nvim_buf_set_lines(0, selectstart[1] - 1, selectend[1], false, lines)
   elseif mode == "line" then
-    table.insert(lines, 1, add.open)
-    table.insert(lines, add.close)
+    table.insert(lines, 1, paira.open)
+    table.insert(lines, paira.close)
     vim.api.nvim_buf_set_lines(0, selectstart[1] - 1, selectend[1], false, lines)
   else -- "block"
     selectend[2] = selectend[2] == #lines[#lines] and -1 or selectend[2]
     lines = vim.tbl_map(function(line)
       return table.concat {
         line:sub(1, selectstart[2]),
-        add.open,
+        paira.open,
         line:sub(selectstart[2] + 1, selectend[2] >= 0 and selectend[2] + 1 or nil),
-        add.close,
+        paira.close,
         line:sub(selectend[2] >= 0 and selectend[2] + 2 or #line + 1),
       }
     end, lines)
@@ -293,27 +252,20 @@ function Surround(mode)
   end
 end
 
---- Callback to set up the surround operator.
-local function asurround()
-  vim.o.opfunc = "v:lua.Surround"
-  return "g@"
-end
-
 --- Finds the given markers around the cursor on the current line.
---- @param mopen string Lua pattern of the opening marker.
---- @param mclose string Lua pattern of the cloding marker.
+--- TODO: make this use text objects
 --- @return integer[]? openpos
 --- @return integer[]? closepos
-local function findmarkers(mopen, mclose)
+local function findmarkers()
   local line = vim.api.nvim_get_current_line()
   local curpos = vim.api.nvim_win_get_cursor(0)
   local before, after = line:sub(1, curpos[2]), line:sub(curpos[2] + 1)
-  local closepos = { after:find(mclose) }
+  local closepos = { after:find(paird.close) }
   if #closepos ~= 2 then return end
-  local find, openpos = { before:find(mopen) }, {}
+  local find, openpos = { before:find(paird.open) }, {}
   while #find > 0 do
     openpos = find
-    find = { before:find(mopen, find[1] + 1) }
+    find = { before:find(paird.open, find[1] + 1) }
   end
   if #openpos ~= 2 then return end
   return openpos, closepos
@@ -321,16 +273,13 @@ end
 
 --- Callabck that deletes surroundings.
 local function dsurround()
-  -- get markers to search for
-  local set = getmarkset("ds")
-  if not set then return end
-  local delete = set.d or set.a
-  delete = type(delete) == "function" and delete() or delete
-  if not delete then return end
-  -- search for last matching before and first matching after
-  local openpos, closepos = findmarkers(delete.open, delete.close)
+  if keymap then
+    keymap = false
+    paird = getcharpair("ds")
+  end
+  if not paird then return end
+  local openpos, closepos = findmarkers()
   if not openpos or not closepos then return end
-  -- remove markers from line
   local curpos = vim.api.nvim_win_get_cursor(0)
   local line = vim.api.nvim_get_current_line()
   vim.api.nvim_buf_set_lines(0, curpos[1] - 1, curpos[1], false, { table.concat {
@@ -342,61 +291,55 @@ end
 
 --- Callback that changes surroundings.
 local function csurround()
-  -- get markers to search for
-  local set = getmarkset("cst")
-  if not set then return end
-  local delete = set.d or set.a
-  delete = type(delete) == "function" and delete() or delete
-  if not delete then return end
-  -- search for last matching before and first matching after
-  local openpos, closepos = findmarkers(delete.open, delete.close)
+  if keymap then
+    keymap = false
+    local d, a = getcharpair("csd"), getcharpair("csa")
+    if not d or not a then return end
+    paird, paira = d, a
+  end
+  if not paird or not paira then return end
+  local openpos, closepos = findmarkers()
   if not openpos or not closepos then return end
-  -- get markers to replace with
-  set = getmarkset("csr")
-  local add = set and (type(set.a) == "function" and set.a() or set.a)
-  if not add then return end
-  -- replace old markers with new markers
   local line = vim.api.nvim_get_current_line()
   local curpos = vim.api.nvim_win_get_cursor(0)
   vim.api.nvim_buf_set_lines(0, curpos[1] - 1, curpos[1], false, { table.concat {
     line:sub(1, openpos[1] - 1),
-    add.open,
+    paira.open,
     line:sub(openpos[2] + 1, closepos[1] + curpos[2] - 1),
-    add.close,
+    paira.close,
     line:sub(closepos[2] + curpos[2] + 1),
   } })
 end
 
-vim.keymap.set("", "s", asurround, { desc = "Surround operator.", expr = true })
-vim.keymap.set("", "ss", function()
-  local curpos = vim.api.nvim_win_get_cursor(0)
-  vim.api.nvim_buf_set_mark(0, "[", curpos[1], curpos[2], {})
-  vim.api.nvim_buf_set_mark(0, "]", curpos[1], curpos[2], {})
-  Surround("line")
-end, { desc = "Surround current line." })
+vim.keymap.set("", "s", function()
+  keymap = true
+  vim.o.opfunc = "v:lua.Surround"
+  return "g@"
+end, { desc = "Surround operator.", expr = true })
+
+vim.keymap.set("n", "ss", function()
+  keymap = true
+  vim.o.opfunc = "v:lua.Surround"
+  return "g@_"
+end, { desc = "Surround current line.", expr = true })
+
 vim.keymap.set("n", "S", function()
-  local curpos = vim.api.nvim_win_get_cursor(0)
-  local line = vim.api.nvim_get_current_line()
-  vim.api.nvim_buf_set_mark(0, "[", curpos[1], curpos[2], {})
-  vim.api.nvim_buf_set_mark(0, "]", curpos[1], #line, {})
-  Surround("char")
-end, { desc = "Surround to end of line." })
+  keymap = true
+  vim.o.opfunc = "v:lua.Surround"
+  return "g@$"
+end, { desc = "Surround to end of line.", expr = true })
+
 vim.keymap.set("v", "S", function()
-  local opstart = vim.fn.getpos("v")
-  local opend = vim.fn.getpos(".")
-  if opstart[2] > opend[2] then
-    opstart, opend = opend, opstart
-  end
-  vim.api.nvim_buf_set_mark(0, "[", opstart[2], opstart[3], {})
+  keymap = true
+  vim.o.opfunc = "v:lua.Surround"
   if vim.api.nvim_get_mode().mode:sub(1, 1) == "" then
-    local line = vim.api.nvim_buf_get_lines(0, opend[2] - 1, opend[2], false)[1]
-    vim.api.nvim_buf_set_mark(0, "]", opend[2], #line, {})
-    Surround("block")
-  else
-    vim.api.nvim_buf_set_mark(0, "]", opend[2], opend[3], {})
-    Surround("line")
+    return "$g@"
+  elseif vim.api.nvim_get_mode().mode:sub(1, 1) == "v" then
+    return "Vg@"
   end
-  vim.cmd.normal("<esc>")
-end, { desc = "Suround visual lines." })
+  return "g@"
+end, { desc = "Suround visual lines.", expr = true })
+
 vim.keymap.set("n", "ds", dsurround, { desc = "Delete surroundings." })
+
 vim.keymap.set("n", "cs", csurround, { desc = "Change surroundings." })
