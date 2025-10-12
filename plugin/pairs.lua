@@ -30,7 +30,7 @@ local pairnames = {
   ["]"] = "brackets",
   ["{"] = "braces",
   ["}"] = "braces",
-  ["<"] = "angels",
+  ["<"] = "angles",
   [">"] = "angles",
   ['"'] = "dquote",
   ["'"] = "quote",
@@ -193,10 +193,8 @@ local paird
 
 --- Queries the user for a character and returns the marker set associated with
 --- that character or nil if there isn't one.
---- @param source string The source to print on the command line.
 --- @return Pairs.Pair
-local function getcharpair(source)
-  vim.api.nvim_echo({ { source } }, false, {})
+local function getcharpair()
   local char = vim.fn.getchar()
   if type(char) == "number" then
     char = string.char(char)
@@ -213,7 +211,7 @@ end
 function Surround(mode)
   if keymap then
     keymap = false
-    paira = getcharpair("s")
+    paira = getcharpair()
   end
   if not paira then return end
   local selectstart = vim.api.nvim_buf_get_mark(0, "[")
@@ -252,63 +250,56 @@ function Surround(mode)
   end
 end
 
---- Finds the given markers around the cursor on the current line.
---- TODO: make this use text objects
+--- Substitues the surroundings around the operator bounds with the given text.
+--- @param ochar string The opening pair to insert.
+--- @param cchar string The closing string to insert.
 --- @return integer[]? openpos
 --- @return integer[]? closepos
-local function findmarkers()
-  local line = vim.api.nvim_get_current_line()
-  local curpos = vim.api.nvim_win_get_cursor(0)
-  local before, after = line:sub(1, curpos[2]), line:sub(curpos[2] + 1)
-  local closepos = { after:find(paird.close) }
-  if #closepos ~= 2 then return end
-  local find, openpos = { before:find(paird.open) }, {}
-  while #find > 0 do
-    openpos = find
-    find = { before:find(paird.open, find[1] + 1) }
+local function subsurround(ochar, cchar)
+  local openpos = vim.api.nvim_buf_get_mark(0, "[")
+  local closepos = vim.api.nvim_buf_get_mark(0, "]")
+  if not openpos or not closepos then return end
+  local lines = vim.api.nvim_buf_get_lines(0, openpos[1] - 1, closepos[1], false)
+  while lines[1]:sub(openpos[2] + 1, openpos[2] + 1):match("%s") do
+    openpos[2] = openpos[2] + 1
   end
-  if #openpos ~= 2 then return end
-  return openpos, closepos
+  while lines[#lines]:sub(closepos[2] + 1, closepos[2] + 1):match("%s") do
+    closepos[2] = closepos[2] - 1
+  end
+  if openpos[1] == closepos[1] then
+    lines[1] = table.concat {
+      lines[1]:sub(1, openpos[2]),
+      ochar,
+      lines[1]:sub(openpos[2] + 2, closepos[2]),
+      cchar,
+      lines[1]:sub(closepos[2] + 2)
+    }
+  else
+    lines[1] = lines[1]:sub(1, openpos[2]) .. ochar .. lines[1]:sub(openpos[2] + 2)
+    if lines[1]:match("^%s*$") then
+      table.remove(lines, 1)
+    end
+    lines[#lines] = lines[#lines]:sub(1, closepos[2]) .. cchar .. lines[#lines]:sub(closepos[2] + 2)
+    if lines[#lines]:match("^%s*$") then
+      lines[#lines] = nil
+    end
+  end
+  vim.api.nvim_buf_set_lines(0, openpos[1] - 1, closepos[1], false, lines)
 end
 
 --- Callabck that deletes surroundings.
-local function dsurround()
-  if keymap then
-    keymap = false
-    paird = getcharpair("ds")
-  end
-  if not paird then return end
-  local openpos, closepos = findmarkers()
-  if not openpos or not closepos then return end
-  local curpos = vim.api.nvim_win_get_cursor(0)
-  local line = vim.api.nvim_get_current_line()
-  vim.api.nvim_buf_set_lines(0, curpos[1] - 1, curpos[1], false, { table.concat {
-    line:sub(1, openpos[1] - 1),
-    line:sub(openpos[2] + 1, closepos[1] + curpos[2] - 1),
-    line:sub(closepos[2] + curpos[2] + 1),
-  } })
+function DeleteSurround()
+  subsurround("", "")
 end
 
 --- Callback that changes surroundings.
-local function csurround()
+function ChangeSurround()
   if keymap then
     keymap = false
-    local d, a = getcharpair("csd"), getcharpair("csa")
-    if not d or not a then return end
-    paird, paira = d, a
+    paira = getcharpair()
   end
-  if not paird or not paira then return end
-  local openpos, closepos = findmarkers()
-  if not openpos or not closepos then return end
-  local line = vim.api.nvim_get_current_line()
-  local curpos = vim.api.nvim_win_get_cursor(0)
-  vim.api.nvim_buf_set_lines(0, curpos[1] - 1, curpos[1], false, { table.concat {
-    line:sub(1, openpos[1] - 1),
-    paira.open,
-    line:sub(openpos[2] + 1, closepos[1] + curpos[2] - 1),
-    paira.close,
-    line:sub(closepos[2] + curpos[2] + 1),
-  } })
+  if not paira then return end
+  subsurround(paira.open, paira.close)
 end
 
 vim.keymap.set("", "s", function()
@@ -340,6 +331,17 @@ vim.keymap.set("v", "S", function()
   return "g@"
 end, { desc = "Suround visual lines.", expr = true })
 
-vim.keymap.set("n", "ds", dsurround, { desc = "Delete surroundings." })
+vim.keymap.set("n", "ds", function()
+  paird = getcharpair()
+  if not paird then return end
+  vim.o.opfunc = "v:lua.DeleteSurround"
+  return "g@a" .. paird.open .. "h"
+end, { desc = "Delete surroundings.", expr = true })
 
-vim.keymap.set("n", "cs", csurround, { desc = "Change surroundings." })
+vim.keymap.set("n", "cs", function()
+  paird = getcharpair()
+  if not paird then return end
+  keymap = true
+  vim.o.opfunc = "v:lua.ChangeSurround"
+  return "g@a" .. paird.open
+end, { desc = "Change surroundings.", expr = true })

@@ -26,8 +26,8 @@ opening and closing character as if you typed <bs><del>.
 To insert a character without causing pairing, use CTRL-V, then the character
 you want to pair. This will prevent the insert mappings from taking effect,
 and will insert the character that you type literally. This is extremely
-useful default vim behavior that not enough people know about, it can even
-input control characters or literal tabs even when 'expandtab' is on!
+useful default vim behavior that not enough people know about; it can even
+input control characters or literal tabs even when 'expandtab' is on.
 
 ==============================================================================
 Surroundings						*pairs-surround*
@@ -35,52 +35,39 @@ Surroundings						*pairs-surround*
 Surrounds allow easy manipulation of pairs around text. The surround operator
 allows you to add a variety of different forms of text on each side of a
 selection. The delete and change operators allow manipulation of existing
-surroundings in a line.
+surroundings in a line. All of the keymaps below work with |single-repeat|
+using the |.| keymap; they WILL NOT prompt the user for a new pair identifier
+to surround/replace.
 
 SURROUND OPERATOR					*pairs-surround-add*
 						*pairs-s* *pairs-ss* *pairs-S*
+						*pairs-v_s* *pairs-v_S*
 
 The remapped s operator (surround) allows you to surround any text with
-predefined pairs. After activating the operator with s, ss, or S (which all
-target text the same way as built-in operators like |d|, |dd|, and |D|) the
-operator will prompt you for a single key which will deciede what the
-selection is surrounded with. Some surroundings will require an additional
-prompt to help decide what exactly to surround with. The optins are as
-follows:
-
-	key	surrounds with				additional prompt ~
-	(	parentheses
-	)	parentheses with internal space
-	[	brackets
-	]	brackets with internal space
-	{	braces
-	}	braces with internal space
-	<	angle brackets
-	>	angle brackets with internal space
-	"	quotes
-	'	apostrophes
-	\`	grave accents
-	t	xml tags				tag name
-	T	xml tag with internal space		tag name
-	p	prompted text				any text
-	P	prompted text with internal space	any text
+predefined pairs. After activating the operator with s, ss, or S---which all
+target text the same way as built-in operators like |d|, |dd|, and |D|, even
+in the various visual modes---the operator will prompt you for a single key
+which will deciede what the selection is surrounded with. Either character
+from the pair is accepted.
 
 DELETE SURROUNDINGS			*pairs-delete-surroundings* *pairs-ds*
 
 Surroundings on either side of the cursor can be deleted with the ds keymap.
 This will prompt the user for a type of pair like when adding surroundings,
-then it will delete the surroundings that you specified at the prompt. Note
-that deleting surroundings does not use text objects or check to make sure the
-pairs are balanced, it will simply delete the closest opening before the
-cursor and the closest closing after the cursor. Deletions also only happen in
-the current line.
+then it will delete the surroundings that you specified at the prompt.
+
+To find surrounding pairs, this plugin uses |text-objects| internally. If the
+behavior is strange, try using `va` followed by the opening character of the
+pair to ensure that you understand how the text object works. This plugin will
+automatically ignore white space at the edges of the text object region, but
+it will not do any more complicated operations on the resulting selection.
 
 CHANGE SURROUNDINGS			*pairs-change-surroundings* *pairs-cs*
 
 Surroundings can be changed with the cs keymap. This works like a combination
 of the delete and add occurring back to back. The keymap will prompt for a
 pair to delete, then instead of deleting that pair it will prompt again for a
-pair to replace it with. Finding the pairs to be replaced works identically to
-deletion like above, meaning there are no checks for balanced pairs.
+pair to replace it with. Like with deletion, this keymap uses text objects to
+identify the pairs that need to be changed.
 
  vim:tw=78:ts=8:noet:ft=help:norl:
