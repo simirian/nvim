@@ -46,48 +46,21 @@ how to use them and what might go wrong when using them.
 
 This configuration aims to minimize dependencies. This means that as many
 plugins as possible will be gradually removed and replaces with vim-style
-`plugin/` files. Current progress is tracked below, and this list will be
-removed once it is completed to a satisfactory degree.
+`plugin/` files.
 
-- [x] `nvim-contour` -> `lines`
-    - [x] this dies on `:hi clear` because `nvim-web-devicons` gets cleared
-- [x] `mason.nvim` -> `lsp`
-- [x] `yicks`
-    - [-] set internal terminal colors
-    - [-] allow command line window (`q:`) highlighting (update fixed this?)
-- [x] `nvim-autopairs` -> `pairs`
-    - [x] simple pairing of `()`, `[]`, `{}`, `""`, `''`, ` `` `
-    - [x] complex (manual with functions) pairing
-    - [x] surround operator
-        - [x] char mode
-        - [x] line mode
-        - [x] block mode
-    - [x] delete surrounds
-    - [x] change surrounds
-    - I imagine this won't be too hard, and I'm looking forward to getting rid
-      of it
-- [o] `nvim-tree` -> `fex`, `ft`
-    - [x] view directories
-    - [x] navigate directories
-    - [x] basic manipulations (add, remove, move, copy)
-    - [x] copy/move across buffers
-    - [x] safe file system modification (as much error checking as possible)
-    - [ ] file tree view for current directory
-- [x] `nvim-manager` -> `lsp`, `projects`
-    - [x] `projects` to save project directories
-    - [x] `lsp` to load language servers
-    - [-] `workspaces` to detect and activate special configurations
-    - I don't know how easy this will be to remove, but it can't be that hard
-- [x] `nvim-cmp` -> `lsp`
-    - [-] automatic live completion
-    - [x] snippet completion
-- [ ] `lazy.nvim` -> git sub-modules
-    - this shouldn't be too hard with git sub-modules
-- [x] `telescope.nvim`, `plenary.nvim` -> `pick` (use `vim.ui.select`)
-    - this is a monumental task and will probably be one of the last things to
-      get replaced (it wasn't that bad, but I didn't make a previewer)
-- [ ] `nvim-treesitter`
-    - I don't actually think this is practical to remove
-- [x] `nvim-web-devicons`
-    - again, I don't actually think this is practical to remove
-    - turns out it's pretty trivial to replace
+### Lazy
+
+Until Neovim releases a stable version with `vim.pack`, lazy is going to be used
+as the package manager for this repo. Or rather, I will use it if I have
+packages to manage. I don't see the others being removed anytime soon, so it's
+going to stay until `vim.pack` is stable.
+
+### Tree-Sitter
+
+To implement tree-sitter support, this configuration uses
+https://github.com/nvim-treesitter/nvim-treesitter/tree/main (note the use of
+the main branch). It would be possible to drop this plugin and instead manually
+define the functionality in a plugin alongside manually making the queries like
+with `lsp/`, but query files are a lot more complex than language server
+configuration files. For this reason, I've decided that this dependency is
+simply practical.

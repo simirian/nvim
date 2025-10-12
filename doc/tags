@@ -13,8 +13,7 @@ calendir-command	calendir.txt	/*calendir-command*
 calendir-date	calendir.txt	/*calendir-date*
 calendir-directory	calendir.txt	/*calendir-directory*
 calendir-journal	calendir.txt	/*calendir-journal*
-calendir-next	calendir.txt	/*calendir-next*
-calendir-previous	calendir.txt	/*calendir-previous*
+calendir-navigation	calendir.txt	/*calendir-navigation*
 calendir-today	calendir.txt	/*calendir-today*
 calendir-tomorrow	calendir.txt	/*calendir-tomorrow*
 calendir-yesterday	calendir.txt	/*calendir-yesterday*
@@ -33,6 +32,8 @@ pairs-s	pairs.txt	/*pairs-s*
 pairs-ss	pairs.txt	/*pairs-ss*
 pairs-surround	pairs.txt	/*pairs-surround*
 pairs-surround-add	pairs.txt	/*pairs-surround-add*
+pairs-v_S	pairs.txt	/*pairs-v_S*
+pairs-v_s	pairs.txt	/*pairs-v_s*
 pairs.txt	pairs.txt	/*pairs.txt*
 pick-command	pick.txt	/*pick-command*
 pick-fuzz	pick.txt	/*pick-fuzz*
