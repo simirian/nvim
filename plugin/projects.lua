@@ -20,13 +20,13 @@ local filepath = vim.fs.normalize(vim.fn.stdpath("data") .. "/projects.json")
 --- Saves the current project list to projects.json.
 local function save()
   --- @diagnostic disable-next-line: undefined-field
-  vim.loop.fs_open(filepath, "w", 420, function(err, file)
+  vim.uv.fs_open(filepath, "w", 420, function(err, file)
     assert(not err, err)
     --- @diagnostic disable-next-line: undefined-field, redefined-local
-    vim.loop.fs_write(file, vim.json.encode(saved), function(err)
+    vim.uv.fs_write(file, vim.json.encode(saved), function(err)
       assert(not err, err)
       --- @diagnostic disable-next-line: undefined-field
-      vim.loop.fs_close(file)
+      vim.uv.fs_close(file)
     end)
   end)
 end
@@ -34,16 +34,16 @@ end
 --- Loads the saved project list from projects.json.
 local function load()
   --- @diagnostic disable-next-line: undefined-field
-  vim.loop.fs_open(filepath, "r", 420, function(err, file)
+  vim.uv.fs_open(filepath, "r", 420, function(err, file)
     assert(not err, err)
     --- @diagnostic disable-next-line: undefined-field, redefined-local
-    vim.loop.fs_fstat(file, function(err, stat)
+    vim.uv.fs_fstat(file, function(err, stat)
       assert(not err, err)
       --- @diagnostic disable-next-line: undefined-field, redefined-local
-      vim.loop.fs_read(file, stat.size, 0, function(err, data)
+      vim.uv.fs_read(file, stat.size, 0, function(err, data)
         assert(not err, err)
         --- @diagnostic disable-next-line: undefined-field
-        vim.loop.fs_close(file)
+        vim.uv.fs_close(file)
         saved = vim.json.decode(data)
       end)
     end)
@@ -55,7 +55,7 @@ end
 --- @param path? string The path to the project directory, default cwd.
 local function add(name, path)
   --- @diagnostic disable-next-line: undefined-field
-  saved[name] = vim.fs.normalize(path or vim.loop.cwd())
+  saved[name] = vim.fs.normalize(path or vim.uv.cwd())
   save()
 end
 
@@ -64,7 +64,7 @@ end
 --- @param project? string The name of or path to of the project to remove.
 local function remove(project)
   --- @diagnostic disable-next-line: undefined-field
-  project = project or vim.fs.normalize(vim.loop.cwd())
+  project = project or vim.fs.normalize(vim.uv.cwd())
   if saved[project] then
     saved[project] = nil
   else
@@ -131,7 +131,7 @@ vim.api.nvim_create_user_command("Project", function(args)
       return
     end
     --- @diagnostic disable-next-line: undefined-field
-    add(args.fargs[2], vim.loop.cwd())
+    add(args.fargs[2], vim.uv.cwd())
   elseif args.fargs[1] == "remove" then
     --- @diagnostic disable-next-line: undefined-field
     remove(args.fargs[2])

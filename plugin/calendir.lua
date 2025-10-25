@@ -91,7 +91,7 @@ end
 local function exists(date)
   local path = vim.fs.normalize(vim.g.calendir .. os.date("/%Y/%m/%d.md", os.time(date)))
   --- @diagnostic disable-next-line: undefined-field
-  return vim.loop.fs_stat(path) ~= nil
+  return vim.uv.fs_stat(path) ~= nil
 end
 
 --- Edits a file in the calendir directory instead of opening it as a calendar.

@@ -368,10 +368,10 @@ function pickers.help(remember)
       local files = vim.api.nvim_get_runtime_file("doc/tags", true)
       for _, file in ipairs(files) do
         --- @diagnostic disable: undefined-field
-        local fd = vim.loop.fs_open(file, "r", 420)
-        local size = vim.loop.fs_fstat(fd).size
-        local contents = vim.loop.fs_read(fd, size)
-        vim.loop.fs_close(fd)
+        local fd = vim.uv.fs_open(file, "r", 420)
+        local size = vim.uv.fs_fstat(fd).size
+        local contents = vim.uv.fs_read(fd, size)
+        vim.uv.fs_close(fd)
         --- @diagnostic enable: undefined-field
         local entries = vim.split(contents, "[\r\n]+", { trimempty = true })
         helpitems = vim.list_extend(helpitems, vim.tbl_map(function(e) return e:match("^[^\t]*") end, entries))
