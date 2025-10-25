@@ -35,18 +35,21 @@ end
 local function load()
   --- @diagnostic disable-next-line: undefined-field
   vim.uv.fs_open(filepath, "r", 420, function(err, file)
-    assert(not err, err)
-    --- @diagnostic disable-next-line: undefined-field, redefined-local
-    vim.uv.fs_fstat(file, function(err, stat)
-      assert(not err, err)
+    if err then
+      saved = {}
+    else
       --- @diagnostic disable-next-line: undefined-field, redefined-local
-      vim.uv.fs_read(file, stat.size, 0, function(err, data)
+      vim.uv.fs_fstat(file, function(err, stat)
         assert(not err, err)
-        --- @diagnostic disable-next-line: undefined-field
-        vim.uv.fs_close(file)
-        saved = vim.json.decode(data)
+        --- @diagnostic disable-next-line: undefined-field, redefined-local
+        vim.uv.fs_read(file, stat.size, 0, function(err, data)
+          assert(not err, err)
+          --- @diagnostic disable-next-line: undefined-field
+          vim.uv.fs_close(file)
+          saved = vim.json.decode(data)
+        end)
       end)
-    end)
+    end
   end)
 end
 
