@@ -1,19 +1,13 @@
 -- simirian's Neovim
 -- scratch buffer plugin
 
---- Map from file types to maps of integers (command counts) to buffer numbers.
---- @type table<string, table<integer, integer>>
-local buffers = {}
-
 vim.api.nvim_create_user_command("Scratch", function(args)
-  buffers[args.args] = buffers[args.args] or {}
-  local bufnr = buffers[args.args][args.count]
-  if not bufnr then
-    bufnr = vim.api.nvim_create_buf(true, true)
-    buffers[args.args][args.count] = bufnr
-    local bufname = ("Scratch %s #%d"):format(args.args, args.count):gsub("%s*$", "")
-    vim.api.nvim_buf_set_name(bufnr, bufname)
-  end
+  local ft = args.args ~= "" and args.args .. " " or ""
+  local bufnr = vim.fn.bufnr("Scratch " .. ft .. "#" .. (args.count or 0), true)
+  vim.bo[bufnr].buftype = "nofile"
+  vim.bo[bufnr].bufhidden = "hide"
+  vim.bo[bufnr].swapfile = false
+  vim.bo[bufnr].modeline = false
   if args.args:match("[^%s]") then
     vim.bo[bufnr].ft = args.args
   end
@@ -27,7 +21,7 @@ end, {
   bar = true,
 })
 
-vim.api.nvim_create_user_command("AnnabellLee", function(args)
+vim.api.nvim_create_user_command("AnnabelLee", function(args)
   local bufnr = vim.fn.bufnr("Scratch Annabel Lee")
   if bufnr == -1 then
     bufnr = vim.api.nvim_create_buf(true, true)

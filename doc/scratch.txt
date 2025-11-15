@@ -20,7 +20,7 @@ be set to the argument for that scratch buffer. Using a count will edit that
 particular scratch buffer for that file type. This means that each file type
 (including no file type) have an independent set of buffers of that file type.
 
-ANNABELL LEE				*:AnnabellLee* *annabell-lee-command*
+ANNABEL LEE				*:AnnabelLee* *annabel-lee-command*
 
 The `:AnnabelLee` command can be used to open a buffer with dummy text. There
 is exactly one annabel lee buffer, unlike with the `:Scratch` command. The
