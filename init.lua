@@ -63,17 +63,6 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
-vim.api.nvim_create_autocmd( "FileType", {
-  desc = "Set spell only in text and markdown files.",
-  callback = function()
-    if vim.bo.ft == "text" or vim.bo.ft == "markdown" then
-      vim.wo.spell = true
-    else
-      vim.wo.spell = false
-    end
-  end,
-})
-
 vim.api.nvim_create_autocmd("BufWinEnter", {
   desc = "Ensure colorcolumn matches textwidth.",
   callback = function()
@@ -118,6 +107,10 @@ vim.keymap.set("", "<leader>Y", '"+Y', { desc = "Yank to system clipboard." })
 vim.keymap.set("", "U", "<C-r>", { desc = "Redo." })
 vim.keymap.set("", "-", ":e %:p:s?[/\\\\]$??:h<cr>", { desc = "Open current buffer's parent.", silent = true })
 vim.keymap.set("", "_", ":e .<cr>", { desc = "Open nvim's current directory.", silent = true })
+
+vim.keymap.set("", "<leader>sh", "<cmd>set hlsearch!<cr>", { desc = "Toggle search term highlighting.", silent = true })
+vim.keymap.set("", "<leader>ss", "<cmd>set spell!<cr>",
+  { desc = "Toggle spell checking for the current window", silent = true })
 
 -- ((lazy.nvim)) ---------------------------------------------------------------
 

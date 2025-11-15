@@ -26,6 +26,8 @@ your language server, then replace all the appropriate variables.
 | `U`                | Redo.                                     |
 | `_`                | Open current working directory buffer.    |
 | `-`                | Open parent of the current buffer.        |
+| `<lesder>ss`       | Sets spelling for the current window.     |
+| `<leader>sh`       | Sets hlsearch globally.                   |
 
 ## Native Plugins
 
