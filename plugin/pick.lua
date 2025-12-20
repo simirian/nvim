@@ -85,7 +85,7 @@ end
 --- Renders only the lines around the cursor for the sake of speed.
 local function displayframe()
   --- @cast lwin integer
-  frame = frame or vim.api.nvim_win_get_height(lwin)
+  frame = frame or vim.o.lines
   local nlines = vim.api.nvim_buf_line_count(lbuf)
   local start = nlines == 1 and 1 or nlines + 1
   local lines = {}
@@ -189,25 +189,33 @@ end, { desc = "Select previous item in list.", buffer = ibuf })
 --- @param item string The item to score.
 --- @param query string The query to score based on.
 local function score(item, query)
-    local s = 0
-    local qi = 1                 -- query index
-    local qc = query:sub(qi, qi) -- query character
-    local li = 0                 -- index of last match
-    for i = 1, #item do
-      local ic = item:sub(i, i)
-      -- base score is 5 if exact match, 1 if case insensitive, and 0 otherwise
-      local b = ic == qc and 5 or (ic:lower() == qc:lower() and 1 or 0)
-      if b ~= 0 then
-        --           v-- score less if it's been a while since the last match
-        --                               v-- later chars are slightly less relevant
-        s = s + (b / (i - li)) * (0.8 + 0.2 * (1 - i / #item))
-        li, qi, qc = i, qi + 1, query:sub(qi + 1, qi + 1)
-      end
+  local s = 0
+  local qi = 1                   -- query index
+  local qc = query:sub(qi, qi)   -- query character
+  local li = 0                   -- index of last match
+  local gc = 0                   -- gap count
+  for i = 1, #item do
+    if qi > #query then break end
+    local ic = item:sub(i, i)
+    -- base score is 5 if exact match, 1 if case insensitive, and 0 otherwise
+    local b = ic == qc and 5 or (ic:lower() == qc:lower() and 2 or 0)
+    -- lose score when in a gap
+    if b == 0 and li ~= 0 then
+      gc = gc + 1
     end
-    -- penalize heavily for not completing the query
-    s = s - (qi > #query and 0 or 10) * (#query - qi + 1)
-    -- reward less for how much of the item wasn't matched
-    return s * (0.8 + 0.2 * ((qi - 1) / #item))
+    -- gain score from matches, later chars are slightly less relevant
+    if b ~= 0 then
+      li, qi, qc = i, qi + 1, query:sub(qi + 1, qi + 1)
+      s = s + b * (0.7 + 0.3 / i)
+    end
+  end
+  -- reward less for how much of the item wasn't matched
+  s = s * (0.8 + 0.2 * li / #item)
+  -- penalize heavily for not completing the query
+  s = s - (qi > #query and 0 or 10) * (#query - qi + 1)
+  -- apply internal gap penalties
+  s = s - gc * 10 / #query
+  return s
 end
 
 --- Simple fuzzy finding algorithm.
@@ -332,7 +340,7 @@ end
 --- @type table<string, Pick.Picker>
 local pickers = {}
 
-local grepprg --- @type vim.SystemObj
+local grepprg        --- @type vim.SystemObj
 local grepinput = "" --- @type string
 local grepitems = {} --- @type string[]
 function pickers.grep(remember)
@@ -342,7 +350,7 @@ function pickers.grep(remember)
       if grepprg then grepprg:kill(15) end
       grepprg = cmdlines({ "rg", "--vimgrep", "-Se", prompt == "" and ".*" or prompt }, {}, function(lines)
         grepitems = lines
-          set(grepitems)
+        set(grepitems)
       end)
     end,
     confirm = function(item)
@@ -372,9 +380,9 @@ function pickers.help(remember)
         local size = vim.uv.fs_fstat(fd).size
         local contents = vim.uv.fs_read(fd, size)
         vim.uv.fs_close(fd)
-        --- @diagnostic enable: undefined-field
-        local entries = vim.split(contents, "[\r\n]+", { trimempty = true })
-        helpitems = vim.list_extend(helpitems, vim.tbl_map(function(e) return e:match("^[^\t]*") end, entries))
+        for _, v in ipairs(vim.split(contents, "[\r\n]+", { trimempty = true })) do
+          helpitems[#helpitems + 1] = v:match("^[^\t]+")
+        end
       end
       helpitems = match(helpitems, prompt)
       return helpitems
@@ -388,18 +396,49 @@ function pickers.help(remember)
   }
 end
 
-local fileprg
+--- Lists all files and directory names recursively.
+--- @param dir string The directory to search.
+--- @param exclude? "git"|"hidden"|"none" The files to exclude.
+--- @param subsequent? boolean If this is a subsequent call of the function.
+--- @return string[]
+local function lsr(dir, exclude, subsequent)
+  exclude = exclude or "git"
+  if not subsequent then
+    dir = vim.fs.normalize(dir, { _fast = true })
+  end
+  local strs = {}
+  for name, type in vim.fs.dir(dir) do
+    if (exclude == "git" and name ~= ".git")
+        or (exclude == "hidden" and name:sub(1, 1) ~= ".")
+        or (exclude == "none")
+    then
+      local fname = dir .. "/" .. name
+      strs[#strs + 1] = fname
+      if type == "directory" then
+        vim.list_extend(strs, lsr(fname, exclude, true))
+      end
+    end
+  end
+  return strs
+end
+
+local filelistdir
+local filelist
 local fileinput = ""
 local fileitems = {}
 function pickers.files(remember)
   pick {
-    generate = function(prompt, set)
+    generate = function(prompt)
       fileinput = prompt
-      if fileprg then fileprg:kill(15) end
-      fileprg = cmdlines({"rg", "--files", "--iglob=!.git/", "-."}, {}, function(lines)
-        fileitems = match(lines, prompt)
-        set(fileitems)
-      end)
+      if filelistdir ~= vim.uv.cwd() or not filelist then
+        filelistdir = vim.uv.cwd()
+        filelist = lsr(".") or {}
+        for i, v in ipairs(filelist) do
+          filelist[i] = v:sub(3)
+        end
+      end
+      fileitems = match(filelist, prompt)
+      return fileitems
     end,
     confirm = function(item)
       closewins()
