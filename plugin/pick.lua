@@ -211,10 +211,10 @@ local function score(item, query)
   end
   -- reward less for how much of the item wasn't matched
   s = s * (0.8 + 0.2 * li / #item)
+  -- apply internal gap penalties
+  s = s * (0.5 + 0.5 / (gc + 1))
   -- penalize heavily for not completing the query
   s = s - (qi > #query and 0 or 10) * (#query - qi + 1)
-  -- apply internal gap penalties
-  s = s - gc * 10 / #query
   return s
 end
 
