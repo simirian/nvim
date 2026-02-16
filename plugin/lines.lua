@@ -34,7 +34,7 @@ function Statusline()
     end
     left = left .. stats .. " %*"
   else
-    left = left .. (vim.wo.spell and "  " or "  ") .. "%{wordcount().words} %*"
+    left = left .. (vim.wo[winid].spell and "  " or "  ") .. "%{wordcount().words} %*"
   end
 
   local fname = vim.fs.basename(vim.api.nvim_buf_get_name(bufnr))
