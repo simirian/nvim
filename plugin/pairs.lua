@@ -335,7 +335,7 @@ vim.keymap.set("n", "ds", function()
   paird = getcharpair()
   if not paird then return end
   vim.o.opfunc = "v:lua.DeleteSurround"
-  return "g@a" .. paird.open .. "h"
+  return "g@a" .. paird.open
 end, { desc = "Delete surroundings.", expr = true })
 
 vim.keymap.set("n", "cs", function()
