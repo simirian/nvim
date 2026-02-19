@@ -183,39 +183,83 @@ vim.keymap.set({ "i", "n" }, "<C-k>", function()
   displayframe()
 end, { desc = "Select previous item in list.", buffer = ibuf })
 
---- Scores a string based on how well it matches a query. I made this up in an
---- hour. It has O(n) and does not match optimally, but it's fuzzy so who cares.
---- Basically designed to be as fast as possible. Probably breaks with utf-8.
+--- Scores a string based on how well it matches a query. UPDATED! I wrote the
+--- new version in an hour as well, but after taking a bioinformatics class and
+--- learning about sequence alignment :P This is mildly slower O(NM) but still
+--- likely fast enough most people.
 --- @param item string The item to score.
 --- @param query string The query to score based on.
 local function score(item, query)
-  local s = 0
-  local qi = 1                   -- query index
-  local qc = query:sub(qi, qi)   -- query character
-  local li = 0                   -- index of last match
-  local gc = 0                   -- gap count
-  for i = 1, #item do
-    if qi > #query then break end
-    local ic = item:sub(i, i)
-    -- base score is 5 if exact match, 1 if case insensitive, and 0 otherwise
-    local b = ic == qc and 5 or (ic:lower() == qc:lower() and 2 or 0)
-    -- lose score when in a gap
-    if b == 0 and li ~= 0 then
-      gc = gc + 1
-    end
-    -- gain score from matches, later chars are slightly less relevant
-    if b ~= 0 then
-      li, qi, qc = i, qi + 1, query:sub(qi + 1, qi + 1)
-      s = s + b * (0.7 + 0.3 / i)
-    end
+  local match = 1
+  local continue = 1.5
+  local mismatch = -3
+  local startskip = -0.1
+  local strskip = -1.5
+  local skipmore = -2
+  local endskip = -0.03
+  local qryskip = -2.5
+
+  local skiptype = 0
+  local matchtype = 1
+  local notype = 2
+
+  local sl = #item
+  local ql = #query
+
+  local scores = { { 0 } }
+  local types = { { 2 } }
+
+  for col = 2, sl + 1 do
+    scores[1][col] = scores[1][col - 1] + startskip
+    types[1][col] = skiptype
   end
-  -- reward less for how much of the item wasn't matched
-  s = s * (0.8 + 0.2 * li / #item)
-  -- apply internal gap penalties
-  s = s * (0.5 + 0.5 / (gc + 1))
-  -- penalize heavily for not completing the query
-  s = s - (qi > #query and 0 or 10) * (#query - qi + 1)
-  return s
+
+  for row = 2, ql + 1 do
+    local psrow = scores[row - 1]
+    local ptrow = types[row - 1]
+    local srow = { psrow[1] + qryskip }
+    local trow = { notype }
+    for col = 2, sl + 1 do
+      -- score coming from above
+      local s = psrow[col] + qryskip
+      local t = notype
+
+      -- score coming from left
+      local ls = srow[col - 1]
+      if row == ql + 1 then
+        ls = ls + endskip
+      elseif trow[col - 1] == skiptype then
+        ls = ls + skipmore
+      else
+        ls = ls + strskip
+      end
+      if ls > s then
+        s = ls
+        t = skiptype
+      end
+
+      -- score coming from the diagonal
+      local ds = psrow[col - 1]
+      local m = item:sub(col - 1, col - 1) == query:sub(row - 1, row - 1)
+      if not m then
+        ds = ds + mismatch
+      elseif ptrow[col - 1] == matchtype then
+        ds = ds + continue
+      else
+        ds = ds + match
+      end
+      if ds > s then
+        s = ds
+        t = m and matchtype or notype
+      end
+
+      srow[col] = s
+      trow[col] = t
+    end
+    scores[row] = srow
+    types[row] = trow
+  end
+  return scores[ql + 1][sl + 1]
 end
 
 --- Simple fuzzy finding algorithm.
@@ -223,16 +267,19 @@ end
 --- @param query string The query string to score based on.
 --- @return string[]
 local function fuzz(list, query)
-  list = vim.tbl_map(function(e)
-    return { e, score(tostring(e), query) }
-  end, list)
-  list = vim.tbl_filter(function(e)
-    return e[2] > 0
-  end, list)
-  table.sort(list, function(a, b)
+  local plist = {}
+  local itemsn = 1
+  for _, e in ipairs(list) do
+    local s = score(e, query)
+    if s > 0 then
+      plist[itemsn] = { e, s }
+      itemsn = itemsn + 1
+    end
+  end
+  table.sort(plist, function(a, b)
     return a[2] > b[2]
   end)
-  return vim.tbl_map(function(e) return e[1] end, list)
+  return vim.tbl_map(function(e) return e[1] end, plist)
 end
 
 --- Filters/sorts selections based on mini.nvim's pick module, but also forces
@@ -258,7 +305,11 @@ local function match(list, query)
     query = query:sub(neg and 3 or 2)
     return vim.tbl_filter(predicates[mode], list)
   else
-    return fuzz(list, query:sub(query:sub(1, 1) == " " and 2 or 1))
+    if query:sub(1, 1) == " " then
+      return fuzz(list, query:sub(2))
+    else
+      return fuzz(list, query)
+    end
   end
 end
 
@@ -458,7 +509,6 @@ function pickers.buffers(remember)
       buffersitems = match(vim.tbl_map(function(e)
         return vim.fs.normalize(vim.fn.fnamemodify(vim.api.nvim_buf_get_name(e), ":p:~:."))
       end, b), prompt)
-      vim.print(buffersitems)
       return buffersitems
     end,
     confirm = function(item)

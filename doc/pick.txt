@@ -63,13 +63,13 @@ the pattern matching, so only entries which do not match will be shown and
 selectable. The prefixes are summarised in the table below.
 
 prefix	meaning ~
-'	contains lua pattern
-!'	does not contain lua pattern
-^	starts with lua pattern
-!^	does not start with lua pattern
-$	ends with lua pattern
-!$	does not end with lua pattern
-<space>	force fuzzy matching
+'	the query is a lua pattern
+!'	the query is a lua pattern which is not in the target
+^	the query is a lua pattern that the target starts with
+!^	the query is a lua pattern that the target does not start with
+$	the query is a lua pattern that the target ends with
+!$	the query is a lua pattern that the target does not end with
+<space>	the query is a fuzzy-matching pattern
 
 In all cases, the entire prefix is stripped from the start of the query when
 the query is used for matching. This means that " 'spe" will do a fuzzy search
@@ -78,26 +78,9 @@ picker. If a query starts with a bang but does not match one of the prefixes
 above, the bang is included in a fuzzy match over the entire input. This means
 that "!file" will search over that entire term.
 
-The particular fuzzy finding algorithm is something I threw together over two
-days based on half-baked ideas and some non-representative testing. There are
-a few major features to consider to maximize use of the fuzzy algorithm. The
-first is that it REALLY cares about how much of the query is in the test
-string. Even if a string contains 3/4 of a query, there is a good chance that
-the string will not show up. The algorithm also does not skip characters in a
-query. If a query has a mistyped "q" in the middle, it will almost always fail
-on every test string.
-
-Other than those particulars, the algorithm uses a few very simple rules. The
-closer matching characters are to each other the stronger the match will be,
-and the closer they are to the start of the test string the stronger the match
-as well. The algorithm will prefer accurate letter case, but will still accept
-characters whose case differs in the query and the test string. If a query
-matches more of a test string, then it will also perform better.
-
-This algorithm is absolutely not perfect. The mistyped "q" example above could
-be regarded as a bug, but this is a fuzzy matching system so there aren't
-really any rules anyways. If your query doesn't match what you want it to,
-then just try with a different query. If it's consistently behaving strangely,
-then submit a bug report.
+The particular fuzzy finding algorithm is something I threw together in a few
+hours based on a brief description from a bioinformatics class I took months
+ago. This means it's probably not the best. It's still pretty good though! And
+it's a fuzzy-matching algorithm, so it doesn't really matter, now does it?
 
  vim:tw=78:ts=8:noet:ft=help:norl:
