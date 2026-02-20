@@ -12,7 +12,7 @@ local lime = "#819e3d" -- namespaces
 local green = "#5b8f38" -- strings, links
 local cyan = "#357e92"
 local blue = "#4366a3"
-local purple = "#123456"
+local purple = "#7944a7"
 
 local back = "#242220" -- normal background
 local backlight = "#33312e" -- pum background, buffer markers
@@ -44,9 +44,9 @@ end
 hi("Normal", { fg = text, bg = back })
 hi("NormalNC", "Normal")
 
-hi("NonText", { fg = textdark })
+hi("NonText", { fg = textbg })
 hi("Folded", { fg = textdark })
-hi("SpecialKey", "NonText")
+hi("SpecialKey", { fg = textdark })
 hi("Whitespace", "NonText")
 
 hi("MatchParen", { fg = textlight })
