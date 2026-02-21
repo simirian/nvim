@@ -1,81 +1,7 @@
 --- simirian's Neovim
 --- generic picker plugin
 
---- @type table<thread, vim.SystemObj>
-local procs = {}
-
---- @class Pick.Async
-local Async = {
-  --- @type thread
-  co = nil,
-
-  --- @type boolean?
-  shouldabort = nil,
-
-  --- @type fun(out: any)?
-  ondone = nil,
-
-  --- @type integer
-  timeout = 0,
-}
-
---- Creates a new async routine.
---- @param fn fun(): any
---- @return Pick.Async
-function Async.new(fn)
-  return setmetatable({ co = coroutine.create(fn) }, { __index = Async })
-end
-
---- Runs the async routine.
-function Async:run()
-  if self.shouldabort then return end
-  local ret = { coroutine.resume(self.co) }
-  if not table.remove(ret, 1) then error(ret[1]) end
-  local status = coroutine.status(self.co)
-  if status == "dead" then
-    if self.ondone then
-      self.ondone(unpack(ret))
-    end
-  elseif status == "suspended" then
-    vim.defer_fn(function() self:run() end, self.timeout)
-  end
-end
-
---- Aborts the async routine.
-function Async:abort()
-  if procs[self.co] then
-    --- @diagnostic disable-next-line: undefined-field
-    procs[self.co]:kill(vim.uv.constants.SIGTERM)
-  end
-  self.shouldabort = true
-end
-
---- Registers a completion callback.
---- @param cb fun(any)
-function Async:done(cb)
-  self.ondone = cb
-  return self
-end
-
---- Sets a delay for subsequent calls to the function. USE WITH CARE.
---- @param ms integer The delay time in miliseconds.
-function Async:delay(ms)
-  self.timeout = ms
-  return self
-end
-
---- Runs a command with all callbacks wrapped as async functions.
---- @param cmd string[] The command to execute.
---- @param opts vim.SystemOpts Options.
-function Async.system(cmd, opts)
-  local out
-  procs[coroutine.running()] = vim.system(cmd, opts, function(o) out = o end)
-  while not out do
-    coroutine.yield()
-  end
-  return out
-end
-
+local async = require("async")
 
 --- @class Pick.Picker<T>
 local Picker = {}
@@ -225,17 +151,17 @@ local function displayframe()
   vim.api.nvim_win_set_cursor(lwin, { selected, 0 })
 end
 
---- @type Pick.Async
+--- @type Async
 local genasync
 
---- @type Pick.Async
+--- @type Async
 local sortasync
 
 --- Runs the picker sorter on the generated items asynchronously.
 local function sort()
   if not generated then return end
   if sortasync then sortasync:abort() end
-  sortasync = Async.new(function()
+  sortasync = async(function()
     local line = vim.api.nvim_buf_get_lines(ibuf, -2, -1, false)[1]
     return bound:sort(generated, line)
   end):done(function(items)
@@ -252,7 +178,7 @@ end
 --- Runs the bound picker generator asynchronously.
 local function generate()
   if genasync then genasync:abort() end
-  genasync = Async.new(function()
+  genasync = async(function()
     return bound:generate()
   end):done(function(items)
     generated = items
@@ -531,7 +457,8 @@ pickers.grep = Picker.new({
 --- @param prompt string
 --- @return string[]
 function pickers.grep:sort(_, prompt)
-  local out = Async.system({ "rg", "--vimgrep", "-Se", prompt == "" and ".*" or prompt }, {})
+  local out = async.system({ "rg", "--vimgrep", "-Se", prompt == "" and ".*" or prompt }, {})
+  --- @cast out vim.SystemCompleted
   if out.code == 0 then
     local new = vim.split(out.stdout, "[\r\n]+", { trimempty = true })
     self.items = new
