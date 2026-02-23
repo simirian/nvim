@@ -105,6 +105,7 @@ local oldwin
 
 --- Opens the picker windows.
 local function openwins()
+  oldwin = vim.api.nvim_get_current_win();
   vim.api.nvim_win_set_config(iwin, winconfig({
     row = math.floor(vim.o.lines / 10),
     col = math.floor(vim.o.columns / 10),
@@ -131,6 +132,7 @@ local function closewins()
   vim.api.nvim_win_set_config(iwin, winconfig({ hide = true }))
   vim.api.nvim_win_set_config(lwin, winconfig({ hide = true }))
   vim.api.nvim_set_current_win(oldwin or vim.api.nvim_tabpage_list_wins(0)[1])
+  oldwin = nil
   vim.api.nvim_buf_set_lines(ibuf, 0, -1, false, {""})
 end
 
