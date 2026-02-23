@@ -77,67 +77,55 @@ vim.api.nvim_buf_set_name(ibuf, "Pick Input")
 local lbuf = vim.api.nvim_create_buf(false, true)
 vim.api.nvim_buf_set_name(lbuf, "Pick List")
 
---- Easy to use defaults for creating a window config.
---- @param opts vim.api.keyset.win_config Window config overrides.
---- @return vim.api.keyset.win_config
-local function winconfig(opts)
-  return vim.tbl_deep_extend("force", {
-    relative = "editor",
-    row = 0,
-    col = 0,
-    height = 1,
-    width = 1,
-    border = "solid",
-    style = "minimal",
-  }, opts)
-end
-
 --- The window used to display the input buffer.
---- @type integer
-local iwin = vim.api.nvim_open_win(ibuf, false, winconfig({ hide = true }))
+--- @type integer?
+local iwin
 
 --- The window used to display the list buffer.
---- @type integer
-local lwin = vim.api.nvim_open_win(lbuf, false, winconfig({ hide = true }))
-
 --- @type integer?
-local oldwin
+local lwin
 
 --- Opens the picker windows.
 local function openwins()
-  oldwin = vim.api.nvim_get_current_win();
-  vim.api.nvim_win_set_config(iwin, winconfig({
+  local base = {
+    relative = "editor",
+    border = "solid",
+    style = "minimal",
+  }
+  iwin = vim.api.nvim_open_win(ibuf, true, vim.tbl_deep_extend("force", base, {
     row = math.floor(vim.o.lines / 10),
     col = math.floor(vim.o.columns / 10),
     height = 1,
     width = math.floor(vim.o.columns * 8 / 10),
-    hide = false,
   }))
   vim.wo[iwin].winhighlight = "NormalFloat:PickInput,FloatBorder:PickInput"
   vim.wo[iwin].statuscolumn = "%#PickInput#   "
-  vim.api.nvim_win_set_config(lwin, winconfig({
+  lwin = vim.api.nvim_open_win(lbuf, false, vim.tbl_deep_extend("force", base, {
     row = math.floor(vim.o.lines / 10 + 3),
     col = math.floor(vim.o.columns / 10),
     width = math.floor(vim.o.columns * 8 / 10),
     height = math.floor(vim.o.lines * 8 / 10 - 5),
-    hide = false,
   }))
   vim.wo[lwin].cursorline = true
   vim.wo[lwin].winhighlight = "NormalFloat:PickList,FloatBorder:PickList,CursorLine:Search"
-  vim.api.nvim_set_current_win(iwin)
 end
 
 --- Closes the picker windows.
 local function closewins()
-  vim.api.nvim_win_set_config(iwin, winconfig({ hide = true }))
-  vim.api.nvim_win_set_config(lwin, winconfig({ hide = true }))
-  vim.api.nvim_set_current_win(oldwin or vim.api.nvim_tabpage_list_wins(0)[1])
-  oldwin = nil
-  vim.api.nvim_buf_set_lines(ibuf, 0, -1, false, {""})
+  if iwin then
+    vim.api.nvim_win_close(iwin, true)
+    iwin = nil
+  end
+  if lwin then
+    vim.api.nvim_win_close(lwin, true)
+    lwin = nil
+  end
+  vim.api.nvim_buf_set_lines(ibuf, 0, -1, false, { "" })
 end
 
 --- Renders only the lines which could be visible, instead of all lines.
 local function displayframe()
+  if not lwin then return end
   local winheight = vim.api.nvim_win_get_height(lwin)
   local first = math.max(selected - winheight, 1)
   local last = math.min(selected + winheight, #sorted)
