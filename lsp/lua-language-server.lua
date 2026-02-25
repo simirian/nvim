@@ -1,6 +1,6 @@
 --- @type vim.lsp.Config
 return {
   cmd = { "lua-language-server" },
-  root_markars = { ".luarc.json", ".stylua.toml", ".luacheckrc" },
+  root_markers = { ".luarc.json", ".stylua.toml", ".luacheckrc", ".git" },
   filetypes = { "lua" },
 }

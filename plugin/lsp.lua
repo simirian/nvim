@@ -92,7 +92,6 @@ end
 
 --- @type vim.lsp.Config
 local defaults = {
-  root_markers = { ".git" },
   on_attach = function(client, bufnr)
     if client.capabilities.textDocument.completion then
       vim.lsp.completion.enable(true, client.id, bufnr, { convert = lsptovim, autotrigger = true })
