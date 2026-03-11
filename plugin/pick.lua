@@ -291,7 +291,6 @@ local function score(item, query)
       end
       if ls > s then
         s = ls
-        t = false
       end
 
       -- score coming from the diagonal
@@ -324,21 +323,40 @@ end
 --- @return string[]
 local function fuzz(list, query)
   local plist = {}
-  for i, e in ipairs(list) do
-    if i % 100 == 0 then
+  local pause = 0
+  -- initial filter
+  plist = vim.tbl_filter(function(str)
+    if pause % 100 == 0 then
       coroutine.yield()
     end
-    local s = score(e, query)
-    if s > 0 then
-      table.insert(plist, { e, s })
+    pause = pause + 1
+    local l = 0
+    local si = 1
+    local slow = str:lower()
+    local th = #query * .75
+    for qi = 1, #query do
+      local i = slow:find(query:sub(qi, qi):lower(), si, true)
+      if i then
+        si = i
+      else
+        l = l + 1 + #query - qi
+        if l > th then return false end
+      end
     end
-  end
-  table.sort(plist, function(a, b)
-    return a[2] > b[2]
-  end)
-  return vim.tbl_map(function(e)
-    return e[1]
+    return true
+  end, list)
+  -- score strings
+  plist = vim.tbl_map(function(str)
+    if pause % 100 == 0 then
+      coroutine.yield()
+    end
+    pause = pause + 1
+    return { str, score(str, query) }
   end, plist)
+  -- sort by scores
+  table.sort(plist, function(a, b) return a[2] > b[2] end)
+  -- select the string and return it
+  return vim.tbl_map(function(e) return e[1] end, plist)
 end
 
 --- Filters/sorts selections based on mini.nvim's pick module, but also forces
