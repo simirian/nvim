@@ -28,21 +28,20 @@ vim.o.expandtab = true
 
 vim.o.ignorecase = true
 vim.o.smartcase = true
-vim.o.hlsearch = false
 
 vim.o.path = ".,,**"
 vim.opt.isfname:remove { "[", "]" }
-vim.opt.suffixesadd = { ".md" }
+vim.o.suffixesadd = ".md"
 
 vim.o.swapfile = false
 vim.o.shada = ""
 
 --- @diagnostic disable-next-line: undefined-field
 if vim.uv.os_uname().sysname == "Windows_NT" then
-  vim.o.shell = vim.fn.executable("pwsh") == 1 and "pwsh" or "powershell"
+  vim.o.shelltemp = false
+  vim.o.shell = "powershell"
   vim.o.shellcmdflag = "-Command $PSDefaultParameterValues['Out-File:Encoding']='utf8';"
-  vim.o.shellredir = '2>&1 | %%{ "$_" } | Out-File %s; exit $LastExitCode'
-  vim.o.shellpipe = '2>&1 | %%{ "$_" } | tee %s; exit $LastExitCode'
+  vim.o.shellpipe = '> %s 2>&1'
   vim.o.shellquote, vim.o.shellxquote = "", ""
 end
 
@@ -109,8 +108,7 @@ vim.keymap.set("", "-", ":e %:p:s?[/\\\\]$??:h<cr>", { desc = "Open current buff
 vim.keymap.set("", "_", ":e .<cr>", { desc = "Open nvim's current directory.", silent = true })
 
 vim.keymap.set("", "<leader>sh", "<cmd>set hlsearch!<cr>", { desc = "Toggle search term highlighting.", silent = true })
-vim.keymap.set("", "<leader>ss", "<cmd>set spell!<cr>",
-  { desc = "Toggle spell checking for the current window", silent = true })
+vim.keymap.set("", "<leader>ss", "<cmd>set spell!<cr>", { desc = "Toggle spell checking for the current window", silent = true })
 
 -- ((lazy.nvim)) ---------------------------------------------------------------
 

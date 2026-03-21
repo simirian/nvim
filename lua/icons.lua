@@ -37,8 +37,8 @@ icons.filetype = {
   gitrebase = { "󰊢", "IconOrange" },
   gitsendemail = { "󰊢", "IconOrange" },
   html = { "", "IconRed" },
-  hyprlang = { "", "IconsCyan" },
-  javascript = { "", "IconsYellow" },
+  hyprlang = { "", "IconCyan" },
+  javascript = { "", "IconYellow" },
   json = { "", "IconYellow" },
   lua = { "", "IconCyan" },
   make = { "", "IconRed" },
@@ -91,7 +91,7 @@ icons.extension = {
 --- @return string icon
 --- @return string highlight
 function M.get(name, category)
-  local ico = { "󰃩", "IconGray" }
+  local ico = { "?", "IconGray" }
   if category == "name" then
     ico = icons.name[name] or ico
   elseif category == "filetype" then
