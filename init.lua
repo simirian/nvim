@@ -22,10 +22,6 @@ vim.o.foldmethod = "expr"
 vim.o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 vim.o.foldlevelstart = 99
 
-vim.o.tabstop = 2
-vim.o.shiftwidth = 0
-vim.o.expandtab = true
-
 vim.o.ignorecase = true
 vim.o.smartcase = true
 
