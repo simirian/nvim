@@ -109,15 +109,18 @@ local function edit(bang, date, precision)
     vim.notify(vim.v.errmsg, vim.log.levels.ERROR, {})
     return
   end
-  if precision == "year" or precision == "month" then
-    vim.fn.mkdir(path, "p")
-  else
-    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-    if #lines == 1 and lines[1] == "" then
-      vim.api.nvim_buf_set_lines(0, 0, -1, false, { os.date("# Daily %F", os.time(date)) --[[@as string]] })
-    end
-    vim.cmd("sil w ++p")
-  end
+  vim.api.nvim_create_autocmd("BufWritePre", {
+    desc = "Creates required parents before writing for the first time.",
+    once = true,
+    buffer = 0,
+    callback = function()
+      if (precision == "year" or precision == "month") then
+        vim.fn.mkdir(path, "p")
+      else
+        vim.fn.mkdir(vim.fs.dirname(path), "p")
+      end
+    end,
+  })
   vim.b.calendir_date = date
   vim.b.calendir_type = ({
     year = "yearfile",
