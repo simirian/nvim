@@ -19,13 +19,11 @@ local filepath = vim.fs.normalize(vim.fn.stdpath("data") .. "/projects.json")
 
 --- Saves the current project list to projects.json.
 local function save()
-  --- @diagnostic disable-next-line: undefined-field
   vim.uv.fs_open(filepath, "w", 420, function(err, file)
     assert(not err, err)
-    --- @diagnostic disable-next-line: undefined-field, redefined-local
-    vim.uv.fs_write(file, vim.json.encode(saved), function(err)
+    --- @diagnostic disable-next-line: redefined-local
+    vim.uv.fs_write(file, vim.json.encode(saved), 0, function(err)
       assert(not err, err)
-      --- @diagnostic disable-next-line: undefined-field
       vim.uv.fs_close(file)
     end)
   end)
@@ -33,18 +31,16 @@ end
 
 --- Loads the saved project list from projects.json.
 local function load()
-  --- @diagnostic disable-next-line: undefined-field
   vim.uv.fs_open(filepath, "r", 420, function(err, file)
     if err then
       saved = {}
     else
-      --- @diagnostic disable-next-line: undefined-field, redefined-local
+      --- @diagnostic disable-next-line: redefined-local
       vim.uv.fs_fstat(file, function(err, stat)
         assert(not err, err)
-        --- @diagnostic disable-next-line: undefined-field, redefined-local
+        --- @diagnostic disable-next-line: redefined-local
         vim.uv.fs_read(file, stat.size, 0, function(err, data)
           assert(not err, err)
-          --- @diagnostic disable-next-line: undefined-field
           vim.uv.fs_close(file)
           saved = vim.json.decode(data)
         end)
@@ -57,8 +53,7 @@ end
 --- @param name string Unique display name of the project.
 --- @param path? string The path to the project directory, default cwd.
 local function add(name, path)
-  --- @diagnostic disable-next-line: undefined-field
-  saved[name] = vim.fs.normalize(path or vim.uv.cwd())
+  saved[name] = vim.fs.normalize(path or vim.uv.cwd() --[[@as string]])
   save()
 end
 
@@ -66,8 +61,7 @@ end
 --- directory, it only causes this module to forget it exists.
 --- @param project? string The name of or path to of the project to remove.
 local function remove(project)
-  --- @diagnostic disable-next-line: undefined-field
-  project = project or vim.fs.normalize(vim.uv.cwd())
+  project = project or vim.fs.normalize(vim.uv.cwd() --[[@as string]])
   if saved[project] then
     saved[project] = nil
   else
@@ -133,10 +127,8 @@ vim.api.nvim_create_user_command("Project", function(args)
       vim.notify(":Project add requries a project name.", vim.log.levels.ERROR, {})
       return
     end
-    --- @diagnostic disable-next-line: undefined-field
     add(args.fargs[2], vim.uv.cwd())
   elseif args.fargs[1] == "remove" then
-    --- @diagnostic disable-next-line: undefined-field
     remove(args.fargs[2])
   elseif args.fargs[1] == "include" then
     local dirs = vim.deepcopy(args.fargs)

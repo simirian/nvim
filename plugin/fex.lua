@@ -12,19 +12,16 @@ vim.g.loaded_netrwPlugin = 1
 --- @param path string The path to create.
 local function mk(path)
   local parent = vim.fs.normalize(path):match(".*/")
-  --- @diagnostic disable-next-line: undefined-field
   if not vim.uv.fs_stat(parent) then
     local _, err = mk(parent .. "/")
     assert(not err, err)
   end
   if path:sub(#path) == "/" then
-    --- @diagnostic disable-next-line: undefined-field
     return vim.uv.fs_mkdir(path, 493) -- 755
   else
-    --- @diagnostic disable-next-line: undefined-field
     local f, err = vim.uv.fs_open(path, "a", 420) -- 644
+    --- @cast f integer
     assert(not err, err)
-    --- @diagnostic disable-next-line: undefined-field
     _, err = vim.uv.fs_close(f)
     assert(not err, err)
   end
@@ -36,33 +33,28 @@ end
 --- @param dst string Location to place  acopy of the source.
 local function cp(src, dst)
   local parent = vim.fs.normalize(dst):match(".*/")
-  --- @diagnostic disable-next-line: undefined-field
   if not vim.uv.fs_stat(parent) then
     local _, err = mk(parent .. "/")
     assert(not err, err)
   end
   local function cp(src, dst, type) --- @diagnostic disable-line: redefined-local
     if type == "file" then
-      --- @diagnostic disable-next-line: undefined-field
       local _, err = vim.uv.fs_copyfile(src, dst)
       assert(not err, err)
     elseif type == "directory" then
-      --- @diagnostic disable-next-line: undefined-field
       local _, err = vim.uv.fs_mkdir(dst, 493)
       assert(not err, err)
       for fname, ftype in vim.fs.dir(src) do
         cp(src .. "/" .. fname, dst .. "/" .. fname, ftype)
       end
     elseif type == "link" then
-      --- @diagnostic disable-next-line: undefined-field
       local target, err = vim.uv.fs_readlink(src)
+      --- @cast target string
       assert(not err, err)
-      --- @diagnostic disable-next-line: undefined-field
       _, err = vim.uv.fs_symlink(target, dst)
       assert(not err, err)
     end
   end
-  --- @diagnostic disable-next-line: undefined-field
   local stat, err = vim.uv.fs_lstat(src)
   assert(not err, err)
   cp(src, dst, stat.type)
@@ -74,12 +66,10 @@ end
 --- @param dst string Location to move the source to.
 local function mv(src, dst)
   local parent = vim.fs.normalize(dst):match(".*/")
-  --- @diagnostic disable-next-line: undefined-field
   if not vim.uv.fs_stat(parent) then
     local _, err = mk(parent .. "/")
     assert(not err, err)
   end
-  --- @diagnostic disable-next-line: undefined-field
   local _, err = vim.uv.fs_rename(src, dst)
   assert(not err, err)
 end
@@ -92,16 +82,13 @@ local function rm(path)
       for fname, ftype in vim.fs.dir(path) do
         rm(path .. "/" .. fname, ftype)
       end
-      --- @diagnostic disable-next-line: undefined-field
       local _, err = vim.uv.fs_rmdir(path)
       assert(not err, err)
     else
-      --- @diagnostic disable-next-line: undefined-field
       local _, err = vim.uv.fs_unlink(path)
       assert(not err, err)
     end
   end
-  --- @diagnostic disable-next-line: undefined-field
   local stat, err = vim.uv.fs_stat(path)
   assert(not err, err)
   rm(path, stat.type)
@@ -258,7 +245,6 @@ local function validate()
   end
   -- ensure all sources actually exist
   for _, src in ipairs(srcnames) do
-    --- @diagnostic disable-next-line: undefined-field
     local _, err = vim.uv.fs_stat(src)
     if err then
       msg = ("%sFEXE3: Error accessing file %s:\n  %s\n"):format(msg, src, err)
@@ -375,7 +361,6 @@ end
 --- @param bufnr integer The buffer to test.
 --- @return boolean
 local function test(bufnr)
-  --- @diagnostic disable-next-line: undefined-field
   local stat = vim.uv.fs_stat(vim.api.nvim_buf_get_name(bufnr))
   return stat and stat.type == "directory"
 end
@@ -402,10 +387,8 @@ local function dir_setup(bufnr)
       return
     end
     local path = vim.fs.normalize(vim.api.nvim_buf_get_name(0) .. "/" .. name)
-    --- @diagnostic disable-next-line: undefined-field
     vim.uv.fs_lstat(path, function(_, stat)
       if stat and stat.type == "link" then
-        --- @diagnostic disable-next-line: undefined-field
         vim.uv.fs_realpath(path, function(err, realpath)
           assert(not err, err)
           vim.schedule(function() vim.cmd.edit(realpath) end)

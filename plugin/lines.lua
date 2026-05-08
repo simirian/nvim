@@ -54,17 +54,17 @@ function Statusline()
   return left .. "%=" .. center .. "%=" .. right
 end
 
---- @diagnostic disable-next-line: undefined-field
 local timer = vim.uv.new_timer()
-timer:start(61000 - os.date("*t").sec * 1000, 60000, vim.schedule_wrap(function()
-  vim.cmd.redrawstatus()
-  vim.cmd.redrawtabline()
-end))
+if timer then
+  timer:start(61000 - os.date("*t").sec * 1000, 60000, vim.schedule_wrap(function()
+    vim.cmd.redrawstatus()
+    vim.cmd.redrawtabline()
+  end))
+end
 
 --- Tabline generating function.
 --- @return string tabline
 function Tabline()
-  --- @diagnostic disable-next-line: undefined-field
   local left = "%#User1# " .. vim.fs.basename(vim.uv.cwd()) .. os.date(" | %R ")
 
   local right = ""

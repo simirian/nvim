@@ -3,10 +3,10 @@
 ## Install
 
 Install the latest version of Neovim. (Older versions are untested but may
-work.) Run `git clone https://github.com/simirian/nvim .` in your configuration
-directory. Install the language servers you will be using from your package
-manager / their downloads page, and ensure they're on `$PATH`. Run `nvim` and
-everything SHOULD work after lazy does its magic.
+work.) Clone this repo into your Neovim configuration directory. Install the
+language servers you will be using from your package manager/their downloads
+page, and ensure they're on `$PATH`. Run `nvim` and `:TSInstall` all of the
+relevant grammars for
 
 If you want to use a language server which isn't configured, copy one of the
 simpler LSP configuration files in `lsp/` (eg. `clangd.lua`) and name it after
@@ -28,6 +28,7 @@ your language server, then replace all the appropriate variables.
 | `-`                | Open parent of the current buffer.        |
 | `<lesder>ss`       | Sets spelling for the current window.     |
 | `<leader>sh`       | Sets hlsearch globally.                   |
+| `<leader>sw`       | Toggles wrapping in the current window.   |
 
 ## Native Plugins
 
@@ -38,8 +39,8 @@ how to use them and what might go wrong when using them.
 - *calendir* `:h calendir.txt` provides calendar and journal functionality
 - *fex* `:h fex.txt` lets you edit the file system like a buffer
 - *lines* customizes the status line and tab line
-- *lsp* sets up native vim language server functionality and tab completion
-- *pairs* `:h pairs.txt` provides autopairs and surrounds
+- *lsp* sets up native vim language server functionality and autocompletion
+- *pairs* `:h pairs.txt` provides automatic pairing and surround operator
 - *pick* `:h pick.txt` pick from lists of things
 - *projects* `:h projects.txt` makes it easy to open projects quickly
 - *scratch* `:h scratch.txt` access to scratch buffers of any file type

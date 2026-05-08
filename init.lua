@@ -37,7 +37,6 @@ vim.o.suffixesadd = ".md"
 vim.o.swapfile = false
 vim.o.shada = ""
 
---- @diagnostic disable-next-line: undefined-field
 if vim.uv.os_uname().sysname == "Windows_NT" then
   vim.o.shelltemp = false
   vim.o.shell = "powershell"
@@ -115,7 +114,6 @@ vim.keymap.set("", "<leader>sw", "<cmd>set wrap!<cr>", { desc = "Toggle line wra
 -- ((lazy.nvim)) ---------------------------------------------------------------
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
---- @diagnostic disable-next-line: undefined-field
 if not vim.uv.fs_stat(lazypath) then
   vim.fn.system { "git", "clone", "--filter=blob:none",
     "https://github.com/folke/lazy.nvim.git", "--branch=stable", lazypath, }

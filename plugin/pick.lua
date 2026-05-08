@@ -500,12 +500,12 @@ function pickers.help:generate()
   local tags = {}
   local files = vim.api.nvim_get_runtime_file("doc/tags", true)
   for _, file in ipairs(files) do
-    --- @diagnostic disable: undefined-field
     local fd = vim.uv.fs_open(file, "r", 420)
+    if not fd then return {} end
     local size = vim.uv.fs_fstat(fd).size
     local contents = vim.uv.fs_read(fd, size)
     vim.uv.fs_close(fd)
-    --- @diagnostic enable: undefined-field
+    if not contents then return {} end
     for _, line in ipairs(vim.split(contents, "[\r\n]+", { trimempty = true })) do
       local tag = line:match("^[^\t]+")
       table.insert(tags, tag)
@@ -541,8 +541,7 @@ pickers.files = Picker.new({
 --- Caches all files in the current directory
 --- @return string[]
 function pickers.files:generate()
-  --- @diagnostic disable-next-line: undefined-field
-  local dir = vim.fs.normalize(vim.uv.cwd())
+  local dir = vim.fs.normalize(vim.uv.cwd() --[[@as string]])
   if self.paths and self.cachedir == dir then return self.paths end
   local function lsr(path)
     local strs = {}

@@ -90,7 +90,6 @@ end
 --- @return boolean
 local function exists(date)
   local path = vim.fs.normalize(vim.g.calendir .. os.date("/%Y/%m/%d.md", os.time(date)))
-  --- @diagnostic disable-next-line: undefined-field
   return vim.uv.fs_stat(path) ~= nil
 end
 
@@ -256,12 +255,12 @@ local function monthcal(bufnr, date)
   vim.bo[bufnr].modified = false
 
   vim.api.nvim_buf_clear_namespace(bufnr, namespace, 0, -1)
-  local lnum, today = 0, os.date("*t")
+  local lnum, today = 0, os.date("*t") --[[@as osdate]]
   iter = first
   while before(iter, last) do
     lnum = iter.wday == 1 and lnum + 1 or lnum
     local hasentry, hl = exists(iter)
-    if samedate(iter, today --[[@as osdate]]) then
+    if samedate(iter, today) then
       hl = hasentry and "CalToday" or "CalNoToday"
     elseif iter.month ~= date.month then
       hl = hasentry and "CalOther" or "CalNoOther"
@@ -279,7 +278,8 @@ local function monthcal(bufnr, date)
     local col = vim.api.nvim_win_get_cursor(0)[2]
     local line = vim.api.nvim_get_current_line()
     local day = tonumber(line:sub(math.floor(col / 5) * 5, math.floor(col / 5 + 1) * 5))
-    edit(true, { year = date.year, month = date.month, day = day --[[@as integer]] }, "day")
+    if not day then return end
+    edit(true, { year = date.year, month = date.month, day = day }, "day")
   end, { buffer = bufnr, desc = "Open journal entry." })
 end
 

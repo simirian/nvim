@@ -69,7 +69,6 @@ end
 --- Aborts the async routine.
 function M.Async:abort()
   if self.system then
-    --- @diagnostic disable-next-line: undefined-field
     self.system:kill(vim.uv.constants.SIGTERM)
   end
   self.shouldabort = true
