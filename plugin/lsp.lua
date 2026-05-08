@@ -48,6 +48,8 @@ local function s_tab()
   return "<tab>"
 end
 
+local augroup = vim.api.nvim_create_augroup("autocomplete", { clear = true })
+
 -- found with the help of https://github.com/onsails/lspkind.nvim
 local kinds = {
   Method = "λ",
@@ -93,8 +95,26 @@ end
 --- @type vim.lsp.Config
 local defaults = {
   on_attach = function(client, bufnr)
-    if client.capabilities.textDocument.completion then
-      vim.lsp.completion.enable(true, client.id, bufnr, { convert = lsptovim, autotrigger = true })
+    if client:supports_method("textDocument/completion") then
+      vim.lsp.completion.enable(true, client.id, bufnr, { convert = lsptovim })
+      local docomplete = false
+      vim.api.nvim_create_autocmd("TextChangedI", {
+        desc = "Trigger autocompletion.",
+        group = augroup,
+        buffer = bufnr,
+        callback = function()
+          if docomplete and vim.fn.pumvisible() == 0 then
+            vim.api.nvim_feedkeys(vim.keycode("<C-x><C-o>"), "m", false)
+            docomplete = false
+          end
+        end,
+      })
+      vim.api.nvim_create_autocmd("InsertCharPre", {
+        desc = "Start autocompletion.",
+        group = augroup,
+        buffer = bufnr,
+        callback = function() docomplete = true end,
+      })
     end
     vim.keymap.set({ "i", "s" }, "<tab>", tab, { desc = "Complete or snippet jump.", expr = true, silent = true, buffer = bufnr })
     vim.keymap.set({ "i", "s" }, "<S-tab>", s_tab, { desc = "Snippet return or cancel.", expr = true, silent = true, buffer = bufnr })
