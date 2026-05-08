@@ -17,10 +17,15 @@ vim.cmd.colorscheme("yicks")
 vim.o.cursorline = true
 vim.o.showmode = false
 vim.o.wrap = false
+vim.o.linebreak = true
 
 vim.o.foldmethod = "expr"
 vim.o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 vim.o.foldlevelstart = 99
+
+vim.o.tabstop = 2
+vim.o.shiftwidth = 0
+vim.o.expandtab = true
 
 vim.o.ignorecase = true
 vim.o.smartcase = true
@@ -105,6 +110,7 @@ vim.keymap.set("", "_", ":e .<cr>", { desc = "Open nvim's current directory.", s
 
 vim.keymap.set("", "<leader>sh", "<cmd>set hlsearch!<cr>", { desc = "Toggle search term highlighting.", silent = true })
 vim.keymap.set("", "<leader>ss", "<cmd>set spell!<cr>", { desc = "Toggle spell checking for the current window", silent = true })
+vim.keymap.set("", "<leader>sw", "<cmd>set wrap!<cr>", { desc = "Toggle line wrapping.", silent = true })
 
 -- ((lazy.nvim)) ---------------------------------------------------------------
 
