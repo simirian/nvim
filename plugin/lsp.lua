@@ -119,19 +119,23 @@ local defaults = {
         callback = function()
           if docomplete and vim.fn.pumvisible() == 0 then
             vim.api.nvim_feedkeys(vim.keycode("<C-x><C-o>"), "m", false)
-            docomplete = false
           end
+          docomplete = false
         end,
       })
       vim.api.nvim_create_autocmd("InsertCharPre", {
         desc = "Start autocompletion.",
         group = augroup,
         buffer = bufnr,
-        callback = function() docomplete = true end,
+        callback = function()
+          docomplete = vim.v.char:match("%a") and vim.fn.pumvisible() == 0
+        end,
       })
     end
-    vim.keymap.set({ "i", "s" }, "<tab>", tab, { desc = "Complete or snippet jump.", expr = true, silent = true, buffer = bufnr })
-    vim.keymap.set({ "i", "s" }, "<S-tab>", s_tab, { desc = "Snippet return or cancel.", expr = true, silent = true, buffer = bufnr })
+    vim.keymap.set({ "i", "s" }, "<tab>", tab,
+      { desc = "Complete or snippet jump.", expr = true, silent = true, buffer = bufnr })
+    vim.keymap.set({ "i", "s" }, "<S-tab>", s_tab,
+      { desc = "Snippet return or cancel.", expr = true, silent = true, buffer = bufnr })
   end,
 }
 vim.lsp.config("*", defaults)
