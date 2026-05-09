@@ -69,8 +69,9 @@ function Tabline()
 
   local right = ""
   local curtab = vim.api.nvim_get_current_tabpage()
-  for _, tabnr in ipairs(vim.api.nvim_list_tabpages()) do
-    if tabnr == curtab then
+  for _, tabid in ipairs(vim.api.nvim_list_tabpages()) do
+    local tabnr = vim.api.nvim_tabpage_get_number(tabid)
+    if tabid == curtab then
       right = right .. "%#TabLineSel# " .. tabnr .. " %#TabLine#"
     elseif right == "" then
       right = right .. "%#TabLine# " .. tabnr .. " "
