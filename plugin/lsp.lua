@@ -1,12 +1,26 @@
 -- simirian's Neovim
 -- LSP configuration plugin
 
+local icons = { " ", " ", " ", " " }
+
 vim.diagnostic.config {
-  virtual_text = {
-    prefix = function(diagnostic)
-      return ({ " ", " ", " ", " " })[diagnostic.severity]
-    end,
-  },
+  virtual_text = { prefix = function(diagnostic)
+    return icons[diagnostic.severity]
+  end },
+  status = { format = function(counts)
+    local line = "%#User2#"
+    if next(counts) == nil then
+      return line .. "  0 %*"
+    end
+    for severity, icon in ipairs(icons) do
+      if counts[severity] then
+        local sstr = vim.diagnostic.severity[severity]
+        local hl = "Diagnostic" .. sstr:sub(1, 1) .. sstr:sub(2):lower()
+        line = line .. " %$" .. hl .. "$" .. icon .. counts[severity]
+      end
+    end
+    return line .. " %*"
+  end },
   signs = false,
   update_in_insert = true,
   severity_sort = true,

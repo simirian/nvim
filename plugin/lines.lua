@@ -16,25 +16,11 @@ function Statusline()
   local winid = vim.g.statusline_winid
   local bufnr = vim.api.nvim_win_get_buf(winid)
 
-  local left = "%#User2#"
+  local left = ""
   if next(vim.lsp.get_clients { bufnr = bufnr }) then
-    local stats = ""
-    local counts = { 0, 0, 0, 0 }
-    local icons = { "  ", "  ", "  ", " 󰌵 " }
-    for _, diagnostic in ipairs(vim.diagnostic.get(bufnr)) do
-      counts[diagnostic.severity] = counts[diagnostic.severity] + 1
-    end
-    for severity, count in ipairs(counts) do
-      if count > 0 then
-        stats = stats .. icons[severity] .. count
-      end
-    end
-    if stats == "" then
-      stats = "  0"
-    end
-    left = left .. stats .. " %*"
+    left = vim.diagnostic.status(bufnr)
   else
-    left = left .. (vim.wo[winid].spell and "  " or "  ") .. "%{wordcount().words} %*"
+    left = "%#User2#" .. (vim.wo[winid].spell and "  " or "  ") .. "%{wordcount().words} %*"
   end
 
   local fname = vim.fs.basename(vim.api.nvim_buf_get_name(bufnr))
