@@ -31,6 +31,14 @@ local function display(item, idx) --- @diagnostic disable-line: unused-local
   return tostring(item)
 end
 
+--- Converts the given item to a quickfix list entry.
+--- @param item any The item to convert.
+--- @param idx integer The index of the item.
+--- @return vim.quickfix.entry
+local function toquickfix(item, idx) --- @diagnostic disable-line: unused-local
+  return { filename = "", lnum = 1, text = "UNKNOWN" }
+end
+
 --- Does something with the item after the user selects it.
 --- @param item any The item to do somehting with.
 --- @param idx integer The index of the item.
@@ -214,6 +222,17 @@ vim.keymap.set({ "i", "n" }, "<C-p>", function()
   displayframe()
 end, { desc = "Select previous item in list.", buffer = ibuf })
 
+vim.keymap.set({ "i", "n" }, "<C-q>", function()
+  if not toquickfix then return end
+  local items = {}
+  for idx, item in ipairs(sorted) do
+    table.insert(items, toquickfix(item, idx))
+  end
+  vim.fn.setqflist(items)
+  closewins()
+  vim.cmd.cope()
+end, { desc = "Send the current sorted list to the quickfix list.", buffer = ibuf })
+
 --- Scores a string based on how well it matches a query. UPDATED! I wrote the
 --- new version in an hour as well, but after taking a bioinformatics class and
 --- learning about sequence alignment :P This is slower: O(NM), but still likely
@@ -371,6 +390,7 @@ vim.ui.select = function(list, opts, on_choice)
   sort = match
   asort()
   display = opts.format_item or tostring
+  toquickfix = nil --- @diagnostic disable-line: cast-local-type
   confirm = on_choice or function() end
   open()
 end
@@ -390,6 +410,10 @@ function M.grep()
     end
   end
   display = tostring
+  toquickfix = function(item)
+    local name, line, col = item:match("^([^:]+):(%d+):(%d+):.*$")
+    return { filename = name, lnum = line, col = col }
+  end
   confirm = function(item)
     local name, line, col = item:match("^([^:]+):(%d+):(%d+):.*$")
     if name and line and col then
@@ -421,6 +445,7 @@ function M.help()
   -- set callbacks
   sort = match
   display = tostring
+  toquickfix = nil --- @diagnostic disable-line: cast-local-type
   confirm = function(item) vim.cmd.help(item) end
   open()
 end
@@ -448,6 +473,7 @@ function M.files()
   -- set callbacks
   sort = match
   display = function(item) return vim.fn.fnamemodify(item, ":~:.") end
+  toquickfix = function(item) return { filename = item } end
   confirm = function(item) vim.cmd.edit(item) end
   open()
 end
