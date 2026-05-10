@@ -1,6 +1,31 @@
 -- simirian's Neovim
 -- scratch buffer plugin
 
+local commands = {
+  javascript = { "node", "-" },
+  python = { "python", "-" },
+}
+
+--- @param args vim.api.keyset.create_user_command.command_args
+local function runcmd(bufnr, args)
+  local ft = vim.bo[bufnr].ft
+  local cmd = commands[ft]
+  if not cmd then return end
+  for _, arg in ipairs(args.fargs) do
+    table.insert(cmd, arg)
+  end
+  local lines = vim.api.nvim_buf_get_lines(bufnr, args.line1 - 1, args.line2, false)
+  vim.system(cmd, { stdin = lines, cwd = vim.fn.expand("~"), text = true }, function(out)
+    print("Process exited with code:", out.code)
+    if out.stdout then
+      print(out.stdout)
+    end
+    if out.stderr then
+      print(out.stderr)
+    end
+  end)
+end
+
 vim.api.nvim_create_user_command("Scratch", function(args)
   local ft = args.args ~= "" and args.args .. " " or ""
   local bufnr = vim.fn.bufnr("Scratch " .. ft .. "#" .. (args.count or 0), true)
@@ -11,9 +36,13 @@ vim.api.nvim_create_user_command("Scratch", function(args)
   if args.args:match("[^%s]") then
     vim.bo[bufnr].ft = args.args
   end
+  --- @diagnostic disable-next-line: redefined-local
+  vim.api.nvim_buf_create_user_command(bufnr, "Run", function(args) runcmd(bufnr, args) end,
+    { desc = "Run code in a scratch buffer.", force = true, nargs = "*", range = "%", bar = true, })
   vim.cmd(bufnr .. "b" .. (args.bang and "!" or ""))
 end, {
   desc = "Open a scratch buffer.",
+  force = true,
   count = 1,
   bang = true,
   nargs = "?",

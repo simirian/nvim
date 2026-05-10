@@ -27,4 +27,11 @@ is exactly one annabel lee buffer, unlike with the `:Scratch` command. The
 file type of the buffer will be markdown and the text in the buffer is the
 poem "Annabell Lee" by Edgar Allen Poe.
 
+RUN									*:Run*
+
+The `:Run` command will run the code in the current scratch buffer, or run the
+current selection. This only works for configured languages, which are
+currently only python and javascript. Command-line arguments for `node` and
+`python` can be provided in the `:Run` command.
+
  vim:tw=78:ts=8:noet:ft=help:norl:
