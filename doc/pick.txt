@@ -83,4 +83,28 @@ hours based on a brief description from a bioinformatics class I took months
 ago. This means it's probably not the best. It's still pretty good though! And
 it's a fuzzy-matching algorithm, so it doesn't really matter, now does it?
 
+==============================================================================
+API								*pick-api*
+
+This plugin provides a public API which can be accessed by requiring the pick
+module:
+>lua
+	local pick = require("pick")
+<
+
+The module allows programmatic access to activating the built-in pickers by
+their name, as well as invoking custom pickers with the `pick()` function.
+
+CUSTOM PICKERS					*custom-pickers* *pick.pick()*
+
+Custom pickers can be created using the `pick()` function. It expects a single
+table argument, which is essentially a strategy for running the picker. It
+expects a list of items or a function to generate them asynchronously. The
+sort function is asynchronous and given the generated list and the user's
+prompt, and is expected to filter and sort the options to best fit the user's
+prompt. The disply function is used to convert the items to string, and the
+toquickfix function is used to convert the items to quickfix items if that's
+relevant behavior. The confirm function is called when the user confirms their
+selection.
+
  vim:tw=78:ts=8:noet:ft=help:norl:

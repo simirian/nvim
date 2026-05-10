@@ -379,23 +379,57 @@ local function match(list, query)
   end
 end
 
---- Prompt user to select an item from a list.
---- @generic T
---- @param list T[]
---- @param opts { format_item?: fun(item: T): string }
---- @param on_choice fun(item: T, idx: integer)
---- @diagnostic disable-next-line: duplicate-set-field
-vim.ui.select = function(list, opts, on_choice)
-  generated = list
-  sort = match
-  asort()
-  display = opts.format_item or tostring
-  toquickfix = nil --- @diagnostic disable-line: cast-local-type
-  confirm = on_choice or function() end
+local M = {}
+
+--- The arguments required to set up a new picker.
+--- @class Pick.Args<T>
+--- A list of items to pick from, or a function to generate them in an async
+--- context. If a function, then `coroutine.yield()` may be used freely.
+--- @field list T[] | fun(): T[]
+--- The function used to sort the items in the list based on the user's prompt.
+--- The function is called in an async context, so `coroutine.yield()` may be
+--- used freely.
+--- @field sort fun(items: T[], prompt: string): items: T[]
+--- The function used to convert each item to a string for display. Default
+--- value is `tostring()`.
+--- @field display? fun(item: T, idx: integer): string
+--- Function which can move entries to the quickfix list.
+--- @field toquickfix? fun(item: T, idx: integer): vim.quickfix.entry
+--- Callback for when the user confirms their selection.
+--- @field confirm fun(item: T, idx: integer)
+
+--- Adds a new picker to the picker list.
+--- @param args Pick.Args The picker variables.
+function M.pick(args)
+  if type(args.list) == "function" then
+    agen(args.list --[[@as fun(): any[] ]])
+  else
+    generated = args.list --[[@as any[] ]]
+  end
+  sort = args.sort or function(items) return items end
+  if type(args.list) ~= "function" then
+    asort()
+  end
+  display = args.display or tostring
+  toquickfix = args.toquickfix
+  confirm = args.confirm or function() end
   open()
 end
 
-local M = {}
+--- Prompt user to select an item from a list.
+--- @generic T
+--- @param list T[]
+--- @param opts vim.ui.select.Opts
+--- @param on_choice fun(item: T, idx: integer)
+--- @diagnostic disable-next-line: duplicate-set-field
+vim.ui.select = function(list, opts, on_choice)
+  M.pick({
+    list = list,
+    sort = match,
+    display = opts.format_item or tostring,
+    confirm = on_choice,
+  })
+end
 
 --- Opens a picker prompt whose input is forwarded to ripgrep.
 function M.grep()
@@ -478,6 +512,20 @@ function M.files()
   open()
 end
 
+--- Opens a picker for listed vim buffers.
+function M.buffers()
+  local bufnrs = vim.api.nvim_list_bufs()
+  local listed = vim.tbl_filter(function(bufnr) return vim.fn.buflisted(bufnr) == 1 end, bufnrs)
+  local names = vim.tbl_map(vim.api.nvim_buf_get_name, listed)
+  M.pick({
+    list = names,
+    sort = match,
+    display = function(item) return vim.fn.fnamemodify(item, ":~:.") end,
+    toquickfix = function(item) return { bufnr = vim.fn.bufnr(item), } end,
+    confirm = function(bufname) vim.cmd.buffer(bufname) end,
+  })
+end
+
 vim.api.nvim_create_user_command("Pick", function(args)
   if M[args.args] then
     M[args.args]()
@@ -497,5 +545,6 @@ end, {
 vim.keymap.set("n", "<leader>ff", M.files, { desc = "Find files." })
 vim.keymap.set("n", "<leader>fh", M.help, { desc = "Find help." })
 vim.keymap.set("n", "<leader>fg", M.grep, { desc = "Find with grep." })
+vim.keymap.set("n", "<leader>fb", M.buffers, { desc = "Find buffers." })
 
 package.loaded["pick"] = M
