@@ -306,57 +306,56 @@ local function score(item, query)
 end
 
 --- Simple fuzzy finding algorithm.
---- @param list string[] List of strings to score.
+--- @param list (string|table)[] List of strings to score.
 --- @param query string The query string to score based on.
---- @return string[]
-local function fuzz(list, query)
-  local plist = {}
-  local pause = 0
-  -- initial filter
-  plist = vim.tbl_filter(function(str)
-    if pause % 100 == 0 then
-      coroutine.yield()
-    end
-    pause = pause + 1
+--- @param field? string The field in the list items to get the string from.
+--- @return { item: string|table, score: number }[]
+local function fuzz(list, query, field)
+  local fuzzed = {}
+  -- filter and score items
+  for _, v in ipairs(list) do
+    coroutine.yield()
+    local str = field and v[field] or v
+    --- @cast str string
     local l = 0
     local si = 1
     local slow = str:lower()
     local th = #query * .75
     for qi = 1, #query do
-      local i = slow:find(query:sub(qi, qi):lower(), si, true)
-      if i then
-        si = i
-      else
-        l = l + 1 + #query - qi
-        if l > th then return false end
+      local fi = slow:find(query:sub(qi, qi):lower(), si, true)
+      if fi then
+        si = fi
+        l = l + 1
+        if l > th then
+          table.insert(fuzzed, {
+            item = v,
+            score = score(str, query),
+          })
+          break
+        end
       end
     end
-    return true
-  end, list)
-  -- score strings
-  plist = vim.tbl_map(function(str)
-    if pause % 100 == 0 then
-      coroutine.yield()
-    end
-    pause = pause + 1
-    return { str, score(str, query) }
-  end, plist)
+  end
   -- sort by scores
-  table.sort(plist, function(a, b) return a[2] > b[2] end)
-  -- select the string and return it
-  return vim.tbl_map(function(e) return e[1] end, plist)
+  table.sort(fuzzed, function(a, b) return a.score > b.score end)
+  return vim.tbl_map(function(e)
+    coroutine.yield()
+    return e.item
+  end, fuzzed)
 end
 
 --- Filters/sorts selections based on mini.nvim's pick module, but also forces
 --- fuzzy matching if the first character is a space, and ignores that space.
 --- Uses the above fuzz() function as a fallback for when there isn't a prefix.
---- @param list string[] The list to be filtered.
+--- @param list (string|table)[] The list to be filtered.
 --- @param query string The query to use to filter the list.
+--- @param field string Field of the list items to sort on.
 --- @return string[]
-local function match(list, query)
-  local function pmatch(s, q)
+local function match(list, query, field)
+  local function pmatch(i, q)
     coroutine.yield()
-    local ok, found = pcall(string.match, s, q)
+    local str = field and i[field] or i
+    local ok, found = pcall(string.match, str, q)
     return ok and found ~= nil
   end
   if query == "" then return list end
@@ -372,9 +371,9 @@ local function match(list, query)
     return vim.tbl_filter(predicates[mode], list)
   else
     if query:sub(1, 1) == " " then
-      return fuzz(list, query:sub(2))
+      return fuzz(list, query:sub(2), field)
     else
-      return fuzz(list, query)
+      return fuzz(list, query, field)
     end
   end
 end
@@ -513,34 +512,29 @@ end
 
 --- Opens a picker for listed vim buffers.
 function M.buffers()
-  local bufnrs = vim.api.nvim_list_bufs()
-  local listed = vim.tbl_filter(function(bufnr) return vim.fn.buflisted(bufnr) == 1 end, bufnrs)
-  local names = vim.tbl_map(vim.api.nvim_buf_get_name, listed)
   M.pick({
-    list = names,
-    sort = match,
-    display = function(item) return vim.fn.fnamemodify(item, ":~:.") end,
-    toquickfix = function(item) return { bufnr = vim.fn.bufnr(item), } end,
-    confirm = function(bufname) vim.cmd.buffer(bufname) end,
-  })
-end
-
---- Picks across quickfix items.
-function M.quickfix()
-  --- @type vim.quickfix.entry[]
-  local items = vim.fn.getqflist()
-  M.pick({
-    list = items,
-    sort = match,
-    display = function(item)
-      return item.text ~= "" and item.text
-          or vim.fn.fnamemodify(vim.api.nvim_buf_get_name(item.bufnr), ":~:.")
+    list = function()
+      local bufnrs = vim.api.nvim_list_bufs()
+      local items = {}
+      for _, bufnr in ipairs(bufnrs) do
+        coroutine.yield()
+        if vim.fn.buflisted(bufnr) == 1 then
+          local bufname = vim.api.nvim_buf_get_name(bufnr)
+          table.insert(items, {
+            bufnr = bufnr,
+            bufname = bufname,
+            shortname = vim.b[bufnr].bufname or vim.fn.fnamemodify(bufname, ":~:."),
+          })
+        end
+      end
+      return items
     end,
-    toquickfix = function(item) return item end,
-    confirm = function(item)
-      vim.cmd.buffer(item.bufnr)
-      vim.api.nvim_win_set_cursor(0, { item.lnum + 1, item.col })
+    sort = function(items, prompt)
+      return match(items, prompt, "shortname")
     end,
+    display = function(item) return item.shortname end,
+    toquickfix = function(item) return { bufnr = item.bufnr, text = item.shortname } end,
+    confirm = function(item) vim.cmd.buffer(item.bufnr) end,
   })
 end
 
