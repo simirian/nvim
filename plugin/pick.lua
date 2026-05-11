@@ -525,6 +525,25 @@ function M.buffers()
   })
 end
 
+--- Picks across quickfix items.
+function M.quickfix()
+  --- @type vim.quickfix.entry[]
+  local items = vim.fn.getqflist()
+  M.pick({
+    list = items,
+    sort = match,
+    display = function(item)
+      return item.text ~= "" and item.text
+          or vim.fn.fnamemodify(vim.api.nvim_buf_get_name(item.bufnr), ":~:.")
+    end,
+    toquickfix = function(item) return item end,
+    confirm = function(item)
+      vim.cmd.buffer(item.bufnr)
+      vim.api.nvim_win_set_cursor(0, { item.lnum + 1, item.col })
+    end,
+  })
+end
+
 vim.api.nvim_create_user_command("Pick", function(args)
   if M[args.args] then
     M[args.args]()
