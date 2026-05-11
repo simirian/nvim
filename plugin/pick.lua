@@ -13,7 +13,7 @@ local sorted
 
 --- The index of the selected item.
 --- @type integer
-local selected
+local selected = 1
 
 --- Sorts the items which are being picked over.
 --- @param items any[] The items to sort.
