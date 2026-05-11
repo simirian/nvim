@@ -487,7 +487,6 @@ end
 --- Pick from all files in the current directory excluding git files.
 function M.files()
   agen(function()
-    local dir = vim.fs.normalize(vim.uv.cwd() --[[@as string]])
     local function lsr(path)
       local strs = {}
       for name, type in vim.fs.dir(path) do
@@ -502,11 +501,11 @@ function M.files()
       end
       return strs
     end
-    return lsr(dir)
+    return vim.tbl_map(function(s) return s:sub(3) end, lsr("."))
   end)
   -- set callbacks
   sort = match
-  display = function(item) return vim.fn.fnamemodify(item, ":~:.") end
+  display = tostring
   toquickfix = function(item) return { filename = item } end
   confirm = function(item) vim.cmd.edit(item) end
   open()
