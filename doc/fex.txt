@@ -87,17 +87,17 @@ complex situation where it is difficult to robustly perform file operations.
 When the parent is copied, it is also impossible for fex to determine if the
 user intended the children to be modified before or after the parent is
 copied. Rather than attempt complex logic to manage the situation, fex simply
-refuses to perform the changes when a directory's child directories are
+refuses to perform changes when a parent directory of those changes is being
 modified.
 
 Solving this issue is very simple: separate the changes into two passes. In
 one pass, you commit the changes that will affect the children, and in the
 other pass you apply modifications to the parent. The ordering of which to do
-first should be intuitive, this error is moreso a notice that you've
+first should be intuitive, this error is moreso a notification that you've
 accidentally caused unsafe behavior rather than a demand that you do difficult
 work instead of the plugin.
 
-ERROR ACCESSING FILE						*FEXE3*
+SOURCE DOES NOT EXIST						*FEXE3*
 
 This error occurs when fex is validating that the current change to fex
 buffers are valid. If fex detects that a file which it expects to exist does
@@ -116,7 +116,7 @@ is being written to multiple times so you can try to fix the error. This check
 will be performed on all changes in all fex buffers, so the conflicting
 changes may be in different locations. To solve this problem, you need to
 remove all but one reference to the name in conflict, so that only one file
-will be moved / copied / created at that location.
+will be moved/copied/created at that location.
 
 FILESYSTEM ERROR 						*FEXE5*
 

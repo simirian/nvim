@@ -13,7 +13,7 @@ vim.g.loaded_netrwPlugin = 1
 --- exist. Parent directories will be created as needed.
 --- @param path string The path to create.
 local function mk(path)
-  local em = "FEXE5: i/o error when creating " .. path .. ": "
+  local em = "FEXE5: filesystem error when creating " .. path .. ": "
   local parent = vim.fs.normalize(path):match(".*/")
   if not vim.uv.fs_stat(parent) then
     mk(parent .. "/")
@@ -34,7 +34,7 @@ end
 --- @param src string Location of the source to be copied.
 --- @param dst string Location to place  acopy of the source.
 local function cp(src, dst)
-  local em = "FEXE5: i/o error when copying " .. src .. " to " .. dst .. ": "
+  local em = "FEXE5: filesystem error when copying " .. src .. " to " .. dst .. ": "
   local parent = vim.fs.normalize(dst):match(".*/")
   if not vim.uv.fs_stat(parent) then
     local _, err = mk(parent .. "/")
@@ -72,13 +72,13 @@ local function mv(src, dst)
     mk(parent .. "/")
   end
   local _, err = vim.uv.fs_rename(src, dst)
-  assert(not err, "FEXE5: i/o error when moving " .. src .. " to " .. dst .. ": " .. (err or ""))
+  assert(not err, "FEXE5: filesystem error when moving " .. src .. " to " .. dst .. ": " .. (err or ""))
 end
 
 --- Removes a file at the given path from the file ssytem.
 --- @param path string The path to be removed.
 local function rm(path)
-  local em = "FEXE5: i/o error when removing " .. path .. ": "
+  local em = "FEXE5: filesystem error when removing " .. path .. ": "
   local function rm(path, type) --- @diagnostic disable-line: redefined-local
     if type == "directory" then
       for fname, ftype in vim.fs.dir(path) do
@@ -145,7 +145,7 @@ local function dir_update(bufnr)
     local children = {}
     -- get and filter children
     local fd, err = vim.uv.fs_scandir(bufname)
-    assert(fd, "FEXE5: i/o error when reading " .. bufname .. ": " .. (err or ""))
+    assert(fd, "FEXE5: filesystem error when reading " .. bufname .. ": " .. (err or ""))
     local fname, ftype = vim.uv.fs_scandir_next(fd)
     while fname do
       coroutine.yield()
@@ -160,7 +160,7 @@ local function dir_update(bufnr)
       fname, ftype = vim.uv.fs_scandir_next(fd)
     end
     -- if ftype is a string, then we have a fail, if it's nil then we just hit the last item
-    assert(type(ftype) ~= "string", "FEXE5: i/o error when reading " .. bufname .. ": " .. (ftype or ""))
+    assert(type(ftype) ~= "string", "FEXE5: filesystem error when reading " .. bufname .. ": " .. (ftype or ""))
     -- sort children
     table.sort(children, function(a, b) return a.dir == b.dir and a.name > b.name or a.dir > b.dir end)
     vim.b[bufnr].fex_visible = children
@@ -228,7 +228,7 @@ local function dir_addchanges(bufnr)
         changes[id][name] = true
         targets[name] = targets[name] and targets[name] + 1 or 1
       else
-        vim.notify("FEXE1: Malformed line in fex buffer " .. bufname .. ":\n  " .. line, vim.log.levels.ERROR, {})
+        vim.notify("FEXE1: malformed line in fex buffer " .. bufname .. ": " .. line, vim.log.levels.ERROR, {})
         ok = false
       end
     end
@@ -243,14 +243,13 @@ end
 --- Checks if the changes the user has made to fex buffers are all valid.
 --- @return boolean valid
 local function validate()
-  local valid = true
-  local msg = ""
+  local errors = {}
   -- ensure no sources are within another source
   local srcnames = {}
   for srcid, dstset in pairs(changes) do
     if srcid ~= 0 then
       local src = swapnameid(srcid)
-      local t1 = next(dstset) -- if this isn't the name then there was a move/delete
+      local t1 = next(dstset)     -- if this isn't the name then there was a move/delete
       local t2 = next(dstset, t1) -- if this exists then there there was a copy
       if t2 or t1 ~= src then
         table.insert(srcnames, src)
@@ -260,9 +259,7 @@ local function validate()
   for i, src in ipairs(srcnames) do
     for j, subsrc in ipairs(srcnames) do
       if i ~= j and subsrc:find(src .. "/", 1, true) then
-        msg = msg .. "FEXE2: Modified child of modified directory:\n"
-            .. ("  %s\n  in %s\n"):format(subsrc, src)
-        valid = false
+        table.insert(errors, "FEXE2: modified child of modified directory: " .. subsrc .. " in " .. src)
       end
     end
   end
@@ -270,15 +267,13 @@ local function validate()
   for _, src in ipairs(srcnames) do
     local _, err = vim.uv.fs_stat(src)
     if err then
-      msg = ("%sFEXE3: Error accessing file %s:\n  %s\n"):format(msg, src, err)
-      valid = false
+      table.insert(errors, "FEXE3: source does not exist: " .. src .. " with " .. err)
     end
   end
   -- ensure no target is specified twice
   for target, count in pairs(targets) do
     if count > 1 then
-      msg = ("%sFEXE4: Multiply defined target:\n  %s\n"):format(msg, target)
-      valid = false
+      table.insert(errors, "FEXE4: multiply defined target: " .. target)
     end
   end
   -- ensure no files which aren't managed by fex get overwritten
@@ -288,15 +283,15 @@ local function validate()
     if bufnr == -1 then
       local stat = vim.uv.fs_stat(target)
       if stat then
-        msg = msg .. "FEXE7: foreign file overwrite:\n  " .. target .. "\n"
-        valid = false
+        table.insert(errors, "FEXE7: foreign file overwrite: " .. target)
       end
     end
   end
-  if not valid then
-    vim.notify(msg, vim.log.levels.ERROR, {})
+  if next(errors) then
+    table.insert(errors, "Use `:h <error>` to learn more about fex errors.")
+    vim.notify(table.concat(errors, "\n"), vim.log.levels.ERROR, {})
   end
-  return valid
+  return not next(errors)
 end
 
 --- Confirms the changes to be made with the user.
