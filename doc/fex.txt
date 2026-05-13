@@ -131,6 +131,15 @@ Fex tried to sync to the file systme while a fex buffer was loading
 asynchronously. This is not allowed, wait until the buffer loads (or delete
 the loading buffer with `:bdelete`) then try again.
 
+FOREIGN FILE OVERWRITE						*FEXE7*
+
+Changes in a fex buffer could result in a file which is not manged by fex
+being overwritten. A file is managed by fex if it is within an open fex
+buffer. To stop seeing this error, open the parent directory of the file which
+triggered this error in fex. To prevent |FEXE4| from triggering, move or
+delete the file in the newly opened buffer with the same name as the file
+triggering this error.
+
 ==============================================================================
 Fex Keymaps							*fex-keymaps*
 

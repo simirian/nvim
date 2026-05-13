@@ -281,6 +281,18 @@ local function validate()
       valid = false
     end
   end
+  -- ensure no files which aren't managed by fex get overwritten
+  for target in pairs(targets) do
+    local parent = target:match("(.*/).+/?$")
+    local bufnr = vim.fn.bufnr(parent)
+    if bufnr == -1 then
+      local stat = vim.uv.fs_stat(target)
+      if stat then
+        msg = msg .. "FEXE7: foreign file overwrite:\n  " .. target .. "\n"
+        valid = false
+      end
+    end
+  end
   if not valid then
     vim.notify(msg, vim.log.levels.ERROR, {})
   end
