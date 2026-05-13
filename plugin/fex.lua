@@ -364,7 +364,11 @@ local function sync()
   local fexbufs = {}
   local ok = true
   for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.b[bufnr].fex_visible and vim.b[bufnr].fex_loading then
+    if vim.b[bufnr].fex_loading then
+      vim.notify("FEXE6: fex buffer is loading: " .. vim.api.nvim_buf_get_name(bufnr))
+      return
+    end
+    if vim.b[bufnr].fex_visible then
       if not dir_addchanges(bufnr) then
         ok = false
       end

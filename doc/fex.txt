@@ -125,6 +125,12 @@ should provide mor information about what went wrong. Most commonly, the error
 will be that a file was moved and fex wasn't updated with `:e` or you don't
 have permission to do something with a file.
 
+FEX BUFFER IS LOADING						*FEXE6*
+
+Fex tried to sync to the file systme while a fex buffer was loading
+asynchronously. This is not allowed, wait until the buffer loads (or delete
+the loading buffer with `:bdelete`) then try again.
+
 ==============================================================================
 Fex Keymaps							*fex-keymaps*
 
