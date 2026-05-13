@@ -226,7 +226,13 @@ local function dir_addchanges(bufnr)
         changes[id] = changes[id] or {}
         name = vim.fs.normalize(bufname .. "/" .. name) .. line:match("/?$")
         changes[id][name] = true
-        targets[name] = targets[name] and targets[name] + 1 or 1
+        targets[name] = targets[name] or {}
+        targets[name][1] = targets[name][1] and targets[name][1] + 1 or 1
+        if id == 0 then
+          targets[name][0] = true
+        else
+          targets[name][swapnameid(id)] = true
+        end
       else
         vim.notify("FEXE1: malformed line in fex buffer " .. bufname .. ": " .. line, vim.log.levels.ERROR, {})
         ok = false
@@ -244,7 +250,6 @@ end
 --- @return boolean valid
 local function validate()
   local errors = {}
-  -- ensure no sources are within another source
   local srcnames = {}
   for srcid, dstset in pairs(changes) do
     if srcid ~= 0 then
@@ -256,10 +261,16 @@ local function validate()
       end
     end
   end
+  -- ensure no changes are made within a modified directory
   for i, src in ipairs(srcnames) do
     for j, subsrc in ipairs(srcnames) do
-      if i ~= j and subsrc:find(src .. "/", 1, true) then
+      if i ~= j and subsrc:find(src .. "/", 1, true) == 1 then
         table.insert(errors, "FEXE2: modified child of modified directory: " .. subsrc .. " in " .. src)
+      end
+    end
+    for target, srcs in pairs(targets) do
+      if src ~= target and target:find(src .. "/", 1, true) == 1 and srcs[target] ~= true then
+        table.insert(errors, "FEXE2: modified child of modified directory: " .. target .. " in " .. src)
       end
     end
   end
@@ -271,8 +282,8 @@ local function validate()
     end
   end
   -- ensure no target is specified twice
-  for target, count in pairs(targets) do
-    if count > 1 then
+  for target, srcs in pairs(targets) do
+    if srcs[1] > 1 then
       table.insert(errors, "FEXE4: multiply defined target: " .. target)
     end
   end
@@ -401,6 +412,7 @@ end
 
 --- Sets up a fex buffer.
 local function dir_setup(bufnr)
+  vim.api.nvim_buf_set_name(bufnr, vim.fs.normalize(vim.api.nvim_buf_get_name(0)))
   vim.api.nvim_create_autocmd("BufReadCmd", {
     desc = "Update fex directory buffers on read.",
     group = augroup,
