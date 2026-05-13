@@ -6,6 +6,7 @@ local M = {}
 --- All existing async objects.
 --- @type table<thread, Async>
 local threads = {}
+setmetatable(threads, { __mode = "kv" })
 
 --- Represents an asynchronous thread. Functions wrapped in `Async` objects can
 --- freely yield to prevent blocking, and will quickly be resumed after other
