@@ -118,6 +118,13 @@ changes may be in different locations. To solve this problem, you need to
 remove all but one reference to the name in conflict, so that only one file
 will be moved / copied / created at that location.
 
+FILESYSTEM ERROR 						*FEXE5*
+
+Something went wrong when trying to access the file system. Reading the error
+should provide mor information about what went wrong. Most commonly, the error
+will be that a file was moved and fex wasn't updated with `:e` or you don't
+have permission to do something with a file.
+
 ==============================================================================
 Fex Keymaps							*fex-keymaps*
 

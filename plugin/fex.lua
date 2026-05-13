@@ -1,6 +1,8 @@
 -- simirian's Neovim
 -- file explorer plugin
 
+local async = require("async")
+
 -- Credit where it's due, this plugin was heavily inspired by peer plugins like
 -- dirbuf and oil. It just aims to be smaller and perhaps a little simpler.
 
@@ -11,19 +13,19 @@ vim.g.loaded_netrwPlugin = 1
 --- exist. Parent directories will be created as needed.
 --- @param path string The path to create.
 local function mk(path)
+  local em = "FEXE5: i/o error when creating " .. path .. ": "
   local parent = vim.fs.normalize(path):match(".*/")
   if not vim.uv.fs_stat(parent) then
-    local _, err = mk(parent .. "/")
-    assert(not err, err)
+    mk(parent .. "/")
   end
   if path:sub(#path) == "/" then
-    return vim.uv.fs_mkdir(path, 493) -- 755
+    local _, err = vim.uv.fs_mkdir(path, 493) -- 755
+    assert(not err, em .. (err or ""))
   else
-    local f, err = vim.uv.fs_open(path, "a", 420) -- 644
-    --- @cast f integer
-    assert(not err, err)
-    _, err = vim.uv.fs_close(f)
-    assert(not err, err)
+    local fd, err = vim.uv.fs_open(path, "a", 420) -- 644
+    assert(fd, em .. (err or ""))
+    _, err = vim.uv.fs_close(fd)
+    assert(not err, em .. (err or ""))
   end
 end
 
@@ -32,31 +34,31 @@ end
 --- @param src string Location of the source to be copied.
 --- @param dst string Location to place  acopy of the source.
 local function cp(src, dst)
+  local em = "FEXE5: i/o error when copying " .. src .. " to " .. dst .. ": "
   local parent = vim.fs.normalize(dst):match(".*/")
   if not vim.uv.fs_stat(parent) then
     local _, err = mk(parent .. "/")
-    assert(not err, err)
+    assert(not err, em .. (err or ""))
   end
   local function cp(src, dst, type) --- @diagnostic disable-line: redefined-local
     if type == "file" then
       local _, err = vim.uv.fs_copyfile(src, dst)
-      assert(not err, err)
+      assert(not err, em .. (err or ""))
     elseif type == "directory" then
       local _, err = vim.uv.fs_mkdir(dst, 493)
-      assert(not err, err)
+      assert(not err, em .. (err or ""))
       for fname, ftype in vim.fs.dir(src) do
         cp(src .. "/" .. fname, dst .. "/" .. fname, ftype)
       end
     elseif type == "link" then
       local target, err = vim.uv.fs_readlink(src)
-      --- @cast target string
-      assert(not err, err)
+      assert(target, em .. (err or ""))
       _, err = vim.uv.fs_symlink(target, dst)
-      assert(not err, err)
+      assert(not err, em .. (err or ""))
     end
   end
   local stat, err = vim.uv.fs_lstat(src)
-  assert(not err, err)
+  assert(stat, em .. (err or ""))
   cp(src, dst, stat.type)
 end
 
@@ -67,30 +69,30 @@ end
 local function mv(src, dst)
   local parent = vim.fs.normalize(dst):match(".*/")
   if not vim.uv.fs_stat(parent) then
-    local _, err = mk(parent .. "/")
-    assert(not err, err)
+    mk(parent .. "/")
   end
   local _, err = vim.uv.fs_rename(src, dst)
-  assert(not err, err)
+  assert(not err, "FEXE5: i/o error when moving " .. src .. " to " .. dst .. ": " .. (err or ""))
 end
 
 --- Removes a file at the given path from the file ssytem.
 --- @param path string The path to be removed.
 local function rm(path)
+  local em = "FEXE5: i/o error when removing " .. path .. ": "
   local function rm(path, type) --- @diagnostic disable-line: redefined-local
     if type == "directory" then
       for fname, ftype in vim.fs.dir(path) do
         rm(path .. "/" .. fname, ftype)
       end
       local _, err = vim.uv.fs_rmdir(path)
-      assert(not err, err)
+      assert(not err, em .. (err or ""))
     else
       local _, err = vim.uv.fs_unlink(path)
-      assert(not err, err)
+      assert(not err, em .. (err or ""))
     end
   end
   local stat, err = vim.uv.fs_stat(path)
-  assert(not err, err)
+  assert(stat, em .. (err or ""))
   rm(path, stat.type)
 end
 
@@ -125,56 +127,77 @@ end
 local augroup = vim.api.nvim_create_augroup("fex", { clear = true })
 local ns = vim.api.nvim_create_namespace("fex")
 
+--- Map of buffer numbers to threads. This is required because vim buffers can't
+--- store async routines.
+--- @type table<table, Async>
+local upthreads = {}
+
 --- Updates a fex directory buffer.
 --- @param bufnr integer The buffer to update.
 local function dir_update(bufnr)
-  local children = {}
-  -- get and filter children
-  for name, type in vim.fs.dir(vim.api.nvim_buf_get_name(bufnr)) do
-    if vim.b[bufnr].fex_showhidden or not name:match("^%.") then
-      table.insert(children, { name = name, type = type })
-    end
+  if upthreads[bufnr] then
+    upthreads[bufnr]:abort()
   end
-  -- sort children
-  table.sort(children, function(first, second)
-    if first.type == "directory" and second.type ~= "directory" then
-      return true
-    elseif first.type ~= "directory" and second.type == "directory" then
-      return false
+  vim.b[bufnr].fex_loading = true
+  upthreads[bufnr] = async(function()
+    vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
+    local bufname = vim.api.nvim_buf_get_name(bufnr)
+    local children = {}
+    -- get and filter children
+    local fd, err = vim.uv.fs_scandir(bufname)
+    assert(fd, "FEXE5: i/o error when reading " .. bufname .. ": " .. (err or ""))
+    local fname, ftype = vim.uv.fs_scandir_next(fd)
+    while fname do
+      coroutine.yield()
+      local path = vim.fs.normalize(bufname .. "/" .. fname)
+      local dir = ftype == "directory" and 1 or 0
+      local ttype
+      if ftype == "link" then
+        ttype = vim.uv.fs_stat(path).type
+        dir = ttype == "directory" and 1 or 0
+      end
+      table.insert(children, { name = fname, path = path, type = ftype, ttype = ttype, dir = dir })
+      fname, ftype = vim.uv.fs_scandir_next(fd)
     end
-    return first.name < second.name
+    -- if ftype is a string, then we have a fail, if it's nil then we just hit the last item
+    assert(type(ftype) ~= "string", "FEXE5: i/o error when reading " .. bufname .. ": " .. (ftype or ""))
+    -- sort children
+    table.sort(children, function(a, b) return a.dir == b.dir and a.name > b.name or a.dir > b.dir end)
+    vim.b[bufnr].fex_visible = children
+    -- make lines
+    local lines = vim.tbl_map(function(child)
+      coroutine.yield()
+      return ("/%x\t%s"):format(swapnameid(child.path), child.name)
+    end, children)
+    -- set lines
+    local ul = vim.bo[bufnr].ul
+    vim.bo[bufnr].ul = -1
+    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+    vim.bo[bufnr].ul = ul
+    vim.bo[bufnr].modified = false
+    vim.b[bufnr].fex_loading = false
+    -- set marks
+    for i, line in ipairs(lines) do
+      coroutine.yield()
+      local ico, hl
+      if children[i].type == "directory" then
+        ico, hl = "", "Directory"
+      elseif children[i].dir == 1 then
+        ico, hl = "", "Directory"
+      else
+        ico, hl = require("icons").get(line:match("\t(.*)"))
+      end
+      vim.api.nvim_buf_set_extmark(bufnr, ns, i - 1, 0, {
+        virt_text = { { ico .. " ", hl } },
+        virt_text_pos = "inline",
+        line_hl_group = children[i].dir == 1 and "Directory" or nil,
+        end_col = line:find("\t", 1, false) - 1,
+        conceal = "",
+        invalidate = true,
+      })
+    end
   end)
-  vim.b[bufnr].fex_visible = children
-  -- make lines
-  local bufname = vim.api.nvim_buf_get_name(bufnr)
-  local lines = vim.tbl_map(function(child)
-    local path = vim.fs.normalize(bufname .. "/" .. child.name)
-    return ("/%x\t%s"):format(swapnameid(path), child.name)
-  end, children)
-  -- set lines
-  local ul = vim.bo[bufnr].ul
-  vim.bo[bufnr].ul = -1
-  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
-  vim.bo[bufnr].ul = ul
-  vim.bo[bufnr].modified = false
-  -- set marks
-  vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
-  for i, line in ipairs(lines) do
-    local ico, hl
-    if children[i].type == "directory" then
-      ico, hl = "", "Directory"
-    else
-      ico, hl = require("icons").get(line:match("\t(.*)"))
-    end
-    vim.api.nvim_buf_set_extmark(bufnr, ns, i - 1, 0, {
-      virt_text = { { ico .. " ", hl } },
-      virt_text_pos = "inline",
-      line_hl_group = children[i].type == "directory" and "Directory" or nil,
-      end_col = line:find("\t", 1, false) - 1,
-      conceal = "",
-      invalidate = true,
-    })
-  end
+  upthreads[bufnr]:run()
 end
 
 --- Map from source ids to a set of destinations. An id of 0 indicates that a
@@ -197,7 +220,7 @@ local function dir_addchanges(bufnr)
       local id, name = 0, line
       if line:sub(1, 1) == "/" then
         id, name = line:match("^/([%da-f]*)\t(.*)$")
-        id = tonumber(id or "", 16)
+        id = tonumber(id --[[@as string]] or "", 16)
       end
       if id and name then
         changes[id] = changes[id] or {}
@@ -205,7 +228,7 @@ local function dir_addchanges(bufnr)
         changes[id][name] = true
         targets[name] = targets[name] and targets[name] + 1 or 1
       else
-        vim.notify("FEXE1: Malformed line in fex buffer " .. bufname .. ":\n  " .. line .. "'", vim.log.levels.ERROR, {})
+        vim.notify("FEXE1: Malformed line in fex buffer " .. bufname .. ":\n  " .. line, vim.log.levels.ERROR, {})
         ok = false
       end
     end
@@ -238,7 +261,7 @@ local function validate()
     for j, subsrc in ipairs(srcnames) do
       if i ~= j and subsrc:find(src .. "/", 1, true) then
         msg = msg .. "FEXE2: Modified child of modified directory:\n"
-            .. ("     %s\n  in %s\n"):format(subsrc, src)
+            .. ("  %s\n  in %s\n"):format(subsrc, src)
         valid = false
       end
     end
@@ -341,7 +364,7 @@ local function sync()
   local fexbufs = {}
   local ok = true
   for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.b[bufnr].fex_visible then
+    if vim.b[bufnr].fex_visible and vim.b[bufnr].fex_loading then
       if not dir_addchanges(bufnr) then
         ok = false
       end
@@ -362,7 +385,7 @@ end
 --- @return boolean
 local function test(bufnr)
   local stat = vim.uv.fs_stat(vim.api.nvim_buf_get_name(bufnr))
-  return stat and stat.type == "directory"
+  return stat ~= nil and stat.type == "directory"
 end
 
 --- Sets up a fex buffer.
@@ -378,6 +401,17 @@ local function dir_setup(bufnr)
     group = augroup,
     buffer = bufnr,
     callback = sync,
+  })
+  vim.api.nvim_create_autocmd({ "BufDelete", "BufUnload", "BufWipeout" }, {
+    desc = "Remove fex data associated with a buffer when it's removed.",
+    group = augroup,
+    buffer = bufnr,
+    callback = function()
+      if upthreads[bufnr] then
+        upthreads[bufnr]:abort()
+        upthreads[bufnr] = nil
+      end
+    end,
   })
   vim.keymap.set("", "<cr>", function()
     local line = vim.api.nvim_get_current_line()
