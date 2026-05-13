@@ -13,7 +13,7 @@ local sorted
 
 --- The index of the selected item.
 --- @type integer
-local selected = 1
+local selected
 
 --- Sorts the items which are being picked over.
 --- @param items any[] The items to sort.
@@ -154,12 +154,6 @@ local function agen(fn)
     asort()
   end)
   agenthread:run()
-end
-
---- Opens the picker.
-local function open()
-  openwins()
-  displayframe()
 end
 
 --- Closes the picker.
@@ -400,6 +394,7 @@ local M = {}
 --- Adds a new picker to the picker list.
 --- @param args Pick.Args The picker variables.
 function M.pick(args)
+  openwins()
   if type(args.list) == "function" then
     agen(args.list --[[@as fun(): any[] ]])
   else
@@ -412,7 +407,6 @@ function M.pick(args)
   display = args.display or tostring
   toquickfix = args.toquickfix
   confirm = args.confirm or function() end
-  open()
 end
 
 --- Prompt user to select an item from a list.
@@ -432,82 +426,79 @@ end
 
 --- Opens a picker prompt whose input is forwarded to ripgrep.
 function M.grep()
-  -- set callbacks
-  sort = function(_, prompt)
-    local out = async.system({ "rg", "--vimgrep", "-Se", prompt == "" and ".*" or prompt }, {})
-    if not out then return {} end
-    if out.code == 0 then
-      return vim.split(out.stdout, "[\r\n]+", { trimempty = true })
-    else
-      return {}
+  M.pick({
+    list = {},
+    sort = function(_, prompt)
+      local out = async.system({ "rg", "--vimgrep", "-Se", prompt == "" and ".*" or prompt }, {})
+      if not out then return {} end
+      if out.code == 0 then
+        return vim.split(out.stdout, "[\r\n]+", { trimempty = true })
+      else
+        return {}
+      end
+    end,
+    toquickfix = function(item)
+      local name, line, col = item:match("^([^:]+):(%d+):(%d+):.*$")
+      return { filename = name, lnum = line, col = col }
+    end,
+    confirm = function(item)
+      local name, line, col = item:match("^([^:]+):(%d+):(%d+):.*$")
+      if name and line and col then
+        vim.cmd.edit(name)
+        vim.api.nvim_win_set_cursor(0, { tonumber(line), tonumber(col) })
+      end
     end
-  end
-  display = tostring
-  toquickfix = function(item)
-    local name, line, col = item:match("^([^:]+):(%d+):(%d+):.*$")
-    return { filename = name, lnum = line, col = col }
-  end
-  confirm = function(item)
-    local name, line, col = item:match("^([^:]+):(%d+):(%d+):.*$")
-    if name and line and col then
-      vim.cmd.edit(name)
-      vim.api.nvim_win_set_cursor(0, { tonumber(line), tonumber(col) })
-    end
-  end
-  open()
+  })
 end
 
 --- Opens a picker prompt for help tags.
 function M.help()
-  agen(function()
-    local tags = {}
-    local files = vim.api.nvim_get_runtime_file("doc/tags", true)
-    for _, file in ipairs(files) do
-      local fd = vim.uv.fs_open(file, "r", 420)
-      if not fd then return {} end
-      local size = vim.uv.fs_fstat(fd).size
-      local contents = vim.uv.fs_read(fd, size)
-      vim.uv.fs_close(fd)
-      if not contents then return {} end
-      for tag in contents:gmatch("([^\r\n\t]+)[^\r\n]+") do
-        table.insert(tags, tag)
+  M.pick({
+    list = function()
+      local tags = {}
+      local files = vim.api.nvim_get_runtime_file("doc/tags", true)
+      for _, file in ipairs(files) do
+        local fd = vim.uv.fs_open(file, "r", 420)
+        if not fd then return {} end
+        local size = vim.uv.fs_fstat(fd).size
+        local contents = vim.uv.fs_read(fd, size)
+        vim.uv.fs_close(fd)
+        if not contents then return {} end
+        for tag in contents:gmatch("([^\r\n\t]+)[^\r\n]+") do
+          table.insert(tags, tag)
+        end
       end
-    end
-    return tags
-  end)
-  -- set callbacks
-  sort = match
-  display = tostring
-  toquickfix = nil --- @diagnostic disable-line: cast-local-type
-  confirm = function(item) vim.cmd.help(item) end
-  open()
+      return tags
+    end,
+    sort = match,
+    confirm = function(item) vim.cmd.help(item) end,
+  })
 end
 
 --- Pick from all files in the current directory excluding git files.
 function M.files()
-  agen(function()
-    local function lsr(path)
-      local strs = {}
-      for name, type in vim.fs.dir(path) do
-        if name ~= ".git" or type ~= "directory" then
-          coroutine.yield()
-          local fname = path .. "/" .. name
-          table.insert(strs, fname)
-          if type == "directory" then
-            vim.list_extend(strs, lsr(fname))
+  M.pick({
+    list = function()
+      local function lsr(path)
+        local strs = {}
+        for name, type in vim.fs.dir(path) do
+          if name ~= ".git" or type ~= "directory" then
+            coroutine.yield()
+            local fname = path .. "/" .. name
+            table.insert(strs, fname)
+            if type == "directory" then
+              vim.list_extend(strs, lsr(fname))
+            end
           end
         end
+        return strs
       end
-      return strs
-    end
-    return vim.tbl_map(function(s) return s:sub(3) end, lsr("."))
-  end)
-  -- set callbacks
-  sort = match
-  display = tostring
-  toquickfix = function(item) return { filename = item } end
-  confirm = function(item) vim.cmd.edit(item) end
-  open()
+      return vim.tbl_map(function(s) return s:sub(3) end, lsr("."))
+    end,
+    sort = match,
+    toquickfix = function(item) return { filename = item } end,
+    confirm = function(item) vim.cmd.edit(item) end,
+  })
 end
 
 --- Opens a picker for listed vim buffers.
