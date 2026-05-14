@@ -104,7 +104,7 @@ vim.keymap.set("", "<leader>y", '"+y', { desc = "Yank to system clipboard." })
 vim.keymap.set("", "<leader>Y", '"+Y', { desc = "Yank to system clipboard." })
 
 vim.keymap.set("", "U", "<C-r>", { desc = "Redo." })
-vim.keymap.set("", "-", ":e %:p:s?[/\\\\]$??:h<cr>", { desc = "Open current buffer's parent.", silent = true })
+vim.keymap.set("", "-", ":e %:h<cr>", { desc = "Open current buffer's parent.", silent = true })
 vim.keymap.set("", "_", ":e .<cr>", { desc = "Open nvim's current directory.", silent = true })
 
 vim.keymap.set("", "<leader>sh", "<cmd>set hlsearch!<cr>", { desc = "Toggle search term highlighting.", silent = true })

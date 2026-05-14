@@ -412,7 +412,12 @@ end
 
 --- Sets up a fex buffer.
 local function dir_setup(bufnr)
-  vim.api.nvim_buf_set_name(bufnr, vim.fs.normalize(vim.api.nvim_buf_get_name(0)))
+  local bufname = vim.api.nvim_buf_get_name(bufnr)
+  local normname = vim.fs.normalize(bufname)
+  if bufname ~= normname then
+    bufname = normname
+    vim.api.nvim_buf_set_name(bufnr, bufname)
+  end
   vim.api.nvim_create_autocmd("BufReadCmd", {
     desc = "Update fex directory buffers on read.",
     group = augroup,
