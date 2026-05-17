@@ -227,117 +227,6 @@ vim.keymap.set({ "i", "n" }, "<C-q>", function()
   vim.cmd.cope()
 end, { desc = "Send the current sorted list to the quickfix list.", buffer = ibuf })
 
---- Scores a string based on how well it matches a query. UPDATED! I wrote the
---- new version in an hour as well, but after taking a bioinformatics class and
---- learning about sequence alignment :P This is slower: O(NM), but still likely
---- fast enough most people.
---- @param item string The item to score.
---- @param query string The query to score based on.
-local function score(item, query)
-  local match = 1 -- initial match
-  local continue = 1.5 -- subsequent matches
-  local mismatch = -1.2 -- mismatched query and item
-  local startskip = -0.2 -- skipped start of item
-  local strskip = -0.5 -- skipped middle part of item
-  local endskip = -0.1 -- skipped terminal part of item
-  local qryskip = -1 -- skipped query character
-  local qryfail = -2 -- failed to complete query
-
-  local sl = #item
-  local ql = #query
-
-  local scores = { { 0 } }
-  local types = { { false } }
-
-  for col = 2, sl + 1 do
-    scores[1][col] = scores[1][col - 1] + startskip
-    types[1][col] = false
-  end
-
-  for row = 2, ql + 1 do
-    local psrow = scores[row - 1]
-    local ptrow = types[row - 1]
-    local srow = { psrow[1] + qryskip }
-    local trow = { false }
-    for col = 2, sl + 1 do
-      -- score coming from above
-      local s = psrow[col] + (col == sl and qryfail or qryskip)
-      local t = false
-
-      -- score coming from left
-      local ls = srow[col - 1]
-      if row == ql + 1 then
-        ls = ls + endskip
-      else
-        ls = ls + strskip
-      end
-      if ls > s then
-        s = ls
-      end
-
-      -- score coming from the diagonal
-      local ds = psrow[col - 1]
-      local m = item:sub(col - 1, col - 1) == query:sub(row - 1, row - 1)
-      if not m then
-        ds = ds + mismatch
-      elseif ptrow[col - 1] then
-        ds = ds + continue
-      else
-        ds = ds + match
-      end
-      if ds > s then
-        s = ds
-        t = m and true or false
-      end
-
-      srow[col] = s
-      trow[col] = t
-    end
-    scores[row] = srow
-    types[row] = trow
-  end
-  return scores[ql + 1][sl + 1]
-end
-
---- Simple fuzzy finding algorithm.
---- @param list (string|table)[] List of strings to score.
---- @param query string The query string to score based on.
---- @param field? string The field in the list items to get the string from.
---- @return { item: string|table, score: number }[]
-local function fuzz(list, query, field)
-  local fuzzed = {}
-  -- filter and score items
-  for _, v in ipairs(list) do
-    coroutine.yield()
-    local str = field and v[field] or v
-    --- @cast str string
-    local l = 0
-    local si = 1
-    local slow = str:lower()
-    local th = #query * .75
-    for qi = 1, #query do
-      local fi = slow:find(query:sub(qi, qi):lower(), si, true)
-      if fi then
-        si = fi
-        l = l + 1
-        if l > th then
-          table.insert(fuzzed, {
-            item = v,
-            score = score(str, query),
-          })
-          break
-        end
-      end
-    end
-  end
-  -- sort by scores
-  table.sort(fuzzed, function(a, b) return a.score > b.score end)
-  return vim.tbl_map(function(e)
-    coroutine.yield()
-    return e.item
-  end, fuzzed)
-end
-
 --- Filters/sorts selections based on mini.nvim's pick module, but also forces
 --- fuzzy matching if the first character is a space, and ignores that space.
 --- Uses the above fuzz() function as a fallback for when there isn't a prefix.
@@ -364,11 +253,10 @@ local function match(list, query, field)
     query = query:sub(neg and 3 or 2)
     return vim.tbl_filter(predicates[mode], list)
   else
-    if query:sub(1, 1) == " " then
-      return fuzz(list, query:sub(2), field)
-    else
-      return fuzz(list, query, field)
-    end
+    query = query:sub(1, 1) == " " and query:sub(2) or query
+    local dict = vim.empty_dict()
+    dict.key = field
+    return vim.fn.matchfuzzy(list, query, dict)
   end
 end
 
