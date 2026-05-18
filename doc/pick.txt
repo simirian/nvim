@@ -1,4 +1,4 @@
-*pick.txt*	Dynamic popup selection with fuzzy matching.
+*simi.pick*    Dynamic popup selection with fuzzy matching.
 
                                   by simirian
 
@@ -7,27 +7,37 @@ and a string input. Also adds a variety of prebuilt pickers which can be
 invoked through the `:Pick` command.
 
 ==============================================================================
-Pick Command						*:Pick* *pick-command*
+Pick Command                                                        *:Pick*
 
 The `:Pick` command provided by this plugin gives access to the complete
 functionality contained within. The command accepts one argument, which is the
 name of the picker which is invoked. It will be one of the pickers listed in
-|pick-pickers|. Using a `:Pick!` will cause the invoked picker to start with
-the last input already entered for easy editing.
+|pick-pickers|.
 
 ==============================================================================
-Keymaps								*pick-keymaps*
+Keymaps                                                         *pick-keymaps*
 
 The pick keymaps all start with `<leader>f` in an effort to make them easy to
 use. The mnemonic for this keymap is "find", as in you are finding particular
 entries from among a list. Every keymap is then followed by a mnemonic letter
-(usually the first letter of the name) which invokes the picker. Using a
-lowercase letter will open the picker with an empty prompt, using an uppercase
-letter is the equivalent of using a bang in the command and will invoke the
-picker with the last input for that type of picker.
+(usually the first letter of the name) which invokes the picker.
+
+While in a picker input window, the following keymaps will be overwritten.
+
+map     modes   action ~
+<cr>    in      confirm selection
+<esc>   n       close the picker
+<c-n>   in      select the next item in the list
+<c-p>   in      select the previous item in the list
+<c-q>   in      send the items to the quickfix list
+
+Sending items to the quickfix list only works for pickers which are
+quickfix-compatible. Among the default pickers, only the help picker is not
+quickfix-compatible, though the quickfix list isn't particularly useful for
+those pickers other than te grep picker.
 
 ==============================================================================
-Pickers								*pick-pickers*
+Pickers                                                         *pick-pickers*
 
 Several pickers are available for use through the |pick-keymaps| and the
 `:Pick` command. They are shown in the table below, where "name" is the name
@@ -36,11 +46,11 @@ invokes the default picker, "input method" is the type of input used to select
 entries from the list, and "picks over" is a description of the items which
 will be available in the list.
 
-name	keymap	input method	picks over ~
-grep	fg	raw ripgrep	grep in the current directory
-help	fh	|pick-fuzz|	help tags in rtp `doc/` directories
-files	ff	|pick-fuzz|	child files (ignores `.git/`)
-buffers	fb	|pick-fuzz|	buffer names in `:ls`
+name        keymap  input method    picks over ~
+grep        fg      raw ripgrep     grep in the current directory
+help        fh      fuzzy           help tags in rtp `doc/` directories
+files       ff      fuzzy           child files (ignores `.git/`)
+buffers     fb      fuzzy           buffer names in `:ls`
 
 The following pickers are planned for future releases:
 
@@ -49,7 +59,7 @@ The following pickers are planned for future releases:
 - character selector (emoji, unicode, nerdfonts)
 
 ==============================================================================
-Fuzzy Finding							*pick-fuzz*
+Fuzzy Finding                                                   *pick-fuzz*
 
 Fizzy finding using this module has special input semantics based on prefixes
 to search terms. A leading space at the start of a fuzzy search query will be
@@ -62,14 +72,14 @@ end of each item in the list. Further prefixing with a bang "!" will negate
 the pattern matching, so only entries which do not match will be shown and
 selectable. The prefixes are summarised in the table below.
 
-prefix	meaning ~
-'	the query is a lua pattern
-!'	the query is a lua pattern which is not in the target
-^	the query is a lua pattern that the target starts with
-!^	the query is a lua pattern that the target does not start with
-$	the query is a lua pattern that the target ends with
-!$	the query is a lua pattern that the target does not end with
-<space>	the query is a fuzzy-matching pattern
+prefix      meaning ~
+'           the query is a lua pattern
+!'          the query is a lua pattern which is not in the target
+^           the query is a lua pattern that the target starts with
+!^          the query is a lua pattern that the target does not start with
+$           the query is a lua pattern that the target ends with
+!$          the query is a lua pattern that the target does not end with
+<space>     the query is a fuzzy-matching pattern
 
 In all cases, the entire prefix is stripped from the start of the query when
 the query is used for matching. This means that " 'spe" will do a fuzzy search
@@ -78,24 +88,26 @@ picker. If a query starts with a bang but does not match one of the prefixes
 above, the bang is included in a fuzzy match over the entire input. This means
 that "!file" will search over that entire term.
 
-The particular fuzzy finding algorithm is something I threw together in a few
-hours based on a brief description from a bioinformatics class I took months
-ago. This means it's probably not the best. It's still pretty good though! And
-it's a fuzzy-matching algorithm, so it doesn't really matter, now does it?
+Fuzzy matching uses the built-in `matchfuzzy()` function, which is based on
+https://github.com/junegunn/fzf. It's a pretty generic fuzzy-matching
+algorithm, and it's way faster because it's implemented in c instead of lua.
+If matching is blocking for longer than it should, open a PR/issue and we'll
+work on it.
 
 ==============================================================================
-API								*pick-api*
+API                                                                 *pick-api*
 
 This plugin provides a public API which can be accessed by requiring the pick
 module:
 >lua
-	local pick = require("pick")
+        local pick = require("pick")
 <
 
 The module allows programmatic access to activating the built-in pickers by
-their name, as well as invoking custom pickers with the `pick()` function.
+their name, as well as invoking custom pickers with the |pick.pick()|
+function.
 
-CUSTOM PICKERS					*custom-pickers* *pick.pick()*
+CUSTOM PICKERS                                              *custom-pickers*
 
 Custom pickers can be created using the `pick()` function. It expects a single
 table argument, which is essentially a strategy for running the picker. It
@@ -107,4 +119,97 @@ toquickfix function is used to convert the items to quickfix items if that's
 relevant behavior. The confirm function is called when the user confirms their
 selection.
 
- vim:tw=78:ts=8:noet:ft=help:norl:
+pick({args})                                                    *pick.pick()*
+    Invokes a picker with the given arguments. This will open the picker
+    windows and run the list and sort functions. This cannot be cancelled
+    (wow, that should be changed).
+
+    If the mandatory keys in this function's arguments are not supplied, they
+    will be replaced with trivial default implementations instead of raising
+    errors.
+
+    Example: >lua
+        require("pick").pick({
+          list = {"apples", "oranges", "bannanas"},
+          sort = function(items, prompt)
+            return vim.fn.matchfuzzy(items, prompt)
+          end,
+          confirm = function(item)
+            print("The user chose " .. item .. "!")
+          end,
+        })
+<
+
+    Parameters: ~
+      • {args}  (|Pick.Args|) Table of keyword arguments.
+
+*Pick.Args*
+
+    Fields: ~
+      • {list}         (`any[] | fun(): any[]`, default: empty) The initial
+                       list of items, supplied to the sorter. When this is an
+                       array, it is given to the sorter verbatim, when this is
+                       a function, it is called in an async context and its
+                       output is given to the sorter once it's done. See
+                       |async-context|
+
+      • {sort}         (`fun(items: any[], prompt: string): any[]`, default: return verbatim)
+                       Function used to sort the items based on the user's
+                       prompt. This function returns the list of items which
+                       the user is shown. This function does not need to
+                       return items in the same form as they were given to it,
+                       which can be useful if you want to display sort scores
+                       or other sorting data. The output items are given to
+                       all other functions which are called in the picker
+                       pipeline.
+
+                       This function is called on every text change, so it
+                       should be fast or async (it is called in an async
+                       context). See |async-context|
+
+      • {display}?     (`fun(item: any, idx: integer): string`, default: tostring)
+                       Function used to convert non-stirng items to strings
+                       which can be displayed in a buffer. Each item must be
+                       converted into a single-line string. If the items are
+                       already strings, this may be nil, it may not be nil in
+                       any other case.
+
+      • {preview}?     (`fun(item: any, idx: integer, winid: integer)`, default: nil)
+                       This function is called every time the user's selection
+                       changes or when the input changes, so long as the sort
+                       function actually returned any items. This function
+                       should set the contents of the the given window to a
+                       preview of the currently selected item. The window
+                       is pre-populated with an empty buffer which can freely
+                       be modified, e.g. fia |nvim_buf_set_lines()|
+
+                       If this argument is not supplied or is nil, then the
+                       preview window will not be opened. The preview window
+                       will be shon if and only if this argument is not nil.
+
+                       Example: >lua
+                       -- a simplified version of the default file preview
+                       preview = function(item, _, winid)
+                         vim.api.nvim_win_call(winid, function()
+                           vim.cmd.edit(item)
+                         end)
+                       end
+<
+
+      • {toquickfix}?  (`fun(item: any, idx: integer): vim.quickfix.entry`, default: nil)
+                       Converts a list item to a quickfix item. The output to
+                       this function is given directly to |setqflist()|. This
+                       argument is optional for a reason, in many cases it
+                       doesn't make sense to send items to a quickfix list.
+
+                       The <c-q> keymap will only work if this function is not
+                       nil. If it is nil, then they keymap will do nothing.
+
+      • {confirm}      (`fun(item: any, idx: integer)`, default: nothing) This
+                       function is called when the user confirms their
+                       selection, e.g. by pressing <cr> with the picker open.
+                       This is called AFTER the picker closes and the user is
+                       returned to their last non-picker window. Defaults to
+                       doing nothing.
+
+ vim:tw=78:ts=8:sw=4:sts=4:et:ft=help:norl:

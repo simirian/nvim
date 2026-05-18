@@ -1,0 +1,36 @@
+*simi.lsp*    Completion and language server functionality.
+
+                                 by simirian
+
+This plugin sets up basic language server functionality. It relies heavily on
+vim's built-in language-server handling and doesn't override much.
+
+==============================================================================
+Completion
+
+This plugin offers autocompletion which is better (last I checked) then vim's
+default 'autocomplete', which triggers on literally everything. It only
+interacts with omnifunc, and is only active when language servers are
+connected to a buffer. This plugin overwrites the <tab> key while in insert
+mode in the following way:
+
+- if a completion menu is visible, accept the current selection
+- if a snippet is active, go to the next placeholder
+- invoke completion
+
+The <s-tab> keymap is also overwritten as follows:
+
+- if a completion menu is visible, cancel completion
+- if a snippet is active, go to the previous placeholder
+- insert a tab character
+
+Other than these keymaps, interaction with the completion menu works as normal
+insert completion does. Here's an overview:
+
+keymap  action ~
+<c-n>   next item
+<c-p>   previous item
+<c-y>   accept item (alternative to <tab>)
+<c-e>   cancel completion (alternative to <s-tab>)
+
+ vim:tw=78:ts=8:sw=4:sts=4:et:ft=help:norl:

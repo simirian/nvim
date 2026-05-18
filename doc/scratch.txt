@@ -1,18 +1,18 @@
-*scratch.txt*	Scratch buffer editing.
+*simi.scratch*    Scratch buffer editing.
 
-				 by simirian
+                                 by simirian
 
 This plugin adds a quick interface for editing multiple scratch buffers of
 various file types, as well as a dummy text buffer.
 
 ==============================================================================
-Commands						*scratch-commands*
+Commands                                                    *scratch-commands*
 
 The interface for this plugin is exposed through two commands. Both of these
 commands create scratch buffers which adhere to |scratch-buffer|, but will
 also be listed in the buffer list.
 
-SCRATCH						*:Scratch* *scratch-command*
+SCRATCH                                                             *:Scratch*
 
 The `:Scratch` command opens an empty scratch buffer. The argument supplied to
 the command will be interpreted as a file type, and the 'filetype' option will
@@ -20,18 +20,18 @@ be set to the argument for that scratch buffer. Using a count will edit that
 particular scratch buffer for that file type. This means that each file type
 (including no file type) have an independent set of buffers of that file type.
 
-ANNABEL LEE				*:AnnabelLee* *annabel-lee-command*
+ANNABEL LEE                                                     *:AnnabelLee*
 
 The `:AnnabelLee` command can be used to open a buffer with dummy text. There
 is exactly one annabel lee buffer, unlike with the `:Scratch` command. The
 file type of the buffer will be markdown and the text in the buffer is the
 poem "Annabell Lee" by Edgar Allen Poe.
 
-RUN									*:Run*
+RUN                                                                     *:Run*
 
 The `:Run` command will run the code in the current scratch buffer, or run the
 current selection. This only works for configured languages, which are
 currently only python and javascript. Command-line arguments for `node` and
 `python` can be provided in the `:Run` command.
 
- vim:tw=78:ts=8:noet:ft=help:norl:
+ vim:tw=78:ts=8:sw=4:sts=4:et:ft=help:norl:

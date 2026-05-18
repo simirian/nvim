@@ -1,4 +1,4 @@
-*fex.txt*	Edit the file system like a normal buffer.
+*simi.fex*    Edit the file system like a normal buffer.
 
                                   by simirian
 
@@ -8,7 +8,7 @@ intuitive. The files associated with this plugin are `plugin/fex.lua` and
 `syntax/fex.vim`.
 
 ==============================================================================
-Editing Files							*fex-editing*
+Editing Files                                                   *fex-editing*
 
 To open a fex buffer, simply `:edit` a directory as if it was a normal file.
 Each line in a fex buffer represents a single file on the file system. The
@@ -54,14 +54,14 @@ or |dd|, then pasitng it in another location with |p|. Just like with copying
 and other actions, the pasted files can be further manipulated.
 
 ==============================================================================
-Errors								*fex-errors*
+Errors                                                          *fex-errors*
 
 You file system has important data on it which fex does not want to mess up.
 For this reason, fex will check before committing changes to the file system
 to ensure that certain special cases do not cause problems. If any problem is
 encountered, fex will stop and inform the user, then cancel the write.
 
-MALFORMED LINE							*FEXE1*
+MALFORMED LINE                                                      *FEXE1*
 
 This problem occurs when fex is parsing the lines in all fax buffers for
 changes. Fex expects the lines to be in a certain form, and if they are not
@@ -80,7 +80,7 @@ The simplest way to fix a malformed line error is to simply undo whatever it
 was that caused the error. You can revert the contents of a fex buffer to the
 state of the file system by editing the buffer with |:edit`.
 
-MODIFIED CHILD OF MODIFIED DIRECTORY				*FEXE2*
+MODIFIED CHILD OF MODIFIED DIRECTORY                                *FEXE2*
 
 When a directory is modified and its children are also modified, it creates a
 complex situation where it is difficult to robustly perform file operations.
@@ -97,7 +97,7 @@ first should be intuitive, this error is moreso a notification that you've
 accidentally caused unsafe behavior rather than a demand that you do difficult
 work instead of the plugin.
 
-SOURCE DOES NOT EXIST						*FEXE3*
+SOURCE DOES NOT EXIST                                               *FEXE3*
 
 This error occurs when fex is validating that the current change to fex
 buffers are valid. If fex detects that a file which it expects to exist does
@@ -108,7 +108,7 @@ Fixing this error is almost never something that can be done within nvim,
 because it is most often caused when a file in a fex buffer is externally
 deleted.
 
-MULTIPLY DEFINED TARGET						*FEXE4*
+MULTIPLY DEFINED TARGET                                             *FEXE4*
 
 Multiply defined target errors happen when you rename or copy multiple files
 to the same location at the same time. Fex will notify you of the file which
@@ -118,20 +118,20 @@ changes may be in different locations. To solve this problem, you need to
 remove all but one reference to the name in conflict, so that only one file
 will be moved/copied/created at that location.
 
-FILESYSTEM ERROR 						*FEXE5*
+FILESYSTEM ERROR                                                    *FEXE5*
 
 Something went wrong when trying to access the file system. Reading the error
 should provide mor information about what went wrong. Most commonly, the error
 will be that a file was moved and fex wasn't updated with `:e` or you don't
 have permission to do something with a file.
 
-FEX BUFFER IS LOADING						*FEXE6*
+FEX BUFFER IS LOADING                                               *FEXE6*
 
 Fex tried to sync to the file systme while a fex buffer was loading
 asynchronously. This is not allowed, wait until the buffer loads (or delete
 the loading buffer with `:bdelete`) then try again.
 
-FOREIGN FILE OVERWRITE						*FEXE7*
+FOREIGN FILE OVERWRITE                                              *FEXE7*
 
 Changes in a fex buffer could result in a file which is not manged by fex
 being overwritten. A file is managed by fex if it is within an open fex
@@ -141,14 +141,14 @@ delete the file in the newly opened buffer with the same name as the file
 triggering this error.
 
 ==============================================================================
-Fex Keymaps							*fex-keymaps*
+Fex Keymaps                                                     *fex-keymaps*
 
 While in a fex buffer, a few keymaps will be defined to make the buffer easier
 to use.
 
-keymap	action ~
-<cr>	edit the file on the current line
-gh	toggle showing hidden ("." prefixed) files
-cc	clear and edit the file name in a line without changing the id
+keymap  action ~
+<cr>    edit the file on the current line
+gh      toggle showing hidden ("." prefixed) files
+cc      clear and edit the file name in a line without changing the id
 
- vim:tw=78:ts=8:noet:ft=help:norl:
+ vim:tw=78:ts=8:sw=4:sts=4:et:ft=help:norl:
