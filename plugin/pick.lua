@@ -31,6 +31,14 @@ local function display(item, idx) --- @diagnostic disable-line: unused-local
   return tostring(item)
 end
 
+--- Called to obtain the preview of a particular item. The function must
+--- populate the window with a preview of the item.
+--- @param item any The item to display.
+--- @param idx integer The index of the item.
+--- @param winid integer The window id to put the preview in.
+local function preview(item, idx, winid) --- @diagnostic disable-line: unused-local
+end
+
 --- Converts the given item to a quickfix list entry.
 --- @param item any The item to convert.
 --- @param idx integer The index of the item.
@@ -55,6 +63,11 @@ vim.api.nvim_buf_set_name(ibuf, "Pick Input")
 local lbuf = vim.api.nvim_create_buf(false, true)
 vim.api.nvim_buf_set_name(lbuf, "Pick List")
 
+--- Buffer used for previews.
+--- @type integer
+local pbuf = vim.api.nvim_create_buf(false, true)
+vim.api.nvim_buf_set_name(pbuf, "Pick Preview")
+
 --- The window used to display the input buffer.
 --- @type integer?
 local iwin
@@ -63,6 +76,10 @@ local iwin
 --- @type integer?
 local lwin
 
+--- The window used to display the preview.
+--- @type integer?
+local pwin
+
 --- Opens the picker windows.
 local function openwins()
   local base = {
@@ -70,22 +87,35 @@ local function openwins()
     border = "solid",
     style = "minimal",
   }
+  local top = math.floor(vim.o.lines / 10)
+  local right = math.floor(vim.o.columns / 10)
+  local fullwidth = math.floor(vim.o.columns * 8 / 10)
+  local fullheight = math.floor(vim.o.lines * 8 / 10) - 2
   iwin = vim.api.nvim_open_win(ibuf, true, vim.tbl_deep_extend("force", base, {
-    row = math.floor(vim.o.lines / 10),
-    col = math.floor(vim.o.columns / 10),
+    row = top,
+    col = right,
+    width = preview and math.floor(fullwidth / 2) - 2 or fullwidth - 2,
     height = 1,
-    width = math.floor(vim.o.columns * 8 / 10),
   }))
   vim.wo[iwin].winhighlight = "NormalFloat:PickInput,FloatBorder:PickInput"
   vim.wo[iwin].statuscolumn = "%#PickInput#   "
   lwin = vim.api.nvim_open_win(lbuf, false, vim.tbl_deep_extend("force", base, {
-    row = math.floor(vim.o.lines / 10 + 3),
-    col = math.floor(vim.o.columns / 10),
-    width = math.floor(vim.o.columns * 8 / 10),
-    height = math.floor(vim.o.lines * 8 / 10 - 5),
+    row = top + 3,
+    col = right,
+    width = preview and math.floor(fullwidth / 2) - 2 or fullwidth - 2,
+    height = fullheight - 5,
   }))
   vim.wo[lwin].cursorline = true
   vim.wo[lwin].winhighlight = "NormalFloat:PickList,FloatBorder:PickList,CursorLine:Search"
+  if preview then
+    pwin = vim.api.nvim_open_win(pbuf, false, vim.tbl_deep_extend("force", base, {
+      row = top,
+      col = right + math.floor(fullwidth / 2),
+      width = math.floor(fullwidth / 2) - 2,
+      height = fullheight - 2,
+    }))
+    vim.wo[pwin].winhighlight = "NormalFloat:PickList,FloatBorder:PickList"
+  end
 end
 
 --- Closes the picker windows.
@@ -98,25 +128,46 @@ local function closewins()
     vim.api.nvim_win_close(lwin, true)
     lwin = nil
   end
+  if pwin then
+    vim.api.nvim_win_close(pwin, true)
+    pwin = nil
+  end
   vim.api.nvim_buf_set_lines(ibuf, 0, -1, false, { "" })
 end
 
---- Renders only the lines which could be visible, instead of all lines.
-local function displayframe()
-  if not lwin then return end
-  local winheight = vim.api.nvim_win_get_height(lwin)
-  local first = math.max(selected - winheight, 1)
-  local last = math.min(selected + winheight, #sorted)
-  local lines = vim.api.nvim_buf_get_lines(lbuf, first - 1, last, false)
-  for i, line in ipairs(lines) do
-    if line == "" then
-      lines[i] = display(sorted[i + first - 1], i + first - 1)
+--- Selects an item and updates the preview and the list.
+--- @param idx integer The index of the selection.
+local function selectitem(idx)
+  selected = idx
+  if lwin then
+    local winheight = vim.api.nvim_win_get_height(lwin)
+    local first = math.max(selected - winheight, 1)
+    local last = math.min(selected + winheight, #sorted)
+    local lines = vim.api.nvim_buf_get_lines(lbuf, first - 1, last, false)
+    for i, line in ipairs(lines) do
+      if line == "" then
+        lines[i] = display(sorted[i + first - 1], i + first - 1)
+      end
+    end
+    vim.bo[lbuf].modifiable = true
+    vim.api.nvim_buf_set_lines(lbuf, first - 1, last, false, lines)
+    vim.bo[lbuf].modifiable = false
+    vim.api.nvim_win_set_cursor(lwin, { selected, 0 })
+  end
+  vim.api.nvim_buf_set_lines(pbuf, 0, -1, false, {})
+  if pwin then
+    vim.api.nvim_win_set_buf(pwin, pbuf)
+    if preview and sorted[idx] ~= nil then
+      -- WHY DOES THIS NEED TO BE SCHEDULED SOMETIMES???? It's not even always.
+      -- When this wasn't scheduled, the :edit command worked in the grep
+      -- picker but not the files picker for some reason. The normal
+      -- autocommands for reading files were being skipped in only that case for
+      -- some reason. This took like three hours to debug :(
+      vim.schedule(function()
+        preview(sorted[idx], idx, pwin)
+      end)
     end
   end
-  vim.bo[lbuf].modifiable = true
-  vim.api.nvim_buf_set_lines(lbuf, first - 1, last, false, lines)
-  vim.bo[lbuf].modifiable = false
-  vim.api.nvim_win_set_cursor(lwin, { selected, 0 })
 end
 
 --- @type Async
@@ -133,11 +184,11 @@ local function asort()
     local line = vim.api.nvim_buf_get_lines(ibuf, -2, -1, false)[1]
     return sort(generated, line)
   end):done(function(items)
-    sorted, selected = items, 1
+    sorted = items
     vim.bo[lbuf].modifiable = true
     vim.api.nvim_buf_set_lines(lbuf, 0, -1, false, vim.tbl_map(function() return "" end, sorted))
     vim.bo[lbuf].modifiable = false
-    displayframe()
+    selectitem(1)
   end)
   asortthread:run()
 end
@@ -207,13 +258,11 @@ vim.keymap.set("n", "<esc>", function()
 end, { desc = "Close the picker.", buffer = ibuf })
 
 vim.keymap.set({ "i", "n" }, "<C-n>", function()
-  selected = selected == #sorted and 1 or selected + 1
-  displayframe()
+  selectitem(selected == #sorted and 1 or selected + 1)
 end, { desc = "Select next item in list.", buffer = ibuf })
 
 vim.keymap.set({ "i", "n" }, "<C-p>", function()
-  selected = selected == 1 and #sorted or selected - 1
-  displayframe()
+  selectitem(selected == 1 and #sorted or selected - 1)
 end, { desc = "Select previous item in list.", buffer = ibuf })
 
 vim.keymap.set({ "i", "n" }, "<C-q>", function()
@@ -262,6 +311,9 @@ end
 
 local M = {}
 
+--- @type integer
+local ns = vim.api.nvim_create_namespace("pick")
+
 --- The arguments required to set up a new picker.
 --- @class Pick.Args<T>
 --- A list of items to pick from, or a function to generate them in an async
@@ -274,6 +326,11 @@ local M = {}
 --- The function used to convert each item to a string for display. Default
 --- value is `tostring()`.
 --- @field display? fun(item: T, idx: integer): string
+--- The function used to populate the preview window. This function is expected
+--- to put something in the preview window, but there is no prior expectation as
+--- to what that thing is. The window is pre-populated with an empty dummy
+--- buffer whose lines can be set.
+--- @field preview? fun(item: T, idx: integer, winid: integer)
 --- Function which can move entries to the quickfix list.
 --- @field toquickfix? fun(item: T, idx: integer): vim.quickfix.entry
 --- Callback for when the user confirms their selection.
@@ -282,6 +339,10 @@ local M = {}
 --- Adds a new picker to the picker list.
 --- @param args Pick.Args The picker variables.
 function M.pick(args)
+  display = args.display or tostring
+  preview = args.preview
+  toquickfix = args.toquickfix
+  confirm = args.confirm or function() end
   openwins()
   if type(args.list) == "function" then
     agen(args.list --[[@as fun(): any[] ]])
@@ -292,9 +353,6 @@ function M.pick(args)
   if type(args.list) ~= "function" then
     asort()
   end
-  display = args.display or tostring
-  toquickfix = args.toquickfix
-  confirm = args.confirm or function() end
 end
 
 --- Prompt user to select an item from a list.
@@ -314,6 +372,7 @@ end
 
 --- Opens a picker prompt whose input is forwarded to ripgrep.
 function M.grep()
+  local bufs = {}
   M.pick({
     list = {},
     sort = function(_, prompt)
@@ -329,13 +388,38 @@ function M.grep()
       local name, line, col = item:match("^([^:]+):(%d+):(%d+):.*$")
       return { filename = name, lnum = line, col = col }
     end,
+    preview = function(item, _, winid)
+      local name, line, col = item:match("^([^:]+):(%d+):(%d+):.*$")
+      if name and line and col then
+        -- open the file in the preview window
+        vim.api.nvim_win_call(winid, function()
+          vim.cmd.edit(name)
+          line = tonumber(line) or 0
+          col = tonumber(col) or 0
+          vim.api.nvim_win_set_cursor(winid, { line, col })
+        end)
+        -- clear old marks
+        for _, bufnr in ipairs(bufs) do
+          vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
+        end
+        -- mark the searched line
+        local bufnr = vim.fn.bufnr(name)
+        table.insert(bufs, bufnr)
+        vim.api.nvim_buf_set_extmark(bufnr, ns, line - 1, col, { line_hl_group = "Search" })
+      end
+    end,
     confirm = function(item)
       local name, line, col = item:match("^([^:]+):(%d+):(%d+):.*$")
+      -- edit the file
       if name and line and col then
         vim.cmd.edit(name)
         vim.api.nvim_win_set_cursor(0, { tonumber(line), tonumber(col) })
       end
-    end
+      -- clear marks
+      for _, bufnr in ipairs(bufs) do
+        vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
+      end
+    end,
   })
 end
 
@@ -352,14 +436,34 @@ function M.help()
         local contents = vim.uv.fs_read(fd, size)
         vim.uv.fs_close(fd)
         if not contents then return {} end
-        for tag in contents:gmatch("([^\r\n\t]+)[^\r\n]+") do
-          table.insert(tags, tag)
+        for tag, fname, pattern in contents:gmatch("([^\r\n\t]+)\t([^\r\n\t]+)\t([^\r\n\t]+)[\r\n]+") do
+          if tag then
+            table.insert(tags, {
+              tag = tag,
+              file = fname and vim.fs.normalize(file):match("^(.*/)") .. fname,
+              pattern = pattern
+            })
+          end
         end
       end
       return tags
     end,
-    sort = match,
-    confirm = function(item) vim.cmd.help(item) end,
+    sort = function(items, prompt) return match(items, prompt, "tag") end,
+    display = function(item) return item.tag end,
+    preview = function(item, _, winid)
+      if item.file then
+        vim.api.nvim_win_call(winid, function()
+          vim.cmd.edit(item.file)
+          if item.pattern then
+            vim.fn.search(item.pattern:sub(2), "c")
+          end
+        end)
+        local bufnr = vim.fn.bufnr(item.file)
+        vim.bo[bufnr].buftype = "help"
+        vim.bo[bufnr].modifiable = false
+      end
+    end,
+    confirm = function(item) vim.cmd.help(item.tag) end,
   })
 end
 
@@ -384,6 +488,16 @@ function M.files()
       return vim.tbl_map(function(s) return s:sub(3) end, lsr("."))
     end,
     sort = match,
+    preview = function(item, _, winid)
+      vim.api.nvim_win_call(winid, function()
+        local bufnr = vim.fn.bufnr(item)
+        if bufnr ~= -1 then
+          vim.cmd.buffer(bufnr)
+        else
+          vim.cmd.edit(item)
+        end
+      end)
+    end,
     toquickfix = function(item) return { filename = item } end,
     confirm = function(item) vim.cmd.edit(item) end,
   })
@@ -412,6 +526,11 @@ function M.buffers()
       return match(items, prompt, "shortname")
     end,
     display = function(item) return item.shortname end,
+    preview = function (item, _, winid)
+      vim.api.nvim_win_call(winid, function()
+        vim.cmd.buffer(item.bufnr)
+      end)
+    end,
     toquickfix = function(item) return { bufnr = item.bufnr, text = item.shortname } end,
     confirm = function(item) vim.cmd.buffer(item.bufnr) end,
   })
