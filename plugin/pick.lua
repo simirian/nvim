@@ -322,7 +322,7 @@ local ns = vim.api.nvim_create_namespace("pick")
 --- The function used to sort the items in the list based on the user's prompt.
 --- The function is called in an async context, so `coroutine.yield()` may be
 --- used freely.
---- @field sort fun(items: T[], prompt: string): items: T[]
+--- @field sort fun(items: T[], prompt: string): T[]
 --- The function used to convert each item to a string for display. Default
 --- value is `tostring()`.
 --- @field display? fun(item: T, idx: integer): string
@@ -347,7 +347,7 @@ function M.pick(args)
   if type(args.list) == "function" then
     agen(args.list --[[@as fun(): any[] ]])
   else
-    generated = args.list --[[@as any[] ]]
+    generated = args.list --[[@as any[] ]] or {}
   end
   sort = args.sort or function(items) return items end
   if type(args.list) ~= "function" then
@@ -393,7 +393,12 @@ function M.grep()
       if name and line and col then
         -- open the file in the preview window
         vim.api.nvim_win_call(winid, function()
-          vim.cmd.edit(name)
+          local bufnr = vim.fn.bufnr(name)
+          if bufnr ~= -1 then
+            vim.cmd.buffer(bufnr)
+          else
+            vim.cmd.edit(name)
+          end
           line = tonumber(line) or 0
           col = tonumber(col) or 0
           vim.api.nvim_win_set_cursor(winid, { line, col })
@@ -453,7 +458,12 @@ function M.help()
     preview = function(item, _, winid)
       if item.file then
         vim.api.nvim_win_call(winid, function()
-          vim.cmd.edit(item.file)
+          local bufnr = vim.fn.bufnr(item.file)
+          if bufnr ~= -1 then
+            vim.cmd.buffer(bufnr)
+          else
+            vim.cmd.edit(item.file)
+          end
           if item.pattern then
             vim.fn.search(item.pattern:sub(2), "c")
           end
