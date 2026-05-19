@@ -104,7 +104,7 @@ local function edit(bang, date, precision)
     month = ("/%04d/%02d"):format(date.year, date.month),
   })[precision] or ("/%04d/%02d/%02d.md"):format(date.year, date.month, date.day)
   local path = vim.fs.normalize(vim.g.calendir .. subpath)
-  if not pcall(vim.cmd --[[@as fun()]], "edit" .. (bang and "! " or " ") .. path) then
+  if not pcall(vim.cmd.edit, { args = { path }, bang = bang }) then
     vim.notify(vim.v.errmsg, vim.log.levels.ERROR, {})
     return
   end
@@ -141,7 +141,7 @@ local function cal(bang, date, precision)
     min = os.date("%F %R", time),
     sec = os.date("%F %T", time),
   })[precision]
-  vim.cmd("edit" .. (bang and "! " or " ") .. "calendir://" .. isodate)
+  vim.cmd.edit({ args = { "calendir://" .. isodate }, bang = bang })
 end
 
 --- The namespace used by this plugin.

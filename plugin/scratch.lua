@@ -39,7 +39,7 @@ vim.api.nvim_create_user_command("Scratch", function(args)
   --- @diagnostic disable-next-line: redefined-local
   vim.api.nvim_buf_create_user_command(bufnr, "Run", function(args) runcmd(bufnr, args) end,
     { desc = "Run code in a scratch buffer.", force = true, nargs = "*", range = "%", bar = true, })
-  vim.cmd(bufnr .. "b" .. (args.bang and "!" or ""))
+  vim.cmd.buffer({ count = bufnr, bang = args.bang })
 end, {
   desc = "Open a scratch buffer.",
   force = true,
@@ -110,5 +110,5 @@ vim.api.nvim_create_user_command("AnnabelLee", function(args)
     vim.bo[bufnr].ul = oldul
   end
   vim.bo[bufnr].ft = "markdown"
-  vim.cmd("buffer" .. (args.bang and "! " or " ") .. bufnr)
+  vim.cmd.buffer({ count = bufnr, bang = args.bang })
 end, { desc = "Open a scratch bufer with the text of Annabel Lee.", bang = true, bar = true })
