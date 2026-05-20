@@ -15,7 +15,7 @@ local function runcmd(bufnr, args)
     table.insert(cmd, arg)
   end
   local lines = vim.api.nvim_buf_get_lines(bufnr, args.line1 - 1, args.line2, false)
-  vim.system(cmd, { stdin = lines, cwd = vim.fn.expand("~"), text = true }, function(out)
+  vim.system(cmd, { stdin = lines, text = true }, function(out)
     print("Process exited with code:", out.code)
     if out.stdout then
       print(out.stdout)
