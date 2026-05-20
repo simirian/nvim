@@ -100,7 +100,7 @@ local kinds = {
 local function lsptovim(item)
   return {
     kind = kinds[vim.lsp.protocol.CompletionItemKind[item.kind]],
-    kind_hlgroup = vim.lsp.protocol.CompletionItemKind[item.kind] .. "Kind",
+    kind_hlgroup = (vim.lsp.protocol.CompletionItemKind[item.kind] or "") .. "Kind",
     abbr = item.label,
     menu = "[LSP]",
   }
