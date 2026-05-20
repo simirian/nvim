@@ -162,7 +162,7 @@ local function dir_update(bufnr)
     -- if ftype is a string, then we have a fail, if it's nil then we just hit the last item
     assert(type(ftype) ~= "string", "FEXE5: filesystem error when reading " .. bufname .. ": " .. (ftype or ""))
     -- sort children
-    table.sort(children, function(a, b) return a.dir == b.dir and a.name > b.name or a.dir > b.dir end)
+    table.sort(children, function(a, b) return a.dir == b.dir and a.name < b.name or a.dir > b.dir end)
     vim.b[bufnr].fex_visible = children
     -- make lines
     local lines = vim.tbl_map(function(child)
