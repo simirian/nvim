@@ -24,7 +24,7 @@ local text = "#a09890" -- normal text
 local textlight = "#d0c8c0" -- standout text
 
 vim.cmd("hi clear")
-vim.o.background = "dark"
+vim.g.colors_name = "yicks"
 
 --- Sets a highlight group. Thin wrapper for `vim.api.nvim_set_hl()` that can
 --- take a single string argument to create a link.
@@ -99,6 +99,7 @@ hi("MsgSeparator", "WinSeparator")
 
 hi("StatusLine", { fg = yellow, bg = border })
 hi("StatusLineNC", { fg = text, bg = border })
+hi("StatusLineTerm", "StatusLine")
 hi("StatusLineTermNC", "StatusLineNC")
 
 hi("TabLine", { fg = text, bg = backlight })
@@ -114,11 +115,13 @@ hi("User2", { fg = yellow, bg = backlight })
 -- floats
 hi("NormalFloat", { fg = text, bg = backlight })
 hi("FloatBorder", { fg = textdark, bg = backlight })
+hi("FloatShadow", { fg = textdark, bg = back })
+hi("FloatShadowThrough", "FloatShadow")
 hi("FloatTitle", "NormalFloat")
 hi("FloatFooter", "FloatTitle")
 
 -- popup menu
-hi("Pmenu", { fg = text, bg = backlight })
+hi("Pmenu", "NormalFloat")
 hi("PmenuKind", "Pmenu")
 hi("PmenuExtra", "Pmenu")
 hi("PmenuMatch", { fg = textdark })
@@ -130,26 +133,38 @@ hi("PmenuMatchSel", { fg = orange })
 
 hi("PmenuSbar", { bg = border })
 hi("PmenuThumb", { bg = yellow })
+hi("PmenuBorder", "FloatBorder")
+hi("PmenuShadow", "FloatShadow")
+hi("PmenuShadowThrough", "PmenuShadow")
 hi("WildMenu", "Pmenu")
 
 -- messages
+hi("MsgArea", "Normal")
+hi("ModeMsg", { fg = yellow })
 hi("MoreMsg", { fg = blue })
 hi("Question", "MoreMsg")
 hi("Title", "MoreMsg")
 
-hi("MsgArea", "Normal")
-hi("ModeMsg", { fg = yellow })
-hi("ErrorMsg", "Error")
+hi("OkMsg", "Ok")
 hi("WarningMsg", "Warning")
+hi("ErrorMsg", "Error")
+hi("StderrMsg", "ErrorMsg")
+hi("StdoutMsg", "Normal")
 
 -- misc
 hi("Directory", { fg = yellow })
 hi("SnippetTabstop", { bg = backlight })
-hi("ComplMatchIns", { fg = text, bg = green }) -- no idea what this is
+hi("SnippetTabstopActive", "SnippetTabstop")
+-- no idea what these are
+hi("ComplMatchIns", { fg = purple, bg = red })
+hi("PreInsert", { fg = purple, bg = red })
+hi("ComplHint", { fg = purple, bg = red })
+hi("ComplHintMore", { fg = purple, bg = red })
 
 -- syntax highlights (:h group-name, :h treesitter-highlight-groups)
--- Worth noting that :h lsp-highlight exists, but those groups are automatically
--- linked to the treesitter groups, so manually defining them isn't needed.
+-- Worth noting that :h lsp-semantic-highlight exists, but those groups are
+-- automatically linked to the treesitter groups, so manually defining them
+-- isn't needed.
 
 -- variables
 hi("Identifier", { fg = yellow })
@@ -277,6 +292,8 @@ hi("@comment.note", { fg = back, bg = cyan })
 
 -- markup
 hi("@markup.heading", { fg = yellow })
+hi("@markup.heading.1.delimiter.vimdoc", {})
+hi("@markup.heading.2.delimiter.vimdoc", {})
 
 hi("@markup.quote", { fg = text })
 hi("@markup.math", { fg = blue })
@@ -297,6 +314,7 @@ hi("DiffAdd", { fg = back, bg = green })
 hi("DiffChange", { fg = back, bg = blue })
 hi("DiffDelete", { fg = back, bg = red })
 hi("DiffText", { fg = back, bg = orange })
+hi("DiffTextAdd", "DiffText")
 hi("Added", "DiffAdd")
 hi("Changed", "DiffChange")
 hi("Removed", "DiffDelete")
