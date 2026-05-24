@@ -24,12 +24,17 @@ entries from among a list. Every keymap is then followed by a mnemonic letter
 
 While in a picker input window, the following keymaps will be overwritten.
 
-map     modes   action ~
-<cr>    in      confirm selection
-<esc>   n       close the picker
-<c-n>   in      select the next item in the list
-<c-p>   in      select the previous item in the list
-<c-q>   in      send the items to the quickfix list
+map     modes   windows     action ~
+<cr>    in      i           confirm selection
+<esc>   n       ip          close the picker
+<c-6>   n       ip          switch between input and preview windows
+<c-n>   in      i           select the next item in the list
+<c-p>   in      i           select the previous item in the list
+<c-q>   in      i           send the items to the quickfix list
+
+The modes in the table should be read as `:map` prefixes, see |map-modes|. The
+window column is a list of boolean flags which are present when the keymap
+works in the inpute (`i`) and preview (`p`) windows.
 
 Sending items to the quickfix list only works for pickers which are
 quickfix-compatible. Among the default pickers, only the help picker is not

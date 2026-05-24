@@ -243,8 +243,11 @@ vim.api.nvim_create_autocmd("BufLeave", {
   group = augroup,
   buffer = ibuf,
   callback = function()
-    close()
     vim.cmd.stopinsert()
+    local win = vim.api.nvim_get_current_win()
+    if win ~= iwin and win ~= lwin and win ~= pwin then
+      close()
+    end
   end,
 })
 
@@ -254,8 +257,11 @@ vim.keymap.set({ "i", "n" }, "<cr>", function()
 end, { desc = "Confirm picker selection.", buffer = ibuf })
 
 vim.keymap.set("n", "<esc>", function()
-  close()
-end, { desc = "Close the picker.", buffer = ibuf })
+  local win = vim.api.nvim_get_current_win()
+  if win == iwin or win == pwin then
+    close()
+  end
+end, { desc = "Close the picker with escape in normal mode." })
 
 vim.keymap.set({ "i", "n" }, "<C-n>", function()
   selectitem(selected == #sorted and 1 or selected + 1)
@@ -264,6 +270,22 @@ end, { desc = "Select next item in list.", buffer = ibuf })
 vim.keymap.set({ "i", "n" }, "<C-p>", function()
   selectitem(selected == 1 and #sorted or selected - 1)
 end, { desc = "Select previous item in list.", buffer = ibuf })
+
+vim.keymap.set("n", "<C-^>", function()
+  local win = vim.api.nvim_get_current_win()
+  if win == iwin and pwin then
+    vim.schedule(function()
+      vim.api.nvim_tabpage_set_win(0, pwin)
+    end)
+    return ""
+  elseif win == pwin and iwin then
+    vim.schedule(function()
+      vim.api.nvim_tabpage_set_win(0, iwin)
+    end)
+    return ""
+  end
+  return "<C-6>"
+end, { desc = "Switch between preview and input buffers.", expr = true })
 
 vim.keymap.set({ "i", "n" }, "<C-q>", function()
   if not toquickfix then return end
