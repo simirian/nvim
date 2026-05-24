@@ -126,8 +126,7 @@ selection.
 
 pick({args})                                                    *pick.pick()*
     Invokes a picker with the given arguments. This will open the picker
-    windows and run the list and sort functions. This cannot be cancelled
-    (wow, that should be changed).
+    windows and run the list and sort functions.
 
     If the mandatory keys in this function's arguments are not supplied, they
     will be replaced with trivial default implementations instead of raising
@@ -216,5 +215,34 @@ pick({args})                                                    *pick.pick()*
                        This is called AFTER the picker closes and the user is
                        returned to their last non-picker window. Defaults to
                        doing nothing.
+
+      • {cancel}       (`fun()`, default: nothing) This function is called
+                       when the picker is closed through ANY means which don't
+                       end up calling confirm. This is especially useful for
+                       cleaning up your own async routines (though you should
+                       be using the asyc context provided) and for cleaning up
+                       help buffers. This will be called after the picker
+                       itself is closed.
+
+cancel()                                                    *pick.cancel()*
+    Cancels the currently running picker. This will close the active windows,
+    end any library-managed async routines, then call the cancel function
+    which was set during the invocation of the picker.
+
+    Example: >lua
+        local pick = require("pick")
+        -- open the picker
+        pick.pick({
+          list = {"apples", "oranges", "bannanas"},
+          sort = function(items, prompt)
+            return vim.fn.matchfuzzy(items, prompt)
+          end,
+          confirm = function(item)
+            print("The user chose " .. item .. "!")
+          end,
+        })
+        -- then immediately close it
+        pick.cancel()
+<
 
  vim:tw=78:ts=8:sw=4:sts=4:et:ft=help:norl:

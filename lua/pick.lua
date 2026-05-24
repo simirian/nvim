@@ -53,6 +53,9 @@ end
 local function confirm(item, idx) --- @diagnostic disable-line: unused-local
 end
 
+--- Does something when the picker is closed without confirmation.
+local function cancel() end
+
 --- Buffer used for input.
 --- @type integer
 local ibuf = vim.api.nvim_create_buf(false, true)
@@ -247,6 +250,7 @@ vim.api.nvim_create_autocmd("BufLeave", {
     local win = vim.api.nvim_get_current_win()
     if win ~= iwin and win ~= lwin and win ~= pwin then
       close()
+      cancel()
     end
   end,
 })
@@ -260,6 +264,7 @@ vim.keymap.set("n", "<esc>", function()
   local win = vim.api.nvim_get_current_win()
   if win == iwin or win == pwin then
     close()
+    cancel()
   end
 end, { desc = "Close the picker with escape in normal mode." })
 
@@ -294,7 +299,8 @@ vim.keymap.set({ "i", "n" }, "<C-q>", function()
     table.insert(items, toquickfix(item, idx))
   end
   vim.fn.setqflist(items)
-  closewins()
+  close()
+  cancel()
   vim.cmd.cope()
 end, { desc = "Send the current sorted list to the quickfix list.", buffer = ibuf })
 
@@ -333,6 +339,31 @@ function M.match(list, query, field)
   end
 end
 
+--- The arguments required to set up a new picker.
+--- @class Pick.Args<T>
+--- A list of items to pick from, or a function to generate them in an async
+--- context. If a function, then `coroutine.yield()` may be used freely.
+--- @field list T[] | fun(): T[]
+--- The function used to sort the items in the list based on the user's prompt.
+--- The function is called in an async context, so `coroutine.yield()` may be
+--- used freely.
+--- @field sort fun(items: T[], prompt: string): T[]
+--- The function used to convert each item to a string for display. Default
+--- value is `tostring()`.
+--- @field display? fun(item: T, idx: integer): string
+--- The function used to populate the preview window. This function is expected
+--- to put something in the preview window, but there is no prior expectation as
+--- to what that thing is. The window is pre-populated with an empty dummy
+--- buffer whose lines can be set.
+--- @field preview? fun(item: T, idx: integer, winid: integer)
+--- Function which can move entries to the quickfix list.
+--- @field toquickfix? fun(item: T, idx: integer): vim.quickfix.entry
+--- Callback for when the user confirms their selection.
+--- @field confirm fun(item: T, idx: integer)
+--- Callback for when the picker is cancelled or ended by any means which isn't
+--- cancellation.
+--- @field cancel? fun()
+
 --- Adds a new picker to the picker list.
 --- @param args Pick.Args The picker variables.
 function M.pick(args)
@@ -340,6 +371,7 @@ function M.pick(args)
   preview = args.preview
   toquickfix = args.toquickfix
   confirm = args.confirm or function() end
+  cancel = args.cancel or function() end
   openwins()
   if type(args.list) == "function" then
     agen(args.list --[[@as fun(): any[] ]])
@@ -350,6 +382,11 @@ function M.pick(args)
   if type(args.list) ~= "function" then
     asort()
   end
+end
+
+function M.cancel()
+  close()
+  cancel()
 end
 
 return M

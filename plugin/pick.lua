@@ -7,28 +7,6 @@ local pick = require("pick")
 --- @type integer
 local ns = vim.api.nvim_create_namespace("pick")
 
---- The arguments required to set up a new picker.
---- @class Pick.Args<T>
---- A list of items to pick from, or a function to generate them in an async
---- context. If a function, then `coroutine.yield()` may be used freely.
---- @field list T[] | fun(): T[]
---- The function used to sort the items in the list based on the user's prompt.
---- The function is called in an async context, so `coroutine.yield()` may be
---- used freely.
---- @field sort fun(items: T[], prompt: string): T[]
---- The function used to convert each item to a string for display. Default
---- value is `tostring()`.
---- @field display? fun(item: T, idx: integer): string
---- The function used to populate the preview window. This function is expected
---- to put something in the preview window, but there is no prior expectation as
---- to what that thing is. The window is pre-populated with an empty dummy
---- buffer whose lines can be set.
---- @field preview? fun(item: T, idx: integer, winid: integer)
---- Function which can move entries to the quickfix list.
---- @field toquickfix? fun(item: T, idx: integer): vim.quickfix.entry
---- Callback for when the user confirms their selection.
---- @field confirm fun(item: T, idx: integer)
-
 --- Prompt user to select an item from a list.
 --- @generic T
 --- @param list T[]
