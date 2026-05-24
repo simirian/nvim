@@ -141,7 +141,13 @@ function pickers.help()
             vim.cmd.edit(item.file)
           end
           if item.pattern then
-            vim.fn.search(item.pattern:sub(2), "c")
+            if item.pattern:find("/", 1, true) == 1 then -- search pattern
+              vim.api.nvim_win_set_cursor(winid, { 1, 0 })
+              local line = vim.fn.search("\\M" .. item.pattern:sub(2), "cw")
+              vim.print(line)
+            else -- line number
+              vim.api.nvim_win_set_cursor(winid, { tonumber(item.pattern) or 1, 0 })
+            end
           end
         end)
         local bufnr = vim.fn.bufnr(item.file)
