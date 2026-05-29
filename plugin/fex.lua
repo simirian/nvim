@@ -156,7 +156,9 @@ local function dir_update(bufnr)
         ttype = vim.uv.fs_stat(path).type
         dir = ttype == "directory" and 1 or 0
       end
-      table.insert(children, { name = fname, path = path, type = ftype, ttype = ttype, dir = dir })
+      if vim.b[bufnr].fex_showhidden or fname:sub(1, 1) ~= "." then
+        table.insert(children, { name = fname, path = path, type = ftype, ttype = ttype, dir = dir })
+      end
       fname, ftype = vim.uv.fs_scandir_next(fd)
     end
     -- if ftype is a string, then we have a fail, if it's nil then we just hit the last item
