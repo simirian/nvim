@@ -79,6 +79,11 @@ function pickers.grep()
         vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
       end
     end,
+    cancel = function()
+      for _, bufnr in ipairs(bufs) do
+        vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
+      end
+    end,
   })
 end
 
