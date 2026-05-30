@@ -198,6 +198,13 @@ local function dir_update(bufnr)
         invalidate = true,
       })
     end
+    -- update cursor position in current buffer
+    if vim.bo.ft == "fex" then
+      local line = vim.api.nvim_get_current_line()
+      local cursor = vim.api.nvim_win_get_cursor(0)
+      local _, col = line:find("\t", 1, true)
+      vim.api.nvim_win_set_cursor(0, { cursor[1], col })
+    end
   end)
   upthreads[bufnr]:run()
 end
@@ -474,16 +481,6 @@ local function dir_setup(bufnr)
   dir_update(bufnr)
 end
 
---- Updates the cursor position in a fex buffer to the start of the file name.
---- @param winnr integer The window to update the cursor of.
-local function fixcurpos(winnr)
-  local bufnr = vim.api.nvim_win_get_buf(winnr)
-  local curpos = vim.api.nvim_win_get_cursor(winnr)
-  local line = vim.api.nvim_buf_get_lines(bufnr, curpos[1] - 1, curpos[1], false)[1]
-  local _, col = line:find("\t", 1, true)
-  vim.api.nvim_win_set_cursor(winnr, { curpos[1], col or 0 })
-end
-
 --- Sets the conceal properties for a window with a fex buffer.
 --- @param winnr integer The window to apply settings to.
 local function setconceal(winnr)
@@ -519,6 +516,7 @@ vim.api.nvim_create_autocmd("BufNew", {
     end
   end,
 })
+
 vim.api.nvim_create_autocmd("VimEnter", {
   desc = "Bind fex buffers after vim startup.",
   group = augroup,
@@ -532,20 +530,31 @@ vim.api.nvim_create_autocmd("VimEnter", {
     for _, winnr in ipairs(vim.api.nvim_list_wins()) do
       if vim.bo[vim.api.nvim_win_get_buf(winnr)].ft == "fex" then
         setconceal(winnr)
-        fixcurpos(winnr)
       end
     end
   end,
 })
+
 vim.api.nvim_create_autocmd("BufWinEnter", {
   desc = "Conceal in fex buffers.",
   group = augroup,
   callback = function()
     if vim.bo.ft == "fex" then
       setconceal(0)
-      fixcurpos(0)
     else
       unsetconceal(0)
+    end
+  end,
+})
+
+vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter" }, {
+  callback = function()
+    if vim.bo.ft == "fex" then
+      local line = vim.api.nvim_get_current_line()
+      if line == "" then return end
+      local cursor = vim.api.nvim_win_get_cursor(0)
+      local _, col = line:find("\t", 1, true)
+      vim.api.nvim_win_set_cursor(0, { cursor[1], col })
     end
   end,
 })
