@@ -126,8 +126,7 @@ function pickers.help()
           if item.pattern then
             if item.pattern:find("/", 1, true) == 1 then -- search pattern
               vim.api.nvim_win_set_cursor(winid, { 1, 0 })
-              local line = vim.fn.search("\\M" .. item.pattern:sub(2), "cw")
-              vim.print(line)
+              vim.fn.search("\\M" .. item.pattern:sub(2), "cw")
             else -- line number
               vim.api.nvim_win_set_cursor(winid, { tonumber(item.pattern) or 1, 0 })
             end

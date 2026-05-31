@@ -50,8 +50,7 @@ end
 --- Does something with the item after the user selects it.
 --- @param item any The item to do somehting with.
 --- @param idx integer The index of the item.
-local function confirm(item, idx) --- @diagnostic disable-line: unused-local
-end
+local function confirm(item, idx) end --- @diagnostic disable-line: unused-local
 
 --- Does something when the picker is closed without confirmation.
 local function cancel() end
@@ -242,13 +241,20 @@ vim.api.nvim_create_autocmd("BufEnter", {
 })
 
 vim.api.nvim_create_autocmd("BufLeave", {
-  desc = "Close picker when leaving the input buffer.",
+  desc = "Leave insert when leaving input buffer.",
   group = augroup,
   buffer = ibuf,
   callback = function()
     vim.cmd.stopinsert()
-    local win = vim.api.nvim_get_current_win()
-    if win ~= iwin and win ~= lwin and win ~= pwin then
+  end,
+})
+
+vim.api.nvim_create_autocmd("WinClosed", {
+  desc = "Close picker when one of the picker windows closes.",
+  group = augroup,
+  callback = function(e)
+    local id = tonumber(e.file) or 0
+    if id == iwin or id == lwin or id == pwin then
       close()
       cancel()
     end
@@ -256,6 +262,7 @@ vim.api.nvim_create_autocmd("BufLeave", {
 })
 
 vim.keymap.set({ "i", "n" }, "<cr>", function()
+  cancel = function() end
   close()
   confirm(sorted[selected], selected)
 end, { desc = "Confirm picker selection.", buffer = ibuf })
@@ -264,7 +271,6 @@ vim.keymap.set("n", "<esc>", function()
   local win = vim.api.nvim_get_current_win()
   if win == iwin or win == pwin then
     close()
-    cancel()
   end
 end, { desc = "Close the picker with escape in normal mode." })
 
@@ -300,7 +306,6 @@ vim.keymap.set({ "i", "n" }, "<C-q>", function()
   end
   vim.fn.setqflist(items)
   close()
-  cancel()
   vim.cmd.cope()
 end, { desc = "Send the current sorted list to the quickfix list.", buffer = ibuf })
 
@@ -386,7 +391,6 @@ end
 
 function M.cancel()
   close()
-  cancel()
 end
 
 return M
