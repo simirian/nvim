@@ -462,10 +462,10 @@ local function dir_setup(bufnr)
       if stat and stat.type == "link" then
         vim.uv.fs_realpath(path, function(err, realpath)
           assert(not err, err)
-          vim.schedule(function() vim.cmd.edit(realpath) end)
+          vim.schedule(function() vim.cmd.edit(vim.fn.fnamemodify(realpath, ":.")) end)
         end)
       else
-        vim.schedule(function() vim.cmd.edit(path) end)
+        vim.schedule(function() vim.cmd.edit(vim.fn.fnamemodify(path, ":.")) end)
       end
     end)
   end, { desc = "Open the item under the cursor.", buffer = bufnr })

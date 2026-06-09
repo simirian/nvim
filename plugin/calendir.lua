@@ -104,10 +104,7 @@ local function edit(bang, date, precision)
     month = ("/%04d/%02d"):format(date.year, date.month),
   })[precision] or ("/%04d/%02d/%02d.md"):format(date.year, date.month, date.day)
   local path = vim.fs.normalize(vim.g.calendir .. subpath)
-  if not pcall(vim.cmd.edit, { args = { path }, bang = bang }) then
-    vim.notify(vim.v.errmsg, vim.log.levels.ERROR, {})
-    return
-  end
+  vim.cmd.edit({ args = { vim.fn.fnamemodify(path, ":.") }, bang = bang })
   vim.api.nvim_create_autocmd("BufWritePre", {
     desc = "Creates required parents before writing for the first time.",
     once = true,

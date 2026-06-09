@@ -23,9 +23,8 @@ function Statusline()
     left = "%#User2#" .. (vim.wo[winid].spell and "  " or "  ") .. "%{wordcount().words} %*"
   end
 
-  local fname = vim.fs.basename(vim.api.nvim_buf_get_name(bufnr))
-  local ico, hl = require("icons").get(fname)
-  local bufname = vim.b[bufnr].bufname or "%t"
+  local ico, hl = require("icons").get(vim.fs.basename(vim.api.nvim_buf_get_name(bufnr)))
+  local bufname = vim.b[bufnr].bufname or "%f"
   local center = " %#" ..hl .. "#" .. ico .. " %*" .. bufname .. " %n " .. (vim.bo[bufnr].modified and " " or "") .. "%*"
 
   local right = "%#User2# %l/%L %c "
