@@ -163,6 +163,7 @@ local function yearcal(bufnr, date)
   vim.b[bufnr].calendir_type = "year"
   vim.b[bufnr].calendir_date = date
   vim.b[bufnr].bufname = os.date("%Y", os.time(date))
+  vim.b[bufnr].icon = { "󰃮", "IconWhite" }
   vim.bo[bufnr].buftype = "nofile"
   vim.bo[bufnr].bufhidden = "hide"
   vim.bo[bufnr].swapfile = false
@@ -227,6 +228,7 @@ local function monthcal(bufnr, date)
   vim.b[bufnr].calendir_type = "month"
   vim.b[bufnr].calendir_date = date
   vim.b[bufnr].bufname = os.date("%B %Y", os.time(date))
+  vim.b[bufnr].icon = { "󰸗", "IconWhite" }
   vim.bo[bufnr].buftype = "nofile"
   vim.bo[bufnr].bufhidden = "hide"
   vim.bo[bufnr].swapfile = false
@@ -285,6 +287,7 @@ end
 --- @param date osdateparam A date in the week.
 local function weekcal(bufnr, date)
   vim.notify("not yet implemented", vim.log.levels.WARN, {})
+  -- vim.b[bufnr].icon = { "󰨳", "IconWhite" }
 end
 
 --- Populates the given buffer with a day calendar.
@@ -292,6 +295,7 @@ end
 --- @param date osdateparam Any date.
 local function daycal(bufnr, date)
   vim.notify("not yet implemented", vim.log.levels.WARN, {})
+  -- vim.b[bufnr].icon = { "󰃶", "IconWhite" }
 end
 
 vim.api.nvim_create_autocmd("BufReadCmd", {

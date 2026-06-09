@@ -478,6 +478,7 @@ local function dir_setup(bufnr)
   vim.bo[bufnr].swapfile = false
   vim.bo[bufnr].tabstop = 8
   vim.bo[bufnr].filetype = "fex"
+  vim.b[bufnr].icon = { "", "Directory"}
   dir_update(bufnr)
 end
 
