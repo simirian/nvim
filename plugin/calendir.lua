@@ -47,8 +47,7 @@ end
 --- @return boolean
 local function realdate(date)
   local real = os.date("*t", os.time(date))
-  return real.year == date.year and real.yday == date.yday
-      and real.hour == date.hour and real.min == date.min and real.sec == date.sec
+  return real.year == date.year and real.month == date.month and real.day == date.day
 end
 
 ---Checks if the first date is before the second date.
@@ -176,11 +175,12 @@ local function yearcal(bufnr, date)
     local line = ""
     for month = 1, 12 do
       local str = "     "
-      if realdate { year = date.year, month = month, day = day } then
+      if realdate({ year = date.year, month = month, day = day }) then
         str = ("%4d "):format(day)
       end
       line = line .. str
     end
+    table.insert(lines, line)
   end
   vim.bo[bufnr].modifiable = true
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
@@ -208,7 +208,7 @@ local function yearcal(bufnr, date)
   end
   for day = 29, 31 do
     for month = 1, 12 do
-      if realdate { year = date.year, month = month, day = day } then
+      if realdate({ year = date.year, month = month, day = day }) then
         mark(month, day)
       end
     end
@@ -216,8 +216,10 @@ local function yearcal(bufnr, date)
 
   vim.keymap.set("", "<cr>", function()
     local curpos = vim.api.nvim_win_get_cursor(0)
-    local month, day = math.floor(curpos[2] / 5) + 1, curpos[1] - 1
-    edit(true, { year = date.year, month = month, day = day }, "day")
+    local seldate = { year = date.year, month = math.floor(curpos[2] / 5) + 1, day = curpos[1] - 1 }
+    if realdate(seldate) then
+      edit(true, seldate, "day")
+    end
   end, { buffer = bufnr, desc = "Open journal entry." })
 end
 
