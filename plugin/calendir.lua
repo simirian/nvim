@@ -276,11 +276,18 @@ local function monthcal(bufnr, date)
   end
 
   vim.keymap.set("", "<cr>", function()
-    local col = vim.api.nvim_win_get_cursor(0)[2]
+    local curpos = vim.api.nvim_win_get_cursor(0)
     local line = vim.api.nvim_get_current_line()
-    local day = tonumber(line:sub(math.floor(col / 5) * 5, math.floor(col / 5 + 1) * 5))
+    local day = tonumber(line:sub(math.floor(curpos[2] / 5) * 5,
+      math.floor(curpos[2] / 5 + 1) * 5))
     if not day then return end
-    edit(true, { year = date.year, month = date.month, day = day }, "day")
+    local off = 0
+    if curpos[1] == 2 and day > 7 then
+      off = -1
+    elseif curpos[1] == vim.api.nvim_buf_line_count(bufnr) and day < 8 then
+      off = 1
+    end
+    edit(true, offset({ year = date.year, month = date.month, day = day }, "month", off), "day")
   end, { buffer = bufnr, desc = "Open journal entry." })
 end
 
