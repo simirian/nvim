@@ -31,12 +31,8 @@ function pickers.grep()
     list = {},
     sort = function(_, prompt)
       local out = async.system({ "rg", "--vimgrep", "-Se", prompt == "" and ".*" or prompt }, {})
-      if not out then return {} end
-      if out.code == 0 then
-        return vim.split(out.stdout, "[\r\n]+", { trimempty = true })
-      else
-        return {}
-      end
+      if not out or out.code ~= 0 then return {} end
+      return vim.split(out.stdout, "[\r\n]+", { trimempty = true })
     end,
     toquickfix = function(item)
       local name, line, col = item:match("^([^:]+):(%d+):(%d+):.*$")
@@ -177,6 +173,30 @@ function pickers.files()
   })
 end
 
+--- Pick from files git is aware of.
+function pickers.gitfiles()
+  pick.pick({
+    list = function()
+      local out = async.system({ "git", "ls-files" }, {})
+      if not out or out.code ~= 0 then return {} end
+      return vim.split(out.stdout, "[\r\n]+", { trimempty = true })
+    end,
+    sort = pick.match,
+    preview = function(item, _, winid)
+      vim.api.nvim_win_call(winid, function()
+        local bufnr = vim.fn.bufnr(item)
+        if bufnr ~= -1 then
+          vim.cmd.buffer(bufnr)
+        else
+          vim.cmd.edit(item)
+        end
+      end)
+    end,
+    toquickfix = function(item) return { filename = item } end,
+    confirm = function(item) vim.cmd.edit(item) end,
+  })
+end
+
 --- Opens a picker for listed vim buffers.
 function pickers.buffers()
   pick.pick({
@@ -228,7 +248,8 @@ end, {
   end,
 })
 
-vim.keymap.set("n", "<leader>ff", pickers.files, { desc = "Find files." })
+vim.keymap.set("n", "<leader>ff", pickers.files, { desc = "Find all files." })
+vim.keymap.set("n", "<leader>fg", pickers.gitfiles, { desc = "Find git files." })
 vim.keymap.set("n", "<leader>fh", pickers.help, { desc = "Find help." })
-vim.keymap.set("n", "<leader>fg", pickers.grep, { desc = "Find with grep." })
+vim.keymap.set("n", "<leader>fs", pickers.grep, { desc = "Find with grep." })
 vim.keymap.set("n", "<leader>fb", pickers.buffers, { desc = "Find buffers." })

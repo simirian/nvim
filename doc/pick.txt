@@ -52,9 +52,10 @@ entries from the list, and "picks over" is a description of the items which
 will be available in the list.
 
 name        keymap  input method    picks over ~
-grep        fg      raw ripgrep     grep in the current directory
+files       ff      fuzzy           all child files except those in `.git/`
+gitfiles    fg      fuzzy           files that git knows about
 help        fh      fuzzy           help tags in rtp `doc/` directories
-files       ff      fuzzy           child files (ignores `.git/`)
+grep        fs      raw ripgrep     grep search in the current directory
 buffers     fb      fuzzy           buffer names in `:ls`
 
 The following pickers are planned for future releases:
