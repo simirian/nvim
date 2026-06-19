@@ -208,8 +208,10 @@ function pickers.buffers()
   })
 end
 
+vim.g.pickers = pickers
+
 vim.api.nvim_create_user_command("Pick", function(args)
-  local p = vim.g.pickers
+  local p = vim.g.pickers or {}
   if p[args.args] then
     p[args.args]()
   end
@@ -218,7 +220,7 @@ end, {
   nargs = "?",
   bang = true,
   complete = function(arglead, cmdline, curpos)
-    local p = vim.g.pickers
+    local p = vim.g.pickers or {}
     if curpos ~= #cmdline then return end
     return vim.tbl_filter(function(e)
       return vim.startswith(e, arglead)
