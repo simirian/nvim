@@ -202,7 +202,7 @@ local function dir_update(bufnr)
     if vim.bo.ft == "fex" then
       local line = vim.api.nvim_get_current_line()
       local cursor = vim.api.nvim_win_get_cursor(0)
-      local _, col = line:find("\t", 1, true)
+      local col = line:find("\t", 1, true) or 0
       vim.api.nvim_win_set_cursor(0, { cursor[1], col })
     end
   end)
@@ -308,7 +308,7 @@ local function validate()
     end
   end
   if next(errors) then
-    table.insert(errors, "Use `:h <error>` to learn more about fex errors.")
+    table.insert(errors, "Use `:h FEXE#` to learn more about fex errors.")
     vim.notify(table.concat(errors, "\n"), vim.log.levels.ERROR, {})
   end
   return not next(errors)
@@ -554,7 +554,7 @@ vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter" }, {
       local line = vim.api.nvim_get_current_line()
       if line == "" then return end
       local cursor = vim.api.nvim_win_get_cursor(0)
-      local _, col = line:find("\t", 1, true)
+      local col = line:find("\t", 1, true) or 0
       vim.api.nvim_win_set_cursor(0, { cursor[1], col })
     end
   end,
