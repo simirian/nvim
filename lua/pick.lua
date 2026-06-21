@@ -106,6 +106,7 @@ local function openwins()
     col = right,
     width = preview and math.floor(fullwidth / 2) - 2 or fullwidth - 2,
     height = fullheight - 5,
+    focusable = false,
   }))
   vim.wo[lwin].cursorline = true
   vim.wo[lwin].winhighlight = "NormalFloat:PickList,FloatBorder:PickList,CursorLine:Search"
