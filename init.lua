@@ -111,29 +111,17 @@ vim.keymap.set("", "<leader>sh", "<cmd>set hlsearch!<cr>", { desc = "Toggle sear
 vim.keymap.set("", "<leader>ss", "<cmd>set spell!<cr>", { desc = "Toggle spell checking for the current window", silent = true })
 vim.keymap.set("", "<leader>sw", "<cmd>set wrap!<cr>", { desc = "Toggle line wrapping.", silent = true })
 
--- ((lazy.nvim)) ---------------------------------------------------------------
+-- ((packages)) ----------------------------------------------------------------
 
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.uv.fs_stat(lazypath) then
-  vim.fn.system { "git", "clone", "--filter=blob:none",
-    "https://github.com/folke/lazy.nvim.git", "--branch=stable", lazypath, }
+vim.pack.add({ { src = "https://github.com/nvim-treesitter/nvim-treesitter", branch = "main" } })
+
+local ok = pcall(require, "nvim-treesitter")
+if ok then
+  require("nvim-treesitter").setup()
+  vim.api.nvim_create_autocmd("FileType", {
+    desc = "Enable treesitter in supported buffers.",
+    callback = function() pcall(vim.treesitter.start) end,
+  })
+else
+  vim.notify("failed to load nvim-treesitter", vim.log.levels.ERROR)
 end
-vim.opt.rtp:prepend(lazypath)
-
-require("lazy").setup {
-  rocks = { enabled = false },
-  spec = {
-    {
-      "nvim-treesitter/nvim-treesitter",
-      branch = "main",
-      build = ":TSUpdate",
-      config = function()
-        require("nvim-treesitter").setup()
-        vim.api.nvim_create_autocmd("FileType", {
-          desc = "Enable treesitter in supported buffers.",
-          callback = function() pcall(vim.treesitter.start) end,
-        })
-      end
-    },
-  },
-}
