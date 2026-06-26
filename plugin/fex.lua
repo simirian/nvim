@@ -9,6 +9,14 @@ local async = require("async")
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 
+local augroup = vim.api.nvim_create_augroup("fex", { clear = true })
+local ns = vim.api.nvim_create_namespace("fex")
+
+--- Map of buffer numbers to threads. This is required because vim buffers can't
+--- store async routines.
+--- @type table<integer, Async>
+local upthreads = {}
+
 --- Creates a file or directory if the path ends in '/'. The path must not yet
 --- exist. Parent directories will be created as needed.
 --- @param path string The path to create.
@@ -86,6 +94,13 @@ local function rm(path)
       end
       local _, err = vim.uv.fs_rmdir(path)
       assert(not err, em .. (err or ""))
+      -- delete fex buffers when they're removed from the filesystem
+      local bufnr = vim.fn.bufnr(path)
+      if bufnr ~= -1 then
+        upthreads[bufnr]:abort()
+        upthreads[bufnr] = nil
+        vim.api.nvim_buf_delete(bufnr, { force = true })
+      end
     else
       local _, err = vim.uv.fs_unlink(path)
       assert(not err, em .. (err or ""))
@@ -123,14 +138,6 @@ local function swapnameid(item)
     return nextid - 1
   end
 end
-
-local augroup = vim.api.nvim_create_augroup("fex", { clear = true })
-local ns = vim.api.nvim_create_namespace("fex")
-
---- Map of buffer numbers to threads. This is required because vim buffers can't
---- store async routines.
---- @type table<table, Async>
-local upthreads = {}
 
 --- Updates a fex directory buffer.
 --- @param bufnr integer The buffer to update.
@@ -406,7 +413,9 @@ local function sync()
   if validate() and confirm() then
     commit()
     for bufnr in pairs(fexbufs) do
-      dir_update(bufnr)
+      if vim.fn.bufexists(bufnr) == 1 then
+        dir_update(bufnr)
+      end
     end
   end
 end
