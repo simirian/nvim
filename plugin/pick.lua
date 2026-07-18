@@ -137,6 +137,13 @@ function pickers.help()
   })
 end
 
+vim.g.pick_filesignore = {
+  [".git"] = true,
+  [".venv"] = true,
+  ["__pycache__"] = true,
+  ["build"] = true,
+}
+
 --- Pick from all files in the current directory excluding git files.
 function pickers.files()
   pick.pick({
@@ -144,7 +151,7 @@ function pickers.files()
       local function lsr(path)
         local strs = {}
         for name, type in vim.fs.dir(path) do
-          if name ~= ".git" or type ~= "directory" then
+          if type ~= "directory" or not vim.g.pick_filesignore[name] then
             coroutine.yield()
             local fname = path .. "/" .. name
             table.insert(strs, fname)
@@ -177,7 +184,7 @@ end
 function pickers.gitfiles()
   pick.pick({
     list = function()
-      local out = async.system({ "git", "ls-files" }, {})
+      local out = async.system({ "git", "ls-files", "-co", "--exclude-standard" }, {})
       if not out or out.code ~= 0 then return {} end
       return vim.split(out.stdout, "[\r\n]+", { trimempty = true })
     end,
