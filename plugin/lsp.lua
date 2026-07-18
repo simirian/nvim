@@ -117,7 +117,7 @@ local defaults = {
         group = augroup,
         buffer = bufnr,
         callback = function()
-          if docomplete and vim.fn.pumvisible() == 0 then
+          if docomplete and vim.fn.pumvisible() == 0 and vim.o.omnifunc ~= "" then
             vim.api.nvim_feedkeys(vim.keycode("<C-x><C-o>"), "m", false)
           end
           docomplete = false
