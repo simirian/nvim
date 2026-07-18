@@ -1,10 +1,10 @@
 -- simirian's Neovim
 -- file explorer plugin
 
-local async = require("async")
-
 -- Credit where it's due, this plugin was heavily inspired by peer plugins like
 -- dirbuf and oil. It just aims to be smaller and perhaps a little simpler.
+
+local async = require("async")
 
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
