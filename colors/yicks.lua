@@ -5,20 +5,20 @@
 -- - github.com/nanotech/jellybeans.vim
 -- - github.com/xero/miasma.nvim
 
-local red = "#bf4840" -- keywords, types, preprocessor
-local orange = "#c17a44" -- literals
-local yellow = "#b4a03c" -- variables, constants
-local lime = "#819e3d" -- namespaces
+local red = "#bf4840" -- keywords, preprocessor
+local orange = "#c17a44" -- functions, literals
+local yellow = "#b4a03c" -- variables
+local lime = "#819e3d" -- types, modules
 local green = "#5b8f38" -- strings, links
-local cyan = "#357e92"
+local cyan = "#357e92" -- special strings
 local blue = "#4366a3"
 local purple = "#7944a7"
 
-local back = "#242220" -- normal background
-local backlight = "#33312e" -- pum background, buffer markers
-local select = "#3e3b38" -- visual and quickfix selection
-local border = "#484440" -- float background
-local textbg = "#5d534b" -- borders, line number, end of buffer
+local back = "#1e1d1c" -- normal background
+local backlight = "#2b2927" -- pum, float background
+local select = "#363432" -- selections, buffer markers, highlights
+local border = "#4c4844" -- borders
+local textbg = "#5d534b" -- line number, end of buffer
 local textdark = "#807870" -- dark text
 local text = "#a09890" -- normal text
 local textlight = "#d0c8c0" -- standout text
@@ -78,7 +78,7 @@ hi("CursorIM", "Cursor")
 hi("TermCursor", "Cursor")
 
 -- buffer markers
-hi("CursorLine", { bg = backlight })
+hi("CursorLine", { bg = select })
 hi("CursorColumn", "CursorLine")
 hi("ColorColumn", "CursorLine")
 
@@ -102,7 +102,7 @@ hi("StatusLineNC", { fg = text, bg = border })
 hi("StatusLineTerm", "StatusLine")
 hi("StatusLineTermNC", "StatusLineNC")
 
-hi("TabLine", { fg = text, bg = backlight })
+hi("TabLine", { fg = text, bg = select })
 hi("TabLineFill", { fg = text, bg = border })
 hi("TabLineSel", { fg = back, bg = yellow })
 
@@ -110,7 +110,7 @@ hi("WinBar", "StatusLine")
 hi("WinBarNC", "StatusLineNC")
 
 hi("User1", { fg = back, bg = yellow })
-hi("User2", { fg = yellow, bg = backlight })
+hi("User2", { fg = yellow, bg = select })
 
 -- floats
 hi("NormalFloat", { fg = text, bg = backlight })
@@ -126,7 +126,7 @@ hi("PmenuKind", "Pmenu")
 hi("PmenuExtra", "Pmenu")
 hi("PmenuMatch", { fg = textdark })
 
-hi("PmenuSel", { fg = yellow, bg = border })
+hi("PmenuSel", { fg = yellow, bg = select })
 hi("PmenuKindSel", "PmenuSel")
 hi("PmenuExtraSel", "PmenuSel")
 hi("PmenuMatchSel", { fg = orange })
@@ -153,7 +153,7 @@ hi("StdoutMsg", "Normal")
 
 -- misc
 hi("Directory", { fg = yellow })
-hi("SnippetTabstop", { bg = backlight })
+hi("SnippetTabstop", { bg = select })
 hi("SnippetTabstopActive", "SnippetTabstop")
 -- no idea what these are
 hi("ComplMatchIns", { fg = purple, bg = red })
@@ -214,7 +214,7 @@ hi("Float", "Number")
 hi("@number.float", "Float")
 
 -- types
-hi("Type", { fg = red })
+hi("Type", { fg = lime })
 hi("StorageClass", "Type")
 hi("Structure", "Type")
 hi("Typedef", "Type")
@@ -332,7 +332,6 @@ hi("@tag.delimiter", { fg = text })
 -- no idea what these do
 hi("Underlined", { underline = true })
 hi("Ignore", { italic = true, fg = textdark })
-hi("Error", { fg = red })
 hi("Todo", { fg = back, bg = yellow })
 
 -- diagnostics (:h diagnostic-highlights)
@@ -364,27 +363,27 @@ hi("FileKind", { fg = text })
 hi("ColorKind", { fg = blue })
 hi("OperatorKind", { fg = text })
 hi("EnumMemberKind", { fg = green })
-hi("TypeParameterKind", { fg = red })
-hi("EnumKind", { fg = red })
-hi("InterfaceKind", { fg = red })
+hi("TypeParameterKind", { fg = lime })
+hi("EnumKind", { fg = lime })
+hi("InterfaceKind", { fg = lime })
 hi("ConstantKind", { fg = yellow })
 hi("ConstructorKind", { fg = orange })
 hi("FunctionKind", { fg = orange })
-hi("ClassKind", { fg = red })
+hi("ClassKind", { fg = lime })
 hi("KeywordKind", { fg = red })
 hi("ValueKind", { fg = orange })
 hi("VariableKind", { fg = yellow })
 hi("PropertyKind", { fg = text })
 hi("FieldKind", { fg = text })
-hi("StructKind", { fg = red })
+hi("StructKind", { fg = lime })
 hi("ReferenceKind", { fg = blue })
 hi("SnippetKind", { fg = blue })
 
 -- calendir groups
-hi("CalDay", { fg = text, bg = backlight })
+hi("CalDay", { fg = text, bg = select })
 hi("CalToday", { fg = back, bg = yellow })
 hi("CalNoToday", { fg = back, bg = text })
-hi("CalOther", { fg = textdark, bg = backlight })
+hi("CalOther", { fg = textdark, bg = select })
 hi("CalNoOther", { fg = textdark})
 
 -- pick groups
