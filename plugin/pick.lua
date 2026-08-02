@@ -184,7 +184,7 @@ end
 function pickers.gitfiles()
   pick.pick({
     list = function()
-      local out = async.system({ "git", "ls-files", "-co", "--exclude-standard" }, {})
+      local out = async.system({ "git", "ls-files", "-co", "--exclude-standard", "--deduplicate" }, {})
       if not out or out.code ~= 0 then return {} end
       return vim.split(out.stdout, "[\r\n]+", { trimempty = true })
     end,
