@@ -49,36 +49,54 @@ function Statusline()
   return left .. "%=" .. center .. "%=" .. right
 end
 
-local timer = vim.uv.new_timer()
-if timer then
-  timer:start(61000 - os.date("*t").sec * 1000, 60000, vim.schedule_wrap(function()
-    vim.cmd.redrawstatus()
-    vim.cmd.redrawtabline()
-  end))
-end
+local tablistbuf = vim.api.nvim_create_buf(false, true)
+local ns = vim.api.nvim_create_namespace("lines")
 
---- Tabline generating function.
---- @return string tabline
-function Tabline()
-  local left = "%#User1# " .. vim.fs.basename(vim.uv.cwd()) .. os.date(" | %R ")
+vim.api.nvim_create_autocmd({ "TabNew", "TabEnter", "UIEnter" }, {
+  desc = "Update tablines.",
+  group = augroup,
+  callback = function()
+    local curtab = vim.api.nvim_get_current_tabpage()
+    local tablist = vim.api.nvim_list_tabpages()
 
-  local right = ""
-  local curtab = vim.api.nvim_get_current_tabpage()
-  for _, tabid in ipairs(vim.api.nvim_list_tabpages()) do
-    local tabnr = vim.api.nvim_tabpage_get_number(tabid)
-    if tabid == curtab then
-      right = right .. "%#TabLineSel# " .. tabnr .. " %#TabLine#"
-    elseif right == "" then
-      right = right .. "%#TabLine# " .. tabnr .. " "
-    else
-      right = right .. " " .. tabnr .. " "
+    local str = ""
+    for i in ipairs(tablist) do
+      str = str .. " " .. i .. " "
     end
-  end
 
-  return left .. "%#TabLineFill#%=" .. right
-end
+    vim.api.nvim_buf_clear_namespace(tablistbuf, ns, 0, -1)
+    vim.api.nvim_buf_set_lines(tablistbuf, 0, -1, false, { str })
+    local last = 0
+    for n, id in ipairs(tablist) do
+      local first = last
+      last = last + (n < 10 and 3 or 4)
+      vim.api.nvim_buf_set_extmark(tablistbuf, ns, 0, first, {
+        end_col = last,
+        hl_group = id == curtab and "TabLineSel" or "TabLine",
+      })
+    end
+
+    local config = {
+      relative = "tabline",
+      width = vim.fn.strdisplaywidth(str),
+      height = 1,
+      row = 0,
+      col = vim.o.columns,
+      anchor = "NE",
+      hide = false,
+      border = "none",
+      style = "minimal",
+      focusable = false,
+    }
+    if vim.t.tablinewin then
+      vim.api.nvim_win_set_config(vim.t.tablinewin, config)
+    else
+      local openconfig = vim.tbl_extend("error", config, { win = vim.api.nvim_tabpage_list_wins(0)[0] })
+      vim.t.tablinewin = vim.api.nvim_open_win(tablistbuf, false, openconfig)
+    end
+  end,
+})
 
 vim.o.statusline = "%!v:lua.Statusline()"
 vim.o.laststatus = 2
-vim.o.tabline = "%!v:lua.Tabline()"
-vim.o.showtabline = 2
+vim.o.showtabline = 0
