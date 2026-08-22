@@ -52,7 +52,7 @@ end
 local tablistbuf = vim.api.nvim_create_buf(false, true)
 local ns = vim.api.nvim_create_namespace("lines")
 
-vim.api.nvim_create_autocmd({ "TabNew", "TabEnter", "UIEnter" }, {
+vim.api.nvim_create_autocmd({ "TabNew", "TabEnter", "VimResized", "UIEnter" }, {
   desc = "Update tablines.",
   group = augroup,
   callback = function()
