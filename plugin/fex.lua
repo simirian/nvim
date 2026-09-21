@@ -142,13 +142,18 @@ end
 --- Updates a fex directory buffer.
 --- @param bufnr integer The buffer to update.
 local function dir_update(bufnr)
+  local bufname = vim.api.nvim_buf_get_name(bufnr)
+  local stat = vim.uv.fs_stat(bufname)
+  if not stat or stat.type ~= "directory" then
+    vim.api.nvim_buf_delete(bufnr, { force = true })
+    return
+  end
   if upthreads[bufnr] then
     upthreads[bufnr]:abort()
   end
   vim.b[bufnr].fex_loading = true
   upthreads[bufnr] = async(function()
     vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
-    local bufname = vim.api.nvim_buf_get_name(bufnr)
     local children = {}
     -- get and filter children
     local fd, err = vim.uv.fs_scandir(bufname)
