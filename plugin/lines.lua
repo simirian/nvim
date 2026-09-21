@@ -32,7 +32,7 @@ function Statusline()
     if isterm then
       ico, hl = "", "IconLime"
     else
-      ico, hl = require("icons").get(vim.fs.basename(bufname))
+      ico, hl = require("icons").get(bufnr)
     end
   end
   local center = " %#" .. hl .. "#" .. ico .. " %*" .. name .. " %n " .. (vim.bo[bufnr].modified and " " or "") .. "%*"

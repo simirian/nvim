@@ -86,13 +86,27 @@ icons.extension = {
 
 
 --- Gets an icon based on the given name and category.
---- @param name string The name of the file to get the icon for.
---- @param category "name"|"extension"|"filetype"? The category to select the icon from.
+--- @param name string|number The name of the file to get the icon for.
+--- @param category "name"|"extension"|"filetype"|"buffer"? The category to select the icon from.
 --- @return string icon
 --- @return string highlight
 function M.get(name, category)
   local ico = { "?", "IconGray" }
-  if category == "name" then
+  if type(name) == "number" or category == "buffer" then
+    --- @cast name integer
+    local filetype = vim.bo[name].ft or vim.filetype.match { buf = name }
+    if icons.filetype[filetype] then
+      ico = icons.filetype[filetype]
+    else
+      local bufname = vim.fs.basename(vim.api.nvim_buf_get_name(name))
+      if icons.name[bufname] then
+        ico = icons.name[bufname]
+      else
+        local extension = vim.fs.ext(bufname)
+        ico = icons.extension[extension] or ico
+      end
+    end
+  elseif category == "name" then
     ico = icons.name[name] or ico
   elseif category == "filetype" then
     ico = icons.filetype[name] or ico
@@ -101,9 +115,7 @@ function M.get(name, category)
       ico = icons.extension[name] or ico
     else
       local ft = vim.filetype.match { filename = "file." .. name } or 0
-      if icons.filetype[ft] then
-        ico = icons.filetype[ft] or ico
-      end
+      ico = icons.filetype[ft] or ico
     end
   else
     if icons.name[name] then

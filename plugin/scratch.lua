@@ -26,16 +26,25 @@ local function runcmd(bufnr, args)
   end)
 end
 
-vim.api.nvim_create_user_command("Scratch", function(args)
-  local ft = args.args ~= "" and args.args .. " " or ""
-  local bufnr = vim.fn.bufnr("Scratch " .. ft .. "#" .. (args.count or 0), true)
-  vim.bo[bufnr].buftype = "nofile"
-  vim.bo[bufnr].bufhidden = "hide"
-  vim.bo[bufnr].swapfile = false
-  vim.bo[bufnr].modeline = false
-  if args.args:match("[^%s]") then
-    vim.bo[bufnr].ft = args.args
+--- Gets a buffer from a filetype and number, or creates a new one if there
+--- isn't one already.
+--- @param filetype string The file type of the buffer.
+--- @param number integer The number withing that filetype.
+--- @returns integer bufnr
+local function get_buffer(filetype, number)
+  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.bo[bufnr].filetype == filetype and vim.b[bufnr].scratch_id == number then
+      return bufnr
+    end
   end
+  local bufnr = vim.api.nvim_create_buf(false, true)
+  vim.bo[bufnr].filetype = filetype:match("[^%s]+")
+  vim.b[bufnr].scratch_id = number
+  return bufnr
+end
+
+vim.api.nvim_create_user_command("Scratch", function(args)
+  local bufnr = get_buffer(args.args, args.count or 0)
   --- @diagnostic disable-next-line: redefined-local
   vim.api.nvim_buf_create_user_command(bufnr, "Run", function(args) runcmd(bufnr, args) end,
     { desc = "Run code in a scratch buffer.", force = true, nargs = "*", range = "%", bar = true, })
@@ -54,7 +63,6 @@ vim.api.nvim_create_user_command("AnnabelLee", function(args)
   local bufnr = vim.fn.bufnr("Scratch Annabel Lee")
   if bufnr == -1 then
     bufnr = vim.api.nvim_create_buf(true, true)
-    vim.api.nvim_buf_set_name(bufnr, "Scratch Annabel Lee")
     local oldul = vim.bo[bufnr].ul
     vim.bo[bufnr].ul = -1
     vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, {
